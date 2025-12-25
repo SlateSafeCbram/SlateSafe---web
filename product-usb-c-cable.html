@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="USB-C Right Angle Cable - Premium 90-degree USB-C cable for tight spaces and professional installations">
-    <title>USB-C Right Angle Cable | SlateSafe</title>
+    <meta name="description" content="USB-C Right Angle Cable from SlateSafe - Perfect for low profile cases, mounts, and tight spaces. Modern Tablet Solutions.">
+    <title>USB-C Right Angle Cable | SlateSafe - Modern Tablet Solutions</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,23 +18,58 @@
     <!-- Tailwind Config for Custom Colors -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         'slate-deep': '#1a1a1a',
                         'slate-dark': '#2d2d2d',
                         'matte-black': '#0a0a0a',
-                        'safety-orange': '#ff6b35',
-                        'electric-blue': '#00a8ff'
+                        'brand-orange': '#e69137',
+                        'brand-blue': '#6ea6db'
                     }
                 }
             }
         }
     </script>
     
+    <!-- Theme Detection Script -->
+    <script>
+        (function() {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('theme');
+            const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+            
+            if (shouldBeDark) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('theme', {
+                    dark: shouldBeDark,
+                    toggle() {
+                        this.dark = !this.dark;
+                        if (this.dark) {
+                            document.documentElement.classList.add('dark');
+                            localStorage.setItem('theme', 'dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                            localStorage.setItem('theme', 'light');
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+    
     <style>
         html {
             scroll-behavior: smooth;
+        }
+        * {
+            transition-property: background-color, border-color, color;
+            transition-duration: 200ms;
+            transition-timing-function: ease-in-out;
         }
         
         .gallery-thumbnail {
@@ -40,7 +78,7 @@
         }
         
         .gallery-thumbnail.active {
-            border-color: #ff6b35;
+            border-color: #e69137;
             opacity: 1;
         }
         
@@ -53,56 +91,77 @@
         }
     </style>
 </head>
-<body class="bg-matte-black text-gray-100 font-sans antialiased">
+<body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
     
     <!-- Navigation -->
-    <nav class="bg-slate-deep/95 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800" x-data="{ open: false }">
+    <nav class="bg-white/95 dark:bg-slate-deep/95 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800" x-data="{ open: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="index.html" class="text-2xl font-bold text-white hover:text-safety-orange transition-colors">
-                        SlateSafe
+                    <a href="index.html" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+                        <img src="logo.svg" alt="SlateSafe Logo" class="h-8 md:h-10 w-auto">
                     </a>
                 </div>
                 
                 <!-- Desktop Navigation -->
-                <div class="hidden md:flex space-x-8">
-                    <a href="index.html" class="text-gray-300 hover:text-white transition-colors">Home</a>
-                    <a href="products.html" class="text-gray-300 hover:text-white transition-colors">Products</a>
-                    <a href="about.html" class="text-gray-300 hover:text-white transition-colors">About</a>
-                    <a href="contact.html" class="text-gray-300 hover:text-white transition-colors">Contact</a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
+                    <a href="products.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
+                    <a href="about.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">About</a>
+                    <a href="contact.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Contact</a>
+                    
+                    <!-- Theme Toggle -->
+                    <button @click="$store.theme.toggle()" class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle theme">
+                        <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg x-show="$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- Mobile menu button -->
-                <button @click="open = !open" class="md:hidden text-gray-300 hover:text-white">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <div class="md:hidden flex items-center space-x-2">
+                    <!-- Theme Toggle (Mobile) -->
+                    <button @click="$store.theme.toggle()" class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle theme">
+                        <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg x-show="$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
+                    <button @click="open = !open" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
         
         <!-- Mobile Navigation -->
-        <div x-show="open" x-collapse class="md:hidden bg-slate-dark border-t border-gray-800">
+        <div x-show="open" x-collapse class="md:hidden bg-gray-50 dark:bg-slate-dark border-t border-gray-200 dark:border-gray-800">
             <div class="px-4 py-4 space-y-3">
-                <a href="index.html" class="block text-gray-300 hover:text-white transition-colors">Home</a>
-                <a href="products.html" class="block text-gray-300 hover:text-white transition-colors">Products</a>
-                <a href="about.html" class="block text-gray-300 hover:text-white transition-colors">About</a>
-                <a href="contact.html" class="block text-gray-300 hover:text-white transition-colors">Contact</a>
+                <a href="index.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
+                <a href="products.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
+                <a href="about.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">About</a>
+                <a href="contact.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Contact</a>
             </div>
         </div>
     </nav>
     
     <!-- Breadcrumb -->
-    <div class="bg-slate-dark border-b border-gray-800">
+    <div class="bg-gray-100 dark:bg-slate-dark border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <nav class="text-sm text-gray-400">
-                <a href="index.html" class="hover:text-white transition-colors">Home</a>
+            <nav class="text-sm text-gray-600 dark:text-gray-400">
+                <a href="index.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
                 <span class="mx-2">/</span>
-                <a href="products.html" class="hover:text-white transition-colors">Products</a>
+                <a href="products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
                 <span class="mx-2">/</span>
-                <span class="text-gray-300">USB-C Right Angle Cable</span>
+                <span class="text-gray-900 dark:text-gray-300">USB-C Right Angle Cable</span>
             </nav>
         </div>
     </div>
@@ -119,11 +178,11 @@
                 { id: 4, alt: 'USB-C Right Angle Cable - In Use' }
             ]}">
                 <!-- Main Image -->
-                <div class="mb-6 rounded-lg overflow-hidden bg-slate-dark border border-gray-800">
-                    <div class="aspect-square flex items-center justify-center bg-gradient-to-br from-slate-dark to-gray-900">
+                <div class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="aspect-square flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900">
                         <div class="text-center p-8">
-                            <div class="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-safety-orange to-electric-blue rounded-lg opacity-30"></div>
-                            <p class="text-gray-500" x-text="images[selectedImage].alt"></p>
+                            <div class="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-brand-orange to-brand-blue rounded-lg opacity-40 dark:opacity-30"></div>
+                            <p class="text-gray-600 dark:text-gray-400" x-text="images[selectedImage].alt"></p>
                         </div>
                     </div>
                 </div>
@@ -134,10 +193,10 @@
                         <button 
                             @click="selectedImage = index"
                             class="gallery-thumbnail aspect-square rounded-lg overflow-hidden border-2 transition-all"
-                            :class="selectedImage === index ? 'border-safety-orange' : 'border-gray-700'"
+                            :class="selectedImage === index ? 'border-brand-orange' : 'border-gray-300 dark:border-gray-700'"
                         >
-                            <div class="w-full h-full bg-gradient-to-br from-slate-dark to-gray-900 flex items-center justify-center">
-                                <div class="w-12 h-12 bg-gradient-to-br from-safety-orange to-electric-blue rounded opacity-20"></div>
+                            <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900 flex items-center justify-center">
+                                <div class="w-12 h-12 bg-gradient-to-br from-brand-orange to-brand-blue rounded opacity-30 dark:opacity-20"></div>
                             </div>
                         </button>
                     </template>
@@ -146,106 +205,107 @@
             
             <!-- Product Details (Right Side) -->
             <div>
-                <h1 class="text-4xl md:text-5xl font-bold mb-4">USB-C Right Angle Cable</h1>
-                <p class="text-3xl font-bold text-safety-orange mb-6">$29.99</p>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">USB-C Right Angle Cable</h1>
+                <p class="text-3xl font-bold text-brand-orange mb-6">$29.99</p>
                 
                 <!-- Product Description -->
                 <div class="mb-8">
-                    <h2 class="text-xl font-semibold mb-4">Description</h2>
-                    <p class="text-gray-400 leading-relaxed mb-4">
-                        Our premium USB-C Right Angle Cable is engineered for professional installations where space is at a premium. 
-                        The 90-degree connector design eliminates cable strain and provides a clean, flush connection in tight spaces.
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Description</h2>
+                    <p class="text-gray-700 dark:text-gray-400 leading-relaxed mb-4">
+                        Perfect for low profile cases, mounts, or where you just want to keep a low profile! Our USB-C Right Angle Cable 
+                        is the best priced and sleekest solution for any mounted Samsung tablet. The 90-degree connector design eliminates 
+                        cable strain and provides a clean, flush connection in tight spaces.
                     </p>
-                    <p class="text-gray-400 leading-relaxed mb-4">
-                        Constructed with high-quality materials and precision-machined connectors, this cable delivers reliable data transfer 
-                        and power delivery while maintaining a compact profile. Perfect for tablet enclosures, docking stations, and 
-                        embedded systems where traditional straight cables simply won't fit.
+                    <p class="text-gray-700 dark:text-gray-400 leading-relaxed mb-4">
+                        Ideal for visitor check-in kiosks, POS systems, home automation tablet mounts like Home Assistant, and any installation 
+                        where a low profile flat cable makes all the difference. This cost-effective solution delivers reliable data transfer 
+                        and power delivery while maintaining that sleek, professional look you need.
                     </p>
                 </div>
                 
                 <!-- Key Features -->
                 <div class="mb-8">
-                    <h2 class="text-xl font-semibold mb-4">Key Features</h2>
-                    <ul class="space-y-3 text-gray-400">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Key Features</h2>
+                    <ul class="space-y-3 text-gray-700 dark:text-gray-400">
                         <li class="flex items-start">
-                            <svg class="w-5 h-5 text-safety-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>90-degree right-angle connector design for tight spaces</span>
                         </li>
                         <li class="flex items-start">
-                            <svg class="w-5 h-5 text-safety-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>USB 3.2 Gen 2 compatible with 10 Gbps data transfer speeds</span>
                         </li>
                         <li class="flex items-start">
-                            <svg class="w-5 h-5 text-safety-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>Supports up to 100W power delivery (PD 3.0)</span>
                         </li>
                         <li class="flex items-start">
-                            <svg class="w-5 h-5 text-safety-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>Premium braided cable with reinforced stress relief</span>
                         </li>
                         <li class="flex items-start">
-                            <svg class="w-5 h-5 text-safety-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>Available in multiple lengths: 1ft, 3ft, 6ft</span>
                         </li>
                         <li class="flex items-start">
-                            <svg class="w-5 h-5 text-safety-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span>Industrial-grade construction for durability</span>
+                            <span>Premium construction for long-lasting durability</span>
                         </li>
                     </ul>
                 </div>
                 
                 <!-- Specifications -->
-                <div class="mb-8 bg-slate-dark p-6 rounded-lg border border-gray-800">
-                    <h2 class="text-xl font-semibold mb-4">Specifications</h2>
+                <div class="mb-8 bg-gray-100 dark:bg-slate-dark p-6 rounded-lg border border-gray-200 dark:border-gray-800">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Specifications</h2>
                     <dl class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <dt class="text-gray-500 mb-1">Connector Type</dt>
-                            <dd class="text-gray-300 font-medium">USB-C to USB-C</dd>
+                            <dt class="text-gray-600 dark:text-gray-500 mb-1">Connector Type</dt>
+                            <dd class="text-gray-900 dark:text-gray-300 font-medium">USB-C to USB-C</dd>
                         </div>
                         <div>
-                            <dt class="text-gray-500 mb-1">Angle</dt>
-                            <dd class="text-gray-300 font-medium">90° Right Angle</dd>
+                            <dt class="text-gray-600 dark:text-gray-500 mb-1">Angle</dt>
+                            <dd class="text-gray-900 dark:text-gray-300 font-medium">90° Right Angle</dd>
                         </div>
                         <div>
-                            <dt class="text-gray-500 mb-1">Data Transfer</dt>
-                            <dd class="text-gray-300 font-medium">Up to 10 Gbps</dd>
+                            <dt class="text-gray-600 dark:text-gray-500 mb-1">Data Transfer</dt>
+                            <dd class="text-gray-900 dark:text-gray-300 font-medium">Up to 10 Gbps</dd>
                         </div>
                         <div>
-                            <dt class="text-gray-500 mb-1">Power Delivery</dt>
-                            <dd class="text-gray-300 font-medium">Up to 100W (PD 3.0)</dd>
+                            <dt class="text-gray-600 dark:text-gray-500 mb-1">Power Delivery</dt>
+                            <dd class="text-gray-900 dark:text-gray-300 font-medium">Up to 100W (PD 3.0)</dd>
                         </div>
                         <div>
-                            <dt class="text-gray-500 mb-1">Cable Length</dt>
-                            <dd class="text-gray-300 font-medium">Selectable (1ft/3ft/6ft)</dd>
+                            <dt class="text-gray-600 dark:text-gray-500 mb-1">Cable Length</dt>
+                            <dd class="text-gray-900 dark:text-gray-300 font-medium">Selectable (1ft/3ft/6ft)</dd>
                         </div>
                         <div>
-                            <dt class="text-gray-500 mb-1">Material</dt>
-                            <dd class="text-gray-300 font-medium">Braided Nylon</dd>
+                            <dt class="text-gray-600 dark:text-gray-500 mb-1">Material</dt>
+                            <dd class="text-gray-900 dark:text-gray-300 font-medium">Braided Nylon</dd>
                         </div>
                     </dl>
                 </div>
                 
                 <!-- Shipping Notice Box -->
-                <div class="mb-8 p-6 bg-safety-orange/10 border-2 border-safety-orange rounded-lg">
+                <div class="mb-8 p-6 bg-brand-orange/10 dark:bg-brand-orange/10 border-2 border-brand-orange rounded-lg">
                     <div class="flex items-start">
-                        <svg class="w-6 h-6 text-safety-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                            <h3 class="text-lg font-bold text-safety-orange mb-2">Limited Batch Shipping</h3>
-                            <p class="text-gray-300 font-semibold">
+                            <h3 class="text-lg font-bold text-brand-orange mb-2">Limited Batch Shipping</h3>
+                            <p class="text-gray-800 dark:text-gray-300 font-semibold">
                                 To maintain quality, orders are batched and shipped every Sunday.
                             </p>
                         </div>
@@ -254,13 +314,13 @@
                 
                 <!-- Quantity Selector -->
                 <div class="mb-8">
-                    <label for="quantity" class="block text-sm font-medium text-gray-300 mb-2">Quantity</label>
+                    <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity</label>
                     <div class="flex items-center space-x-4">
-                        <button class="px-4 py-2 bg-slate-dark border border-gray-700 rounded-lg hover:bg-slate-700 transition-colors" x-data @click="if (parseInt(document.getElementById('quantity').value) > 1) document.getElementById('quantity').value = parseInt(document.getElementById('quantity').value) - 1">
+                        <button class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white" x-data @click="if (parseInt(document.getElementById('quantity').value) > 1) document.getElementById('quantity').value = parseInt(document.getElementById('quantity').value) - 1">
                             -
                         </button>
-                        <input type="number" id="quantity" value="1" min="1" class="w-20 px-4 py-2 bg-slate-dark border border-gray-700 rounded-lg text-center focus:outline-none focus:border-safety-orange">
-                        <button class="px-4 py-2 bg-slate-dark border border-gray-700 rounded-lg hover:bg-slate-700 transition-colors" x-data @click="document.getElementById('quantity').value = parseInt(document.getElementById('quantity').value) + 1">
+                        <input type="number" id="quantity" value="1" min="1" class="w-20 px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-center text-gray-900 dark:text-white focus:outline-none focus:border-brand-orange">
+                        <button class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white" x-data @click="document.getElementById('quantity').value = parseInt(document.getElementById('quantity').value) + 1">
                             +
                         </button>
                     </div>
@@ -269,31 +329,31 @@
                 <!-- Buy Button Placeholder -->
                 <!-- TODO: Integrate with e-commerce platform (e.g., Stripe Checkout, Shopify Buy Button, or custom payment processor) -->
                 <div class="mb-8">
-                    <button class="w-full py-4 bg-safety-orange hover:bg-orange-600 text-white font-bold text-lg rounded-lg transition-colors shadow-lg">
+                    <button class="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors shadow-lg">
                         Add to Cart
                     </button>
-                    <p class="text-center text-gray-500 text-sm mt-4">
+                    <p class="text-center text-gray-600 dark:text-gray-400 text-sm mt-4">
                         Secure checkout via integrated payment processor
                     </p>
                 </div>
                 
                 <!-- Additional Info -->
-                <div class="border-t border-gray-800 pt-8">
-                    <div class="space-y-4 text-sm text-gray-400">
+                <div class="border-t border-gray-200 dark:border-gray-800 pt-8">
+                    <div class="space-y-4 text-sm text-gray-700 dark:text-gray-400">
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-safety-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>1-year manufacturer warranty included</span>
                         </div>
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-safety-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>30-day money-back guarantee</span>
                         </div>
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-safety-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>Free shipping on orders over $100</span>
@@ -305,78 +365,78 @@
     </main>
     
     <!-- Related Products Section (Optional) -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-800">
-        <h2 class="text-2xl font-bold mb-8">Related Products</h2>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-200 dark:border-gray-800">
+        <h2 class="text-2xl font-bold mb-8 text-gray-900 dark:text-white">Related Products</h2>
         <div class="grid md:grid-cols-3 gap-6">
-            <a href="product-tablet-enclosure.html" class="bg-slate-deep rounded-lg overflow-hidden border border-gray-800 hover:border-safety-orange transition-all">
-                <div class="h-48 bg-gradient-to-br from-gray-900 to-slate-dark flex items-center justify-center">
+            <a href="product-tablet-enclosure.html" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all">
+                <div class="h-48 bg-gradient-to-br from-gray-300 to-gray-200 dark:from-gray-900 dark:to-slate-dark flex items-center justify-center">
                     <div class="text-center">
-                        <div class="w-20 h-20 mx-auto mb-2 bg-gradient-to-br from-electric-blue to-safety-orange rounded-lg opacity-30"></div>
-                        <p class="text-gray-500 text-xs">Industrial Tablet Enclosure</p>
+                        <div class="w-20 h-20 mx-auto mb-2 bg-gradient-to-br from-brand-blue to-brand-orange rounded-lg opacity-40 dark:opacity-30"></div>
+                        <p class="text-gray-600 dark:text-gray-400 text-xs">Tablet Enclosure</p>
                     </div>
                 </div>
                 <div class="p-4">
-                    <h3 class="font-semibold mb-2">Industrial Tablet Enclosure</h3>
-                    <p class="text-safety-orange font-bold">$299.99</p>
+                    <h3 class="font-semibold mb-2 text-gray-900 dark:text-white">Tablet Enclosure</h3>
+                    <p class="text-brand-orange font-bold">$299.99</p>
                 </div>
             </a>
         </div>
     </section>
     
     <!-- Footer -->
-    <footer class="bg-slate-deep border-t border-gray-800">
+    <footer class="bg-gray-50 dark:bg-slate-deep border-t border-gray-200 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
-                    <h3 class="text-2xl font-bold mb-4">SlateSafe</h3>
-                    <p class="text-gray-400 text-sm">
-                        Professional industrial hardware solutions for modern businesses
+                    <img src="logo.svg" alt="SlateSafe Logo" class="h-10 mb-4 w-auto">
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                        Modern Tablet Solutions - Cost-effective, practical accessories for visitor kiosks, POS systems, and home automation
                     </p>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4">Products</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="products.html" class="hover:text-white transition-colors">All Products</a></li>
-                        <li><a href="product-usb-c-cable.html" class="hover:text-white transition-colors">USB-C Cables</a></li>
-                        <li><a href="product-tablet-enclosure.html" class="hover:text-white transition-colors">Tablet Enclosures</a></li>
+                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Products</h4>
+                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <li><a href="products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">All Products</a></li>
+                        <li><a href="product-usb-c-cable.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">USB-C Cables</a></li>
+                        <li><a href="product-tablet-enclosure.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Tablet Enclosures</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4">Company</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
+                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <li><a href="about.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="contact.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4">Legal</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="privacy-policy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><a href="shipping-policy.html" class="hover:text-white transition-colors">Shipping Policy</a></li>
+                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <li><a href="privacy-policy.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="shipping-policy.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Shipping Policy</a></li>
                     </ul>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400 text-sm mb-4 md:mb-0">
+            <div class="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 md:mb-0">
                     &copy; 2024 SlateSafe. All rights reserved.
                 </p>
                 <div class="flex space-x-6">
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-brand-orange dark:hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
                         </svg>
                     </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-brand-orange dark:hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
                             <circle cx="4" cy="4" r="2"/>
                         </svg>
                     </a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-brand-orange dark:hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>

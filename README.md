@@ -134,7 +134,7 @@ The site references these pages (create as needed):
 
 ## 📧 Contact
 
-For questions or support, use the contact form or email: slatesafe@gmail.com
+For questions or support, use the contact form or email: cbrammell@slatesafe.com
 
 ## 📜 License
 
