@@ -1,0 +1,17 @@
+{
+  "name": "slatesafe",
+  "version": "1.0.0",
+  "description": "SlateSafe - Modern Tablet Solutions",
+  "scripts": {
+    "build-css": "tailwindcss -i ./src/input.css -o ./dist/output.css --minify",
+    "watch-css": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.17"
+  }
+}
+
+
+
