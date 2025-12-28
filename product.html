@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse all SlateSafe products - Modern Tablet Solutions for visitor kiosks, POS systems, and home automation mounts">
-    <title>Products | SlateSafe - Modern Tablet Solutions</title>
+    <meta name="description" x-bind:content="productData ? productData.title + ' from SlateSafe - Modern Tablet Solutions' : 'Product from SlateSafe - Modern Tablet Solutions'">
+    <title x-text="productData ? productData.title + ' | SlateSafe - Modern Tablet Solutions' : 'Product | SlateSafe'"></title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -15,115 +15,34 @@
     <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
+    <!-- Product Gallery Component -->
+    <script src="product-gallery.js"></script>
+    
     <!-- Shared JavaScript - Must load before Alpine.js initializes -->
     <script src="app-init.js"></script>
     <script src="shopify-cart.js"></script>
     
-    <!-- Products Page Component -->
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('productsPage', () => ({
-                sortBy: 'featured',
-                filterCategory: 'all',
-                products: [],
-                loading: true,
-                async init() {
-                    try {
-                        console.log('Loading products from JSON...');
-                        // Load products from JSON file first
-                        const response = await fetch('products.json');
-                        if (!response.ok) {
-                            throw new Error(`Failed to load products: ${response.status}`);
-                        }
-                        const data = await response.json();
-                        console.log('Products data loaded:', data);
-                        
-                        if (!data.products || !Array.isArray(data.products)) {
-                            throw new Error('Invalid products data');
-                        }
-                        
-                        console.log(`Found ${data.products.length} products`);
-                        
-                        // First, populate products from JSON (without prices)
-                        this.products = data.products.map(product => ({
-                            id: product.id,
-                            name: product.title,
-                            price: 0,
-                            category: product.category,
-                            featured: product.featured || false,
-                            handle: product.handle,
-                            shopifyId: product.id
-                        }));
-                        
-                        console.log('Products array:', this.products);
-                        
-                        // Set loading to false so products show immediately
-                        this.loading = false;
-                        
-                        // Then fetch prices from Shopify (in background)
-                        setTimeout(async () => {
-                            try {
-                                if (typeof Alpine !== 'undefined' && Alpine.store('cart') && Alpine.store('cart').fetchProductDetails) {
-                                    const productsWithPrices = await Promise.all(this.products.map(async (product) => {
-                                        try {
-                                            const details = await Alpine.store('cart').fetchProductDetails(product.shopifyId);
-                                            if (details && details.price) {
-                                                product.price = details.price;
-                                            }
-                                        } catch (error) {
-                                            console.error(`Failed to fetch price for product ${product.shopifyId}:`, error);
-                                        }
-                                        return product;
-                                    }));
-                                    this.products = productsWithPrices;
-                                }
-                            } catch (error) {
-                                console.error('Error fetching prices:', error);
-                            }
-                        }, 500);
-                        
-                    } catch (error) {
-                        console.error('Error loading products:', error);
-                        this.loading = false;
-                        this.products = [];
-                    }
-                },
-                
-                get filteredProducts() {
-                    // Create a copy of the products array to avoid mutation issues
-                    let filtered = Array.isArray(this.products) ? [...this.products] : [];
-                    
-                    // Filter by category
-                    if (this.filterCategory !== 'all') {
-                        filtered = filtered.filter(p => p.category === this.filterCategory);
-                    }
-                    
-                    // Sort products
-                    if (this.sortBy === 'price-low') {
-                        filtered = filtered.sort((a, b) => a.price - b.price);
-                    } else if (this.sortBy === 'price-high') {
-                        filtered = filtered.sort((a, b) => b.price - a.price);
-                    } else if (this.sortBy === 'name') {
-                        filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
-                    } else if (this.sortBy === 'featured') {
-                        // Featured first, then others
-                        filtered = filtered.sort((a, b) => {
-                            if (a.featured && !b.featured) return -1;
-                            if (!a.featured && b.featured) return 1;
-                            return 0;
-                        });
-                    }
-                    
-                    return filtered;
-                }
-            }));
-        });
-    </script>
-    
-    <!-- Shopify Storefront API -->
-    <!-- Using headless app scopes for cart functionality -->
+    <style>
+        .gallery-thumbnail {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .gallery-thumbnail.active {
+            border-color: #e69137;
+            opacity: 1;
+        }
+        
+        .gallery-thumbnail:not(.active) {
+            opacity: 0.6;
+        }
+        
+        .gallery-thumbnail:hover {
+            opacity: 1;
+        }
+    </style>
 </head>
-<body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
+<body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased" x-data="productPage()">
     
     <!-- Toast Notifications -->
     <div class="fixed top-20 right-4 z-50 space-y-2" x-data>
@@ -170,7 +89,7 @@
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
-                    <a href="products.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors font-semibold text-brand-orange dark:text-white">Products</a>
+                    <a href="products.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
                     <a href="about.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">About</a>
                     <a href="contact.html" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Contact</a>
                     
@@ -234,109 +153,261 @@
              class="md:hidden bg-gray-50 dark:bg-slate-dark border-t border-gray-200 dark:border-gray-800">
             <div class="px-4 py-4 space-y-3">
                 <a href="index.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
-                <a href="products.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors font-semibold text-brand-orange dark:text-white">Products</a>
+                <a href="products.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
                 <a href="about.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">About</a>
                 <a href="contact.html" class="block text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white transition-colors">Contact</a>
             </div>
         </div>
     </nav>
     
-    <!-- Page Header -->
+    <!-- Breadcrumb -->
     <div class="bg-gray-100 dark:bg-slate-dark border-b border-gray-200 dark:border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Product Catalog</h1>
-            <p class="text-xl text-gray-600 dark:text-gray-400">Browse our complete range of practical tablet accessories</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav class="text-sm text-gray-600 dark:text-gray-400">
+                <a href="index.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
+                <span class="mx-2">/</span>
+                <span class="text-gray-900 dark:text-gray-300" x-text="productData ? productData.title : 'Loading...'"></span>
+            </nav>
         </div>
     </div>
     
-    <!-- Products Section -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="productsPage">
-        
-        <!-- Filter and Sort Controls -->
-        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex flex-wrap gap-4">
-                <label class="text-gray-700 dark:text-gray-300">Filter:</label>
-                <select x-model="filterCategory" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-300 focus:outline-none focus:border-brand-orange">
-                    <option value="all">All Products</option>
-                    <option value="cables">Cables</option>
-                    <option value="enclosures">Enclosures</option>
-                </select>
-            </div>
-            
-            <div class="flex flex-wrap gap-4">
-                <label class="text-gray-700 dark:text-gray-300">Sort:</label>
-                <select x-model="sortBy" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-300 focus:outline-none focus:border-brand-orange">
-                    <option value="featured">Featured</option>
-                    <option value="name">Name A-Z</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- Loading State -->
-        <div x-show="loading" class="text-center py-12">
+    <!-- Loading State -->
+    <div x-show="loading" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="text-center">
             <svg class="w-12 h-12 mx-auto mb-4 text-brand-orange animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            <p class="text-gray-600 dark:text-gray-400">Loading products...</p>
+            <p class="text-gray-600 dark:text-gray-400">Loading product...</p>
         </div>
-        
-        <!-- Products Grid -->
-        <div x-show="!loading" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <template x-for="product in filteredProducts" :key="product.id">
-                <a :href="'product.html?handle=' + product.handle" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
-                    <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden" 
-                         x-data="{ thumbnail: null, loading: true }"
-                         x-init="
-                             if (product.shopifyId) {
-                                 Alpine.store('cart').fetchProductThumbnail(product.shopifyId).then(t => {
-                                     thumbnail = t;
-                                     loading = false;
-                                 }).catch(() => { loading = false; });
-                             } else {
-                                 loading = false;
-                             }
-                         ">
-                        <!-- Product Thumbnail Image -->
-                        <img x-show="thumbnail && !loading" 
-                             :src="thumbnail.url + '?width=400'"
-                             :alt="thumbnail.alt || product.name"
-                             class="w-full h-full object-cover">
-                        <!-- Placeholder while loading or if no thumbnail -->
-                        <div x-show="!thumbnail || loading" class="bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900 flex items-center justify-center w-full h-full">
-                            <div class="text-center">
-                                <div class="w-24 h-24 mx-auto mb-4 rounded-lg opacity-40 dark:opacity-30 transition-transform group-hover:scale-110 bg-gradient-to-br from-brand-orange to-brand-blue"></div>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm" x-text="product.name"></p>
-                            </div>
-                        </div>
-                        <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold" x-show="product.featured">
-                            Featured
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-brand-orange transition-colors" x-text="product.name"></h3>
-                        <p class="text-2xl font-bold text-brand-orange mb-4" x-show="product.price > 0" x-text="'$' + product.price.toFixed(2)"></p>
-                       <p class="text-2xl font-bold text-gray-400 mb-4" x-show="product.price === 0">Price unavailable</p>
-                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 group-hover:text-brand-orange dark:group-hover:text-white transition-colors">
-                            <span>View Details</span>
-                            <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </div>
+    
+    <!-- Error State -->
+    <div x-show="error && !loading" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="text-center">
+            <p class="text-red-600 dark:text-red-400 text-lg mb-4" x-text="error"></p>
+            <a href="products.html" class="text-brand-orange hover:text-brand-orange/80 transition-colors">Return to Products</a>
+        </div>
+    </div>
+    
+    <!-- Product Page Content -->
+    <main x-show="!loading && !error && productData" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid lg:grid-cols-2 gap-12">
+            
+            <!-- Product Media Gallery (Left Side) -->
+            <template x-if="productId">
+                <div x-data="productGallery(productId)">
+                    <!-- Loading State -->
+                    <div x-show="loading" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="aspect-square flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900">
+                        <div class="text-center p-8">
+                            <svg class="w-12 h-12 mx-auto mb-4 text-brand-orange animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
+                            <p class="text-gray-600 dark:text-gray-400">Loading gallery...</p>
                         </div>
                     </div>
-                </a>
+                </div>
+                
+                <!-- Error State -->
+                <div x-show="error && !loading" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="aspect-square flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900">
+                        <div class="text-center p-8">
+                            <p class="text-gray-600 dark:text-gray-400" x-text="error"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Media Display -->
+                <div x-show="!loading && !error && media.length > 0" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="aspect-square bg-black dark:bg-gray-900 flex items-center justify-center relative">
+                        <!-- Image Media -->
+                        <template x-for="(item, index) in media" :key="item.id">
+                            <div x-show="selectedIndex === index" class="absolute inset-0 w-full h-full">
+                                <img x-show="item.type === 'IMAGE'" 
+                                     :src="getOptimizedImageUrl(item.url)" 
+                                     :alt="item.alt"
+                                     class="w-full h-full object-contain"
+                                     loading="lazy">
+                                <!-- Video Media -->
+                                <video x-show="item.type === 'VIDEO'" 
+                                       :src="item.url"
+                                       autoplay
+                                       loop
+                                       muted
+                                       playsinline
+                                       class="w-full h-full object-contain">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Thumbnail Gallery -->
+                <div x-show="!loading && !error && media.length > 1" class="grid grid-cols-4 gap-4">
+                    <template x-for="(item, index) in media" :key="item.id">
+                        <button 
+                            @click="selectMedia(index)"
+                            class="gallery-thumbnail aspect-square rounded-lg overflow-hidden border-2 transition-all bg-gray-100 dark:bg-slate-dark"
+                            :class="selectedIndex === index ? 'border-brand-orange opacity-100' : 'border-gray-300 dark:border-gray-700 opacity-60 hover:opacity-100'"
+                        >
+                            <!-- Image Thumbnail -->
+                            <img x-show="item.type === 'IMAGE'"
+                                 :src="getThumbnailUrl(item.url)"
+                                 :alt="item.alt"
+                                 class="w-full h-full object-cover">
+                            
+                            <!-- Video Thumbnail -->
+                            <div x-show="item.type === 'VIDEO'" class="w-full h-full relative">
+                                <div x-show="!item.previewUrl" class="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <!-- Video Play Icon Overlay -->
+                                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+                </div>
             </template>
-        </div>
-        
-        <!-- Empty State -->
-        <div x-show="!loading && filteredProducts.length === 0" class="text-center py-12">
-            <p class="text-gray-600 dark:text-gray-400 text-lg">No products found matching your criteria.</p>
+            
+            <!-- Placeholder while productId loads -->
+            <div x-show="!productId" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                <div class="aspect-square flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900">
+                    <div class="text-center p-8">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-brand-orange animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <p class="text-gray-600 dark:text-gray-400">Loading gallery...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Details (Right Side) -->
+            <div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white" x-text="productData ? productData.title : ''"></h1>
+                <p class="text-3xl font-bold text-brand-orange mb-6" x-text="productData ? productData.priceFormatted : ''"></p>
+                
+                <!-- Product Description -->
+                <div class="mb-8" x-show="productData && productData.descriptionHtml">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Description</h2>
+                    <div class="text-gray-700 dark:text-gray-400 leading-relaxed" x-html="productData.descriptionHtml"></div>
+                </div>
+                
+                <!-- Key Features -->
+                <div class="mb-8" x-show="keyFeatures && keyFeatures.length > 0">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Key Features</h2>
+                    <ul class="space-y-3 text-gray-700 dark:text-gray-400">
+                        <template x-for="feature in keyFeatures" :key="feature">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span x-text="feature"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                
+                <!-- Specifications -->
+                <div class="mb-8 bg-gray-100 dark:bg-slate-dark p-6 rounded-lg border border-gray-200 dark:border-gray-800" x-show="specifications && Object.keys(specifications).length > 0">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Specifications</h2>
+                    <dl class="grid grid-cols-2 gap-4 text-sm">
+                        <template x-for="[key, value] in Object.entries(specifications)" :key="key">
+                            <div>
+                                <dt class="text-gray-600 dark:text-gray-500 mb-1" x-text="key"></dt>
+                                <dd class="text-gray-900 dark:text-gray-300 font-medium" x-text="value"></dd>
+                            </div>
+                        </template>
+                    </dl>
+                </div>
+                
+                <!-- Shipping Notice Box -->
+                <div class="mb-8 p-6 bg-brand-orange/10 dark:bg-brand-orange/10 border-2 border-brand-orange rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-bold text-brand-orange mb-2">Limited Batch Shipping</h3>
+                            <p class="text-gray-800 dark:text-gray-300 font-semibold">
+                                To maintain quality, orders are batched and shipped every Sunday.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quantity Selector -->
+                <div class="mb-8">
+                    <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity</label>
+                    <div class="flex items-center space-x-4">
+                        <button @click="if (quantity > 1) quantity--" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white">
+                            -
+                        </button>
+                        <input type="number" x-model="quantity" min="1" class="w-20 px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-center text-gray-900 dark:text-white focus:outline-none focus:border-brand-orange">
+                        <button @click="quantity++" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white">
+                            +
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Add to Cart Button -->
+                <div class="mb-8">
+                    <button @click="addToCart()" 
+                            :disabled="addingToCart"
+                            class="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg transition-colors shadow-lg">
+                        <span x-show="!addingToCart">Add to Cart</span>
+                        <span x-show="addingToCart" class="flex items-center justify-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Adding...
+                        </span>
+                    </button>
+                    <p class="text-center text-gray-600 dark:text-gray-400 text-sm mt-4">
+                        Secure checkout via Shopify
+                    </p>
+                </div>
+                
+                <!-- Additional Info -->
+                <div class="border-t border-gray-200 dark:border-gray-800 pt-8">
+                    <div class="space-y-4 text-sm text-gray-700 dark:text-gray-400">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>1-year manufacturer warranty included</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>30-day money-back guarantee</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Free shipping on orders over $100</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
     
     <!-- Footer -->
-    <footer class="bg-gray-50 dark:bg-slate-deep border-t border-gray-200 dark:border-gray-800 mt-20">
+    <footer class="bg-gray-50 dark:bg-slate-deep border-t border-gray-200 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
@@ -350,8 +421,6 @@
                     <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Products</h4>
                     <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                         <li><a href="products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">All Products</a></li>
-                        <li><a href="product-usb-c-cable.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">USB-C Cables</a></li>
-                        <li><a href="product-tablet-enclosure.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Tablet Enclosures</a></li>
                     </ul>
                 </div>
                 
@@ -410,7 +479,6 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex justify-end"
          @keydown.escape.window="$store.cart.open = false">
         
         <!-- Backdrop -->
@@ -506,6 +574,91 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        function productPage() {
+            return {
+                loading: true,
+                error: null,
+                productData: null,
+                productId: null,
+                productIndex: null,
+                keyFeatures: [],
+                specifications: {},
+                quantity: 1,
+                addingToCart: false,
+                
+                async init() {
+                    // Extract handle from URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const handle = urlParams.get('handle');
+                    
+                    if (!handle) {
+                        this.error = 'Product handle not found in URL';
+                        this.loading = false;
+                        return;
+                    }
+                    
+                    try {
+                        // Load products.json
+                        const productsResponse = await fetch('products.json');
+                        if (!productsResponse.ok) {
+                            throw new Error('Failed to load products index');
+                        }
+                        const productsData = await productsResponse.json();
+                        
+                        // Find product by handle
+                        const product = productsData.products.find(p => p.handle === handle);
+                        if (!product) {
+                            this.error = 'Product not found';
+                            this.loading = false;
+                            return;
+                        }
+                        
+                        this.productIndex = product;
+                        this.productId = product.id;
+                        
+                        // Fetch full product details from Shopify
+                        const details = await Alpine.store('cart').fetchProductDetails(product.id);
+                        if (!details) {
+                            this.error = 'Failed to load product details';
+                            this.loading = false;
+                            return;
+                        }
+                        
+                        this.productData = details;
+                        
+                        // Use JSON keyFeatures if available, otherwise empty array
+                        this.keyFeatures = product.keyFeatures || [];
+                        
+                        // Use JSON specifications if available, otherwise empty object
+                        this.specifications = product.specifications || {};
+                        
+                        this.loading = false;
+                    } catch (err) {
+                        console.error('Error loading product:', err);
+                        this.error = 'Failed to load product. Please try again.';
+                        this.loading = false;
+                    }
+                },
+                
+                async addToCart() {
+                    if (!this.productId || this.addingToCart) return;
+                    
+                    this.addingToCart = true;
+                    try {
+                        await Alpine.store('cart').addProduct(this.productId, this.quantity);
+                        Alpine.store('cart').openDrawer();
+                        Alpine.store('toast').show('Product added to cart!', 'success');
+                    } catch (error) {
+                        Alpine.store('toast').show('Failed to add product to cart. Please try again.', 'error');
+                    } finally {
+                        this.addingToCart = false;
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>
 
