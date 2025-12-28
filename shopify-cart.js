@@ -472,6 +472,218 @@ document.addEventListener('alpine:init', () => {
         checkoutUrl: '#',
         getCheckoutUrl() {
             return this.checkoutUrl || '#';
+        },
+        
+        async getProductHandleFromId(productId) {
+            // Convert product ID to GID format if needed
+            const productGid = productId.toString().startsWith('gid://') 
+                ? productId 
+                : `gid://shopify/Product/${productId}`;
+            
+            try {
+                const query = `
+                    query getProductHandle($id: ID!) {
+                        product(id: $id) {
+                            id
+                            handle
+                        }
+                    }
+                `;
+                const result = await this.shopifyRequest(query, { id: productGid });
+                return result.data?.product?.handle || null;
+            } catch (error) {
+                this.handleError(error, 'fetching product handle');
+                return null;
+            }
+        },
+        
+        async fetchProductMedia(productIdOrHandle) {
+            // Determine if input is a product ID (numeric) or handle (string)
+            const isNumericId = /^\d+$/.test(productIdOrHandle.toString());
+            let productHandle = productIdOrHandle;
+            
+            // If it's a numeric ID, resolve the handle first
+            if (isNumericId) {
+                productHandle = await this.getProductHandleFromId(productIdOrHandle);
+                if (!productHandle) {
+                    return [];
+                }
+            }
+            
+            try {
+                const query = `
+                    query getProductMedia($handle: String!) {
+                        product(handle: $handle) {
+                            id
+                            media(first: 20) {
+                                edges {
+                                    node {
+                                        mediaContentType
+                                        alt
+                                        ... on MediaImage {
+                                            image {
+                                                url
+                                                altText
+                                            }
+                                        }
+                                        ... on Video {
+                                            sources {
+                                                url
+                                                mimeType
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `;
+                const result = await this.shopifyRequest(query, { handle: productHandle });
+                if (result.data?.product?.media?.edges) {
+                    return result.data.product.media.edges.map(edge => {
+                        const node = edge.node;
+                        if (node.mediaContentType === 'IMAGE') {
+                            return {
+                                type: 'IMAGE',
+                                url: node.image?.url || '',
+                                alt: node.alt || node.image?.altText || '',
+                                id: node.image?.url || Math.random().toString()
+                            };
+                        } else if (node.mediaContentType === 'VIDEO') {
+                            // Get the best video source (prefer mp4)
+                            const videoSource = node.sources?.find(s => s.mimeType?.includes('mp4')) || node.sources?.[0];
+                            return {
+                                type: 'VIDEO',
+                                url: videoSource?.url || '',
+                                previewUrl: null,
+                                alt: node.alt || '',
+                                id: videoSource?.url || Math.random().toString()
+                            };
+                        }
+                        return null;
+                    }).filter(item => item !== null);
+                }
+                return [];
+            } catch (error) {
+                this.handleError(error, 'fetching product media');
+                return [];
+            }
+        },
+        
+        async fetchProductThumbnail(productIdOrHandle) {
+            // Fetch only the first image for thumbnail display
+            const media = await this.fetchProductMedia(productIdOrHandle);
+            if (media.length > 0 && media[0].type === 'IMAGE') {
+                return {
+                    url: media[0].url,
+                    alt: media[0].alt
+                };
+            }
+            return null;
+        },
+        
+        async fetchProductDetails(productIdOrHandle) {
+            // Determine if input is a product ID (numeric) or handle (string)
+            const isNumericId = /^\d+$/.test(productIdOrHandle.toString());
+            let productHandle = productIdOrHandle;
+            let productGid = null;
+            
+            // If it's a numeric ID, resolve the handle first
+            if (isNumericId) {
+                productGid = `gid://shopify/Product/${productIdOrHandle}`;
+                productHandle = await this.getProductHandleFromId(productIdOrHandle);
+                if (!productHandle) {
+                    return null;
+                }
+            } else {
+                // If handle provided, we'll query by handle and get the ID from response
+            }
+            
+            try {
+                const query = `
+                    query getProductDetails($handle: String!) {
+                        product(handle: $handle) {
+                            id
+                            title
+                            descriptionHtml
+                            priceRange {
+                                minVariantPrice {
+                                    amount
+                                    currencyCode
+                                }
+                                maxVariantPrice {
+                                    amount
+                                    currencyCode
+                                }
+                            }
+                            variants(first: 10) {
+                                edges {
+                                    node {
+                                        id
+                                        title
+                                        price {
+                                            amount
+                                            currencyCode
+                                        }
+                                        availableForSale
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `;
+                const result = await this.shopifyRequest(query, { handle: productHandle });
+                
+                if (!result.data?.product) {
+                    return null;
+                }
+                
+                const product = result.data.product;
+                const productId = product.id.replace('gid://shopify/Product/', '');
+                
+                // Fetch media separately
+                const media = await this.fetchProductMedia(isNumericId ? productIdOrHandle : productHandle);
+                
+                // Get first available variant or first variant for pricing
+                const firstVariant = product.variants.edges[0]?.node || null;
+                const price = firstVariant?.price?.amount || product.priceRange.minVariantPrice.amount;
+                
+                return {
+                    id: productId,
+                    handle: productHandle,
+                    title: product.title,
+                    descriptionHtml: product.descriptionHtml,
+                    description: product.descriptionHtml ? this.stripHtmlTags(product.descriptionHtml) : '',
+                    price: parseFloat(price),
+                    priceFormatted: `$${parseFloat(price).toFixed(2)}`,
+                    currencyCode: firstVariant?.price?.currencyCode || product.priceRange.minVariantPrice.currencyCode,
+                    priceRange: {
+                        min: parseFloat(product.priceRange.minVariantPrice.amount),
+                        max: parseFloat(product.priceRange.maxVariantPrice.amount),
+                        minFormatted: `$${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}`,
+                        maxFormatted: `$${parseFloat(product.priceRange.maxVariantPrice.amount).toFixed(2)}`
+                    },
+                    variants: product.variants.edges.map(edge => ({
+                        id: edge.node.id,
+                        title: edge.node.title,
+                        price: parseFloat(edge.node.price.amount),
+                        priceFormatted: `$${parseFloat(edge.node.price.amount).toFixed(2)}`,
+                        currencyCode: edge.node.price.currencyCode,
+                        availableForSale: edge.node.availableForSale
+                    })),
+                    media: media
+                };
+            } catch (error) {
+                this.handleError(error, 'fetching product details');
+                return null;
+            }
+        },
+        
+        stripHtmlTags(html) {
+            // Simple HTML tag stripper for plain text description
+            const tmp = document.createElement('DIV');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
         }
     });
     

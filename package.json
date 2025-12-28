@@ -4,7 +4,9 @@
   "description": "SlateSafe - Modern Tablet Solutions",
   "scripts": {
     "build-css": "tailwindcss -i ./src/input.css -o ./dist/output.css --minify",
-    "watch-css": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch"
+    "watch-css": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
+    "serve": "npx http-server . -p 8080 -o",
+    "dev": "npx http-server . -p 8080"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.0",

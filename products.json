@@ -1,0 +1,51 @@
+{
+  "products": [
+    {
+      "id": "9593037586679",
+      "handle": "flat-90-degree-usb-c-ribbon-extension-cable",
+      "title": "USB-C Right Angle Cable",
+      "category": "cables",
+      "featured": true,
+      "featureHighlight": "Perfect for low profile cases and mounts",
+      "keyFeatures": [
+        "90-degree right-angle connector design for tight spaces",
+        "USB 3.2 Gen 2 compatible with 10 Gbps data transfer speeds",
+        "Supports up to 100W power delivery (PD 3.0)",
+        "Premium braided cable with reinforced stress relief",
+        "Available in multiple lengths: 1ft, 3ft, 6ft",
+        "Premium construction for long-lasting durability"
+      ],
+      "specifications": {
+        "Connector Type": "USB-C to USB-C",
+        "Angle": "90° Right Angle",
+        "Data Transfer": "Up to 10 Gbps",
+        "Power Delivery": "Up to 100W (PD 3.0)",
+        "Cable Length": "Selectable (1ft/3ft/6ft)",
+        "Material": "Braided Nylon"
+      }
+    },
+    {
+      "id": "9872488694007",
+      "handle": "tablet-enclosure",
+      "title": "Tablet Enclosure",
+      "category": "enclosures",
+      "featured": true,
+      "featureHighlight": "Tamper-resistant, low-profile design",
+      "keyFeatures": [
+        "IP65 rated - Dust and water resistant protection",
+        "3D printed construction using premium ABS and PETG-CF materials",
+        "Full touchscreen functionality maintained",
+        "VESA mount and vehicle mount compatibility",
+        "Temperature range: -20°C to 60°C operating",
+        "Multiple size options: 10\", 11\", 12.9\" tablets"
+      ],
+      "specifications": {
+        "Operating Temperature": "-20°C to 60°C",
+        "Mounting": "VESA & Vehicle",
+        "Tablet Sizes": "10\", 11\", 12.9\"",
+        "Weight": "2.5 lbs"
+      }
+    }
+  ]
+}
+

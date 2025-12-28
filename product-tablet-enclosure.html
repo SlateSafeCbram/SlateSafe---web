@@ -15,6 +15,9 @@
     <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
+    <!-- Product Gallery Component -->
+    <script src="product-gallery.js"></script>
+    
     <!-- Shopify Storefront API -->
     <!-- Note: You'll need to replace YOUR_STOREFRONT_ACCESS_TOKEN with your actual Storefront API access token -->
     <!-- Get it from: Shopify Admin > Settings > Apps and sales channels > Develop apps > Create an app > Configure Storefront API scopes -->
@@ -484,7 +487,107 @@
                     },
                     
                     checkoutUrl: '#',
-                    getCheckoutUrl() { return this.checkoutUrl || '#'; }
+                    getCheckoutUrl() { return this.checkoutUrl || '#'; },
+                    
+                    async getProductHandleFromId(productId) {
+                        const productGid = productId.toString().startsWith('gid://') 
+                            ? productId 
+                            : `gid://shopify/Product/${productId}`;
+                        try {
+                            const query = `
+                                query getProductHandle($id: ID!) {
+                                    product(id: $id) {
+                                        id
+                                        handle
+                                    }
+                                }
+                            `;
+                            const result = await this.shopifyRequest(query, { id: productGid });
+                            return result.data?.product?.handle || null;
+                        } catch (error) {
+                            this.handleError(error, 'fetching product handle');
+                            return null;
+                        }
+                    },
+                    
+                    async fetchProductMedia(productIdOrHandle) {
+                        const isNumericId = /^\d+$/.test(productIdOrHandle.toString());
+                        let productHandle = productIdOrHandle;
+                        if (isNumericId) {
+                            productHandle = await this.getProductHandleFromId(productIdOrHandle);
+                            if (!productHandle) {
+                                return [];
+                            }
+                        }
+                        try {
+                            const query = `
+                                query getProductMedia($handle: String!) {
+                                    product(handle: $handle) {
+                                        id
+                                        media(first: 20) {
+                                            edges {
+                                                node {
+                                                    mediaContentType
+                                                    alt
+                                                    ... on MediaImage {
+                                                        image {
+                                                            url
+                                                            altText
+                                                        }
+                                                    }
+                                                    ... on Video {
+                                                        sources {
+                                                            url
+                                                            mimeType
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            `;
+                            const result = await this.shopifyRequest(query, { handle: productHandle });
+                            if (result.data?.product?.media?.edges) {
+                                return result.data.product.media.edges.map(edge => {
+                                    const node = edge.node;
+                                    if (node.mediaContentType === 'IMAGE') {
+                                        return {
+                                            type: 'IMAGE',
+                                            url: node.image?.url || '',
+                                            alt: node.alt || node.image?.altText || '',
+                                            id: node.image?.url || Math.random().toString()
+                                        };
+                                    } else if (node.mediaContentType === 'VIDEO') {
+                                        const videoSource = node.sources?.find(s => s.mimeType?.includes('mp4')) || node.sources?.[0];
+                                        return {
+                                            type: 'VIDEO',
+                                            url: videoSource?.url || '',
+                                            previewUrl: null,
+                                            alt: node.alt || '',
+                                            id: videoSource?.url || Math.random().toString()
+                                        };
+                                    }
+                                    return null;
+                                }).filter(item => item !== null);
+                            }
+                            return [];
+                        } catch (error) {
+                            this.handleError(error, 'fetching product media');
+                            return [];
+                        }
+                    },
+                    
+                    async fetchProductThumbnail(productIdOrHandle) {
+                        const media = await this.fetchProductMedia(productIdOrHandle);
+                        if (media.length > 0 && media[0].type === 'IMAGE') {
+                            return {
+                                url: media[0].url,
+                                alt: media[0].alt
+                            };
+                        }
+                        return null;
+                    }
                 });
                 
                 // Initialize cart on page load
@@ -673,33 +776,89 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid lg:grid-cols-2 gap-12">
             
-            <!-- Image Gallery (Left Side) -->
-            <div x-data="{ selectedImage: 0, images: [
-                { id: 1, alt: 'Tablet Enclosure - Front View' },
-                { id: 2, alt: 'Tablet Enclosure - Side View' },
-                { id: 3, alt: 'Tablet Enclosure - Mounting Options' },
-                { id: 4, alt: 'Tablet Enclosure - In Use' }
-            ]}">
-                <!-- Main Image -->
-                <div class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+            <!-- Product Media Gallery (Left Side) -->
+            <div x-data="productGallery('tablet-enclosure')">
+                <!-- Loading State -->
+                <div x-show="loading" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
                     <div class="aspect-square flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900">
                         <div class="text-center p-8">
-                            <div class="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-brand-blue to-brand-orange rounded-lg opacity-40 dark:opacity-30"></div>
-                            <p class="text-gray-600 dark:text-gray-400" x-text="images[selectedImage].alt"></p>
+                            <svg class="w-12 h-12 mx-auto mb-4 text-brand-orange animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <p class="text-gray-600 dark:text-gray-400">Loading gallery...</p>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Error State -->
+                <div x-show="error && !loading" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="aspect-square flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900">
+                        <div class="text-center p-8">
+                            <p class="text-gray-600 dark:text-gray-400" x-text="error"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Media Display -->
+                <div x-show="!loading && !error && media.length > 0" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="aspect-square bg-black dark:bg-gray-900 flex items-center justify-center relative">
+                        <!-- Image Media -->
+                        <template x-for="(item, index) in media" :key="item.id">
+                            <div x-show="selectedIndex === index" class="absolute inset-0 w-full h-full">
+                                <img x-show="item.type === 'IMAGE'" 
+                                     :src="getOptimizedImageUrl(item.url)" 
+                                     :alt="item.alt"
+                                     class="w-full h-full object-contain"
+                                     loading="lazy">
+                                
+                                <!-- Video Media -->
+                                <video x-show="item.type === 'VIDEO'" 
+                                       :src="item.url"
+                                       autoplay
+                                       loop
+                                       muted
+                                       playsinline
+                                       class="w-full h-full object-contain"
+                                       :poster="item.previewUrl ? getOptimizedImageUrl(item.previewUrl) : ''">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
                 <!-- Thumbnail Gallery -->
-                <div class="grid grid-cols-4 gap-4">
-                    <template x-for="(image, index) in images" :key="image.id">
+                <div x-show="!loading && !error && media.length > 1" class="grid grid-cols-4 gap-4">
+                    <template x-for="(item, index) in media" :key="item.id">
                         <button 
-                            @click="selectedImage = index"
-                            class="gallery-thumbnail aspect-square rounded-lg overflow-hidden border-2 transition-all"
-                            :class="selectedImage === index ? 'border-brand-orange' : 'border-gray-300 dark:border-gray-700'"
+                            @click="selectMedia(index)"
+                            class="gallery-thumbnail aspect-square rounded-lg overflow-hidden border-2 transition-all bg-gray-100 dark:bg-slate-dark"
+                            :class="selectedIndex === index ? 'border-brand-orange opacity-100' : 'border-gray-300 dark:border-gray-700 opacity-60 hover:opacity-100'"
                         >
-                            <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900 flex items-center justify-center">
-                                <div class="w-12 h-12 bg-gradient-to-br from-brand-blue to-brand-orange rounded opacity-30 dark:opacity-20"></div>
+                            <!-- Image Thumbnail -->
+                            <img x-show="item.type === 'IMAGE'"
+                                 :src="getThumbnailUrl(item.url)"
+                                 :alt="item.alt"
+                                 class="w-full h-full object-cover">
+                            
+                            <!-- Video Thumbnail -->
+                            <div x-show="item.type === 'VIDEO'" class="w-full h-full relative">
+                                <img x-show="item.previewUrl"
+                                     :src="getThumbnailUrl(item.previewUrl)"
+                                     :alt="item.alt"
+                                     class="w-full h-full object-cover">
+                                <div x-show="!item.previewUrl" class="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <!-- Video Play Icon Overlay -->
+                                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </div>
                             </div>
                         </button>
                     </template>
