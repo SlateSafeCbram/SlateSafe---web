@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse all SlateSafe products - Modern Tablet Solutions for visitor kiosks, POS systems, and home automation mounts">
-    <title>Products | SlateSafe - Modern Tablet Solutions</title>
+    <meta name="description" content="Privacy Policy and Data Sharing Opt-Out for SlateSafe. Learn about how we collect and share personal information, and how to opt out of targeted advertising.">
+    <title>Privacy Policy | SlateSafe - Modern Tablet Solutions</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -18,110 +18,6 @@
     <!-- Shared JavaScript - Must load before Alpine.js initializes -->
     <script src="app-init.js"></script>
     <script src="shopify-cart.js"></script>
-    
-    <!-- Products Page Component -->
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('productsPage', () => ({
-                sortBy: 'featured',
-                filterCategory: 'all',
-                products: [],
-                loading: true,
-                async init() {
-                    try {
-                        console.log('Loading products from JSON...');
-                        // Load products from JSON file first
-                        const response = await fetch('products.json');
-                        if (!response.ok) {
-                            throw new Error(`Failed to load products: ${response.status}`);
-                        }
-                        const data = await response.json();
-                        console.log('Products data loaded:', data);
-                        
-                        if (!data.products || !Array.isArray(data.products)) {
-                            throw new Error('Invalid products data');
-                        }
-                        
-                        console.log(`Found ${data.products.length} products`);
-                        
-                        // First, populate products from JSON (without prices)
-                        this.products = data.products.map(product => ({
-                            id: product.id,
-                            name: product.title,
-                            price: 0,
-                            category: product.category,
-                            featured: product.featured || false,
-                            handle: product.handle,
-                            shopifyId: product.id
-                        }));
-                        
-                        console.log('Products array:', this.products);
-                        
-                        // Set loading to false so products show immediately
-                        this.loading = false;
-                        
-                        // Then fetch prices from Shopify (in background)
-                        setTimeout(async () => {
-                            try {
-                                if (typeof Alpine !== 'undefined' && Alpine.store('cart') && Alpine.store('cart').fetchProductDetails) {
-                                    const productsWithPrices = await Promise.all(this.products.map(async (product) => {
-                                        try {
-                                            const details = await Alpine.store('cart').fetchProductDetails(product.shopifyId);
-                                            if (details && details.price) {
-                                                product.price = details.price;
-                                            }
-                                        } catch (error) {
-                                            console.error(`Failed to fetch price for product ${product.shopifyId}:`, error);
-                                        }
-                                        return product;
-                                    }));
-                                    this.products = productsWithPrices;
-                                }
-                            } catch (error) {
-                                console.error('Error fetching prices:', error);
-                            }
-                        }, 500);
-                        
-                    } catch (error) {
-                        console.error('Error loading products:', error);
-                        this.loading = false;
-                        this.products = [];
-                    }
-                },
-                
-                get filteredProducts() {
-                    // Create a copy of the products array to avoid mutation issues
-                    let filtered = Array.isArray(this.products) ? [...this.products] : [];
-                    
-                    // Filter by category
-                    if (this.filterCategory !== 'all') {
-                        filtered = filtered.filter(p => p.category === this.filterCategory);
-                    }
-                    
-                    // Sort products
-                    if (this.sortBy === 'price-low') {
-                        filtered = filtered.sort((a, b) => a.price - b.price);
-                    } else if (this.sortBy === 'price-high') {
-                        filtered = filtered.sort((a, b) => b.price - a.price);
-                    } else if (this.sortBy === 'name') {
-                        filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
-                    } else if (this.sortBy === 'featured') {
-                        // Featured first, then others
-                        filtered = filtered.sort((a, b) => {
-                            if (a.featured && !b.featured) return -1;
-                            if (!a.featured && b.featured) return 1;
-                            return 0;
-                        });
-                    }
-                    
-                    return filtered;
-                }
-            }));
-        });
-    </script>
-    
-    <!-- Shopify Storefront API -->
-    <!-- Using headless app scopes for cart functionality -->
 </head>
 <body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
     
@@ -170,7 +66,7 @@
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-white hover:text-brand-orange transition-colors">Home</a>
-                    <a href="products.html" class="text-white hover:text-brand-orange transition-colors font-semibold text-brand-orange">Products</a>
+                    <a href="products.html" class="text-white hover:text-brand-orange transition-colors">Products</a>
                     <a href="about.html" class="text-white hover:text-brand-orange transition-colors">About</a>
                     <a href="contact.html" class="text-white hover:text-brand-orange transition-colors">Contact</a>
                     
@@ -196,23 +92,13 @@
                 <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center space-x-2">
                     <!-- Cart Icon (Mobile) -->
-                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Shopping cart">
+                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span x-show="$store.cart.itemCount > 0" class="absolute top-0 right-0 bg-brand-orange text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" x-text="$store.cart.itemCount"></span>
                     </button>
-                    
-                    <!-- Theme Toggle (Mobile) -->
-                    <button @click="$store.theme.toggle()" class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle theme">
-                        <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                        <svg x-show="$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </button>
-                    <button @click="open = !open" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white">
+                    <button @click="open = !open" class="text-white hover:text-brand-orange">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -234,7 +120,7 @@
              class="md:hidden bg-header-blue border-t border-header-blue/80">
             <div class="px-4 py-4 space-y-3">
                 <a href="index.html" class="block text-white hover:text-brand-orange transition-colors">Home</a>
-                <a href="products.html" class="block text-white hover:text-brand-orange transition-colors font-semibold text-brand-orange">Products</a>
+                <a href="products.html" class="block text-white hover:text-brand-orange transition-colors">Products</a>
                 <a href="about.html" class="block text-white hover:text-brand-orange transition-colors">About</a>
                 <a href="contact.html" class="block text-white hover:text-brand-orange transition-colors">Contact</a>
             </div>
@@ -243,95 +129,31 @@
     
     <!-- Page Header -->
     <div class="bg-gray-100 dark:bg-slate-dark border-b border-gray-200 dark:border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Product Catalog</h1>
-            <p class="text-xl text-gray-600 dark:text-gray-400">Browse our complete range of practical tablet accessories</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav class="text-sm text-gray-600 dark:text-gray-400">
+                <a href="index.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <span class="text-gray-900 dark:text-gray-300">Privacy Policy</span>
+            </nav>
         </div>
     </div>
     
-    <!-- Products Section -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="productsPage">
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h1 class="text-4xl md:text-5xl font-bold mb-8 text-gray-900 dark:text-white">Your Privacy Choices</h1>
         
-        <!-- Filter and Sort Controls -->
-        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex flex-wrap gap-4">
-                <label class="text-gray-700 dark:text-gray-300">Filter:</label>
-                <select x-model="filterCategory" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-300 focus:outline-none focus:border-brand-orange">
-                    <option value="all">All Products</option>
-                    <option value="cables">Cables</option>
-                    <option value="enclosures">Enclosures</option>
-                </select>
-            </div>
+        <div class="prose prose-lg max-w-none dark:prose-invert">
+            <p class="text-lg text-gray-700 dark:text-gray-300 mb-6">
+                As described in our Privacy Policy, we collect personal information from your interactions with us and our website, including through cookies and similar technologies. We may also share this personal information with third parties, including advertising partners. We do this in order to show you ads on other websites that are more relevant to your interests and for other reasons outlined in our privacy policy.
+            </p>
             
-            <div class="flex flex-wrap gap-4">
-                <label class="text-gray-700 dark:text-gray-300">Sort:</label>
-                <select x-model="sortBy" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-300 focus:outline-none focus:border-brand-orange">
-                    <option value="featured">Featured</option>
-                    <option value="name">Name A-Z</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- Loading State -->
-        <div x-show="loading" class="text-center py-12">
-            <svg class="w-12 h-12 mx-auto mb-4 text-brand-orange animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <p class="text-gray-600 dark:text-gray-400">Loading products...</p>
-        </div>
-        
-        <!-- Products Grid -->
-        <div x-show="!loading" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <template x-for="product in filteredProducts" :key="product.id">
-                <a :href="'product.html?handle=' + product.handle" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
-                    <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden" 
-                         x-data="{ thumbnail: null, loading: true }"
-                         x-init="
-                             if (product.shopifyId) {
-                                 Alpine.store('cart').fetchProductThumbnail(product.shopifyId).then(t => {
-                                     thumbnail = t;
-                                     loading = false;
-                                 }).catch(() => { loading = false; });
-                             } else {
-                                 loading = false;
-                             }
-                         ">
-                        <!-- Product Thumbnail Image -->
-                        <img x-show="thumbnail && !loading" 
-                             :src="thumbnail.url + '?width=400'"
-                             :alt="thumbnail.alt || product.name"
-                             class="w-full h-full object-cover">
-                        <!-- Placeholder while loading or if no thumbnail -->
-                        <div x-show="!thumbnail || loading" class="bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900 flex items-center justify-center w-full h-full">
-                            <div class="text-center">
-                                <div class="w-24 h-24 mx-auto mb-4 rounded-lg opacity-40 dark:opacity-30 transition-transform group-hover:scale-110 bg-gradient-to-br from-brand-orange to-brand-blue"></div>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm" x-text="product.name"></p>
-                            </div>
-                        </div>
-                        <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold" x-show="product.featured">
-                            Featured
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-brand-orange transition-colors" x-text="product.name"></h3>
-                        <p class="text-2xl font-bold text-brand-orange mb-4" x-show="product.price > 0" x-text="'$' + product.price.toFixed(2)"></p>
-                       <p class="text-2xl font-bold text-gray-400 mb-4" x-show="product.price === 0">Price unavailable</p>
-                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 group-hover:text-brand-orange dark:group-hover:text-white transition-colors">
-                            <span>View Details</span>
-                            <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </div>
-                </a>
-            </template>
-        </div>
-        
-        <!-- Empty State -->
-        <div x-show="!loading && filteredProducts.length === 0" class="text-center py-12">
-            <p class="text-gray-600 dark:text-gray-400 text-lg">No products found matching your criteria.</p>
+            <p class="text-lg text-gray-700 dark:text-gray-300 mb-6">
+                Sharing of personal information for targeted advertising based on your interaction on different websites may be considered "sales", "sharing", or "targeted advertising" under certain U.S. state privacy laws. Depending on where you live, you may have the right to opt out of these activities. If you would like to exercise this opt-out right, please follow the instructions below.
+            </p>
+            
+            <p class="text-lg text-gray-700 dark:text-gray-300">
+                If you visit our website with the Global Privacy Control opt-out preference signal enabled, depending on where you are, we will treat this as a request to opt-out of activity that may be considered a "sale" or "sharing" of personal information or other uses that may be considered targeted advertising for the device and browser you used to visit our website.
+            </p>
         </div>
     </main>
     
@@ -341,38 +163,38 @@
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
                     <img src="logo.svg" alt="SlateSafe Logo" class="h-10 mb-4 w-auto">
-                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    <p class="text-gray-200 text-sm">
                         Modern Tablet Solutions - Cost-effective, practical accessories for visitor kiosks, POS systems, and home automation
                     </p>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Products</h4>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <li><a href="products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">All Products</a></li>
+                    <h4 class="font-semibold mb-4 text-white">Products</h4>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        <li><a href="products.html" class="hover:text-brand-orange transition-colors">All Products</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Company</h4>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <li><a href="about.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="contact.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Contact</a></li>
+                    <h4 class="font-semibold mb-4 text-white">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        <li><a href="about.html" class="hover:text-brand-orange transition-colors">About Us</a></li>
+                        <li><a href="contact.html" class="hover:text-brand-orange transition-colors">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Legal</h4>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <li><a href="privacy-policy.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><a href="shipping-policy.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Shipping Policy</a></li>
+                    <h4 class="font-semibold mb-4 text-white">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        <li><a href="privacy-policy.html" class="hover:text-brand-orange transition-colors font-semibold text-brand-orange">Privacy Policy</a></li>
+                        <li><a href="shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
                     </ul>
                 </div>
             </div>
             
-            <div class="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 md:mb-0">
-                    &copy; 2024 SlateSafe. All rights reserved.
+            <div class="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-200 text-sm mb-4 md:mb-0">
+                    &copy; 2025 SlateSafe. All rights reserved.
                 </p>
                 <div class="flex space-x-6">
                     <div class="relative group">
