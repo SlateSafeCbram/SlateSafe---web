@@ -221,7 +221,7 @@
                 
                 <!-- Main Media Display -->
                 <div x-show="!loading && !error && media.length > 0" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
-                    <div class="bg-black dark:bg-gray-900 flex items-center justify-center relative" style="min-height: 500px; max-height: 700px;">
+                    <div class="bg-white dark:bg-header-blue flex items-center justify-center relative" style="min-height: 500px; max-height: 700px;">
                         <!-- Image Media -->
                         <template x-for="(item, index) in media" :key="item.id">
                             <div x-show="selectedIndex === index" class="absolute inset-0 w-full h-full">
