@@ -6,6 +6,7 @@ document.addEventListener('alpine:init', () => {
         selectedIndex: 0,
         loading: true,
         error: null,
+        userHasInteracted: false,
         
         async init() {
             if (!productId) {
@@ -31,6 +32,7 @@ document.addEventListener('alpine:init', () => {
         
         selectMedia(index) {
             if (index >= 0 && index < this.media.length) {
+                this.userHasInteracted = true;
                 this.selectedIndex = index;
             }
         },

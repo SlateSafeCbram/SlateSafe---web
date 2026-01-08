@@ -9,19 +9,18 @@
       "featureHighlight": "Perfect for low profile cases and mounts",
       "keyFeatures": [
         "90-degree right-angle connector design for tight spaces",
-        "USB 3.2 Gen 2 compatible with 10 Gbps data transfer speeds",
-        "Supports up to 100W power delivery (PD 3.0)",
-        "Premium braided cable with reinforced stress relief",
-        "Available in multiple lengths: 1ft, 3ft, 6ft",
-        "Premium construction for long-lasting durability"
+        "Capable of 480 Mbps data transfer speeds",
+        "Supports up to 30W power delivery",
+        "Premium FPC PVC cable",
+        "Ideal length to route through tablet cases"
       ],
       "specifications": {
         "Connector Type": "USB-C to USB-C",
         "Angle": "90° Right Angle",
-        "Data Transfer": "Up to 10 Gbps",
-        "Power Delivery": "Up to 100W (PD 3.0)",
-        "Cable Length": "Selectable (1ft/3ft/6ft)",
-        "Material": "Braided Nylon"
+        "Data Transfer": "Up to 480 Mbps",
+        "Power Delivery": "Up to 30W 6A",
+        "Cable Length": "20cm or approximately 7.9in",
+        "Material": "PVC, NYLON, TPE, ABS, Pure Copper"
       }
     },
     {
@@ -32,18 +31,18 @@
       "featured": true,
       "featureHighlight": "Tamper-resistant, low-profile design",
       "keyFeatures": [
-        "IP65 rated - Dust and water resistant protection",
-        "3D printed construction using premium ABS and PETG-CF materials",
+        "3D printed construction using premium PETG-CF material",
+        "Flat USB-C cable extender included"
         "Full touchscreen functionality maintained",
-        "VESA mount and vehicle mount compatibility",
-        "Temperature range: -20°C to 60°C operating",
-        "Multiple size options: 10\", 11\", 12.9\" tablets"
+        "Access to microphones cameras and buttons",
+        "Ideal for video conferencing applications",
+        "VESA & Single gang wall box",
+        "Temperature range: -20°C to 60°C operating"
       ],
       "specifications": {
         "Operating Temperature": "-20°C to 60°C",
-        "Mounting": "VESA & Vehicle",
-        "Tablet Sizes": "10\", 11\", 12.9\"",
-        "Weight": "2.5 lbs"
+        "Mounting": "VESA & Single gang wall box",
+        "Supported Tablet Models": "Samsung Tab A9+"
       }
     }
   ]
