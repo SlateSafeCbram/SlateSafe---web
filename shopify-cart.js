@@ -532,6 +532,12 @@ document.addEventListener('alpine:init', () => {
                                                 mimeType
                                             }
                                         }
+                                        ... on ExternalVideo {
+                                            id
+                                            host
+                                            originUrl
+                                            embedUrl
+                                        }
                                     }
                                 }
                             }
@@ -559,6 +565,28 @@ document.addEventListener('alpine:init', () => {
                                 alt: node.alt || '',
                                 id: videoSource?.url || Math.random().toString()
                             };
+                        } else if (node.mediaContentType === 'EXTERNAL_VIDEO') {
+                            // External video (YouTube/Vimeo) - use embedUrl for iframe embedding
+                            if (node.embedUrl) {
+                                // Extract YouTube video ID from originUrl for thumbnail
+                                let thumbnailUrl = null;
+                                if (node.originUrl) {
+                                    const youtubeMatch = node.originUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+                                    if (youtubeMatch && youtubeMatch[1]) {
+                                        thumbnailUrl = `https://img.youtube.com/vi/${youtubeMatch[1]}/maxresdefault.jpg`;
+                                    }
+                                }
+                                return {
+                                    type: 'EXTERNAL_VIDEO',
+                                    url: node.embedUrl,
+                                    originUrl: node.originUrl || '',
+                                    host: node.host || '',
+                                    thumbnailUrl: thumbnailUrl,
+                                    alt: node.alt || '',
+                                    id: node.id || node.embedUrl || Math.random().toString()
+                                };
+                            }
+                            return null;
                         }
                         return null;
                     }).filter(item => item !== null);
