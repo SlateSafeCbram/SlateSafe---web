@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - SlateSafe</title>
+    <!-- Meta refresh redirect -->
+    <meta http-equiv="refresh" content="3;url=index.html">
+    <!-- Canonical link for SEO -->
+    <link rel="canonical" href="index.html">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .error-container {
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 4rem;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin: 0 0 20px 0;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+        a {
+            color: white;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        a:hover {
+            opacity: 0.8;
+        }
+        .countdown {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <div class="message">
+            <p>The page you're looking for doesn't exist or has been moved.</p>
+            <p>You will be redirected to our homepage in a few seconds.</p>
+        </div>
+        <div class="spinner"></div>
+        <p class="countdown">Redirecting to homepage...</p>
+        <p>If you are not redirected automatically, <a href="index.html">click here to go to the homepage</a>.</p>
+    </div>
+    
+    <script>
+        // JavaScript redirect as fallback
+        // Using replace() instead of assign() to prevent back button issues
+        // Delay of 3 seconds to match meta refresh
+        setTimeout(function() {
+            window.location.replace('index.html');
+        }, 3000);
+        
+        // Also provide immediate redirect option
+        // If user wants to go immediately, they can click the link
+    </script>
+</body>
+</html>
