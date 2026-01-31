@@ -41,6 +41,14 @@
                 this.messages = this.messages.filter(m => m.id !== id);
             }
         });
+        
+        // Cookie consent store is initialized in cookie-consent.js
+        // Initialize analytics after consent check
+        if (Alpine.store('cookieConsent') && Alpine.store('cookieConsent').hasConsented()) {
+            if (typeof SlateSafeAnalytics !== 'undefined') {
+                SlateSafeAnalytics.init();
+            }
+        }
     });
 })();
 

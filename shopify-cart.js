@@ -335,6 +335,31 @@ document.addEventListener('alpine:init', () => {
                     await this.fetchCart();
                     this.openDrawer();
                     Alpine.store('toast').show('Item added to cart!', 'success');
+                    
+                    // Track add to cart event
+                    if (typeof SlateSafeAnalytics !== 'undefined') {
+                        try {
+                            // Get product details for tracking
+                            const productDetails = await this.fetchProductDetails(productOrVariantId);
+                            if (productDetails) {
+                                SlateSafeAnalytics.trackAddToCart({
+                                    id: productDetails.id || productOrVariantId,
+                                    title: productDetails.title,
+                                    price: productDetails.price || 0,
+                                    quantity: quantity
+                                });
+                            }
+                        } catch (err) {
+                            console.error('Error tracking add to cart:', err);
+                            // Still track with available data
+                            SlateSafeAnalytics.trackAddToCart({
+                                id: productOrVariantId,
+                                title: 'Product',
+                                price: 0,
+                                quantity: quantity
+                            });
+                        }
+                    }
                 } else {
                     throw new Error('Failed to add item to cart');
                 }
@@ -471,6 +496,13 @@ document.addEventListener('alpine:init', () => {
         
         checkoutUrl: '#',
         getCheckoutUrl() {
+            // Track begin checkout event
+            if (typeof SlateSafeAnalytics !== 'undefined' && this.items.length > 0) {
+                SlateSafeAnalytics.trackBeginCheckout({
+                    items: this.items,
+                    total: this.total
+                });
+            }
             return this.checkoutUrl || '#';
         },
         
