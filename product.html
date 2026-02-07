@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" x-bind:content="productData ? productData.title + ' from SlateSafe - Modern Tablet Solutions' : 'Product from SlateSafe - Modern Tablet Solutions'">
     <title x-text="productData ? productData.title + ' | SlateSafe - Modern Tablet Solutions' : 'Product | SlateSafe'"></title>
+    <link rel="canonical" id="canonical-link" href="">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -22,9 +23,29 @@
     <script src="app-init.js"></script>
     <script src="cookie-consent.js"></script>
     <script src="analytics.js"></script>
+    <script src="url-router.js"></script>
     <script src="shopify-cart.js"></script>
     
     <style>
+        /* Hide content until Alpine.js loads and fade in smoothly */
+        [x-cloak] {
+            display: none !important;
+        }
+        
+        /* Fade-in animation for product page content */
+        body {
+            animation: fadeIn 0.4s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
         .gallery-thumbnail {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -44,7 +65,7 @@
         }
     </style>
 </head>
-<body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased" x-data="productPage()">
+<body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased" x-data="productPage()" x-cloak>
     
     <!-- Toast Notifications -->
     <div class="fixed top-20 right-4 z-50 space-y-2" x-data>
@@ -194,7 +215,11 @@
     </div>
     
     <!-- Product Page Content -->
-    <main x-show="!loading && !error && productData" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <main x-show="!loading && !error && productData" 
+          x-transition:enter="transition ease-out duration-400"
+          x-transition:enter-start="opacity-0"
+          x-transition:enter-end="opacity-100"
+          class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid lg:grid-cols-2 gap-12">
             
             <!-- Product Media Gallery (Left Side) -->
@@ -632,72 +657,156 @@
                 shippingNotice: null,
                 
                 async init() {
-                    // Extract handle from URL
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const handle = urlParams.get('handle');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'product.html:634',message:'Product page init started',data:{pathname:window.location.pathname,search:window.location.search,hash:window.location.hash,href:window.location.href,hasRouter:typeof ProductRouter !== 'undefined'},timestamp:Date.now(),runId:'post-fix',hypothesisId:'D'})}).catch(()=>{});
+                    // #endregion
+                    // Extract handle from URL using router (supports clean URLs and query parameters)
+                    let handle = null;
+                    if (typeof ProductRouter !== 'undefined') {
+                        handle = ProductRouter.getProductHandle();
+                    } else {
+                        // Fallback to query parameter if router not loaded
+                        const urlParams = new URLSearchParams(window.location.search);
+                        handle = urlParams.get('handle');
+                    }
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'product.html:645',message:'Handle extracted',data:{handle:handle},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                    // #endregion
                     
                     if (!handle) {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'product.html:649',message:'No handle found - error',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                        // #endregion
                         this.error = 'Product handle not found in URL';
                         this.loading = false;
                         return;
                     }
                     
                     try {
-                        // Load products.json
-                        const productsResponse = await fetch('products.json');
-                        if (!productsResponse.ok) {
-                            throw new Error('Failed to load products index');
-                        }
-                        const productsData = await productsResponse.json();
-                        
-                        // Find product by handle
-                        const product = productsData.products.find(p => p.handle === handle);
-                        if (!product) {
-                            this.error = 'Product not found';
-                            this.loading = false;
-                            return;
-                        }
-                        
-                        this.productIndex = product;
-                        this.productId = product.id;
-                        
-                        // Fetch full product details from Shopify
-                        const details = await Alpine.store('cart').fetchProductDetails(product.id);
-                        if (!details) {
-                            this.error = 'Failed to load product details';
-                            this.loading = false;
-                            return;
-                        }
-                        
-                        this.productData = details;
-                        
-                        // Use JSON keyFeatures if available, otherwise empty array
-                        this.keyFeatures = product.keyFeatures || [];
-                        
-                        // Use JSON specifications if available, otherwise empty object
-                        this.specifications = product.specifications || {};
-                        
-                        // Load shipping notice
+                        // Check if product exists in products.json (featured product)
+                        let productInJson = null;
                         try {
-                            const shippingResponse = await fetch('shipping-notice.json');
-                            if (shippingResponse.ok) {
-                                const shippingData = await shippingResponse.json();
-                                this.shippingNotice = shippingData;
+                            const productsResponse = await fetch('products.json');
+                            if (productsResponse.ok) {
+                                const productsData = await productsResponse.json();
+                                productInJson = productsData.products.find(p => p.handle === handle);
                             }
                         } catch (err) {
-                            console.error('Error loading shipping notice:', err);
-                            // Continue without shipping notice
+                            console.error('Error loading products.json:', err);
+                            // Continue - product might not be in JSON (non-featured)
                         }
                         
-                        this.loading = false;
-                        
-                        // Track product view
-                        if (typeof SlateSafeAnalytics !== 'undefined' && this.productData) {
-                            SlateSafeAnalytics.trackProductView({
-                                id: this.productData.id || this.productId,
-                                title: this.productData.title,
-                                price: this.productData.price || 0
-                            });
+                        // If product is in products.json, use existing logic (featured product - unchanged)
+                        if (productInJson) {
+                            this.productIndex = productInJson;
+                            this.productId = productInJson.id;
+                            
+                            // Fetch full product details from Shopify
+                            const details = await Alpine.store('cart').fetchProductDetails(productInJson.id);
+                            if (!details) {
+                                this.error = 'Failed to load product details';
+                                this.loading = false;
+                                return;
+                            }
+                            
+                            this.productData = details;
+                            
+                            // Use JSON keyFeatures if available, otherwise empty array
+                            this.keyFeatures = productInJson.keyFeatures || [];
+                            
+                            // Use JSON specifications if available, otherwise empty object
+                            this.specifications = productInJson.specifications || {};
+                            
+                            // Update canonical link
+                            if (typeof ProductRouter !== 'undefined' && this.productData.handle) {
+                                const canonicalLink = document.getElementById('canonical-link');
+                                if (canonicalLink) {
+                                    canonicalLink.href = window.location.origin + ProductRouter.getProductUrl(this.productData.handle);
+                                }
+                            }
+                            
+                            // Load shipping notice
+                            try {
+                                const shippingResponse = await fetch('shipping-notice.json');
+                                if (shippingResponse.ok) {
+                                    const shippingData = await shippingResponse.json();
+                                    this.shippingNotice = shippingData;
+                                }
+                            } catch (err) {
+                                console.error('Error loading shipping notice:', err);
+                                // Continue without shipping notice
+                            }
+                            
+                            this.loading = false;
+                            
+                            // Update URL to clean format and page title
+                            if (typeof ProductRouter !== 'undefined') {
+                                ProductRouter.updateUrl(handle, this.productData.title);
+                            }
+                            
+                            // Track product view
+                            if (typeof SlateSafeAnalytics !== 'undefined' && this.productData) {
+                                SlateSafeAnalytics.trackProductView({
+                                    id: this.productData.id || this.productId,
+                                    title: this.productData.title,
+                                    price: this.productData.price || 0
+                                });
+                            }
+                        } else {
+                            // Product NOT in products.json - load everything from Shopify (new functionality)
+                            console.log('Product not in products.json, loading from Shopify:', handle);
+                            
+                            // Fetch product details from Shopify using handle
+                            const details = await Alpine.store('cart').fetchProductDetails(handle);
+                            if (!details) {
+                                this.error = 'Product not found';
+                                this.loading = false;
+                                return;
+                            }
+                            
+                            this.productData = details;
+                            this.productId = details.id;
+                            
+                            // Update canonical link
+                            if (typeof ProductRouter !== 'undefined' && this.productData.handle) {
+                                const canonicalLink = document.getElementById('canonical-link');
+                                if (canonicalLink) {
+                                    canonicalLink.href = window.location.origin + ProductRouter.getProductUrl(this.productData.handle);
+                                }
+                            }
+                            
+                            // For non-featured products, no keyFeatures or specifications from JSON
+                            this.keyFeatures = [];
+                            this.specifications = {};
+                            
+                            // Load shipping notice (same as featured products)
+                            try {
+                                const shippingResponse = await fetch('shipping-notice.json');
+                                if (shippingResponse.ok) {
+                                    const shippingData = await shippingResponse.json();
+                                    this.shippingNotice = shippingData;
+                                }
+                            } catch (err) {
+                                console.error('Error loading shipping notice:', err);
+                                // Continue without shipping notice
+                            }
+                            
+                            this.loading = false;
+                            
+                            // Update URL to clean format and page title
+                            if (typeof ProductRouter !== 'undefined') {
+                                ProductRouter.updateUrl(handle, this.productData.title);
+                            }
+                            
+                            // Track product view
+                            if (typeof SlateSafeAnalytics !== 'undefined' && this.productData) {
+                                SlateSafeAnalytics.trackProductView({
+                                    id: this.productData.id || this.productId,
+                                    title: this.productData.title,
+                                    price: this.productData.price || 0
+                                });
+                            }
                         }
                     } catch (err) {
                         console.error('Error loading product:', err);

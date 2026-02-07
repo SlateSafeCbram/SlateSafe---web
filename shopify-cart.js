@@ -744,6 +744,79 @@ document.addEventListener('alpine:init', () => {
             const tmp = document.createElement('DIV');
             tmp.innerHTML = html;
             return tmp.textContent || tmp.innerText || '';
+        },
+        
+        async fetchAllProducts(first = 250) {
+            // Fetch all products from Shopify Storefront API
+            // Returns array of products with: id, handle, title, price, image, availableForSale
+            try {
+                const query = `
+                    query getAllProducts($first: Int!) {
+                        products(first: $first) {
+                            edges {
+                                node {
+                                    id
+                                    handle
+                                    title
+                                    priceRange {
+                                        minVariantPrice {
+                                            amount
+                                            currencyCode
+                                        }
+                                    }
+                                    images(first: 1) {
+                                        edges {
+                                            node {
+                                                url
+                                                altText
+                                            }
+                                        }
+                                    }
+                                    availableForSale
+                                }
+                            }
+                            pageInfo {
+                                hasNextPage
+                                endCursor
+                            }
+                        }
+                    }
+                `;
+                
+                const result = await this.shopifyRequest(query, { first });
+                
+                if (!result.data?.products?.edges) {
+                    return [];
+                }
+                
+                // Transform Shopify products to our format
+                const products = result.data.products.edges.map(edge => {
+                    const product = edge.node;
+                    const productId = product.id.replace('gid://shopify/Product/', '');
+                    const image = product.images.edges[0]?.node || null;
+                    
+                    return {
+                        id: productId,
+                        handle: product.handle,
+                        title: product.title,
+                        name: product.title, // Alias for compatibility
+                        price: parseFloat(product.priceRange.minVariantPrice.amount) || 0,
+                        currencyCode: product.priceRange.minVariantPrice.currencyCode,
+                        availableForSale: product.availableForSale,
+                        featured: false, // Non-featured products
+                        thumbnail: image ? {
+                            url: image.url,
+                            alt: image.altText || product.title
+                        } : null,
+                        shopifyId: productId
+                    };
+                });
+                
+                return products;
+            } catch (error) {
+                this.handleError(error, 'fetching all products');
+                return [];
+            }
         }
     });
     

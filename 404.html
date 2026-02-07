@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - SlateSafe</title>
+    <script src="url-router.js"></script>
+    <style>
+        /* Detect theme and apply appropriate background */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            /* Default to light mode */
+            background: #ffffff;
+            color: #1f2937;
+            transition: background-color 0.2s ease;
+        }
+        
+        /* Dark mode - matches site's matte-black */
+        body.dark {
+            background: #0f172a;
+            color: #f3f4f6;
+        }
+        
+        /* Hide all content for product redirects - just show solid background */
+        body.product-redirect .error-container {
+            display: none;
+        }
+        
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 4rem;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin: 0 0 20px 0;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.3);
+            border-top: 4px solid currentColor;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+        body.dark .spinner {
+            border-color: rgba(255, 255, 255, 0.3);
+            border-top-color: currentColor;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+        a {
+            color: inherit;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        a:hover {
+            opacity: 0.8;
+        }
+        .countdown {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <div class="message">
+            <p>The page you're looking for doesn't exist or has been moved.</p>
+            <p id="redirect-message">Checking if this is a product URL...</p>
+        </div>
+        <div class="spinner" id="spinner"></div>
+        <p class="countdown" id="countdown"></p>
+        <p>If you are not redirected automatically, <a href="index.html" id="home-link">click here to go to the homepage</a>.</p>
+    </div>
+    
+    <script>
+        (function() {
+            // Detect theme and apply to body
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('theme');
+            const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+            
+            if (shouldBeDark) {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+            }
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'404.html:82',message:'404 page loaded',data:{pathname:window.location.pathname,search:window.location.search,hash:window.location.hash},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+            // Check if this is a product URL
+            const pathname = window.location.pathname;
+            const productMatch = pathname.match(/\/product\/([^\/]+)/);
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'404.html:87',message:'Product URL check',data:{pathname:pathname,productMatch:productMatch ? productMatch[1] : null},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+            
+            if (productMatch) {
+                // Hide all content for product redirects - just show solid background
+                document.body.classList.add('product-redirect');
+                // This is a product URL - redirect to product.html with handle
+                const handle = productMatch[1];
+                // Use absolute path to avoid relative path resolution issues
+                const productUrl = `/product.html?handle=${encodeURIComponent(handle)}`;
+                
+                // Store handle in sessionStorage as backup in case query string is lost
+                try {
+                    sessionStorage.setItem('productHandle', handle);
+                } catch (e) {
+                    // Ignore if sessionStorage not available
+                }
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'404.html:93',message:'Redirecting to product page',data:{handle:handle,productUrl:productUrl},timestamp:Date.now(),runId:'post-fix',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+                
+                document.getElementById('redirect-message').textContent = 'Redirecting to product page...';
+                document.getElementById('countdown').textContent = 'Redirecting to product page...';
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'404.html:100',message:'About to redirect',data:{currentUrl:window.location.href,redirectUrl:productUrl},timestamp:Date.now(),runId:'post-fix',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+                
+                // Redirect immediately - use href instead of replace to ensure query string is preserved
+                window.location.href = productUrl;
+            } else {
+                // Not a product URL - redirect to homepage after delay
+                document.getElementById('redirect-message').textContent = 'You will be redirected to our homepage in a few seconds.';
+                document.getElementById('countdown').textContent = 'Redirecting to homepage...';
+                
+                setTimeout(function() {
+                    window.location.replace('index.html');
+                }, 3000);
+            }
+        })();
+    </script>
+</body>
+</html>
