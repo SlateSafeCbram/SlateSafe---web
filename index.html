@@ -19,6 +19,7 @@
     <script src="app-init.js"></script>
     <script src="cookie-consent.js"></script>
     <script src="analytics.js"></script>
+    <script src="url-router.js"></script>
     <script src="shopify-cart.js"></script>
 </head>
 <body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
@@ -315,7 +316,7 @@
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl font-bold text-brand-orange" x-show="product.price > 0" x-text="'$' + product.price.toFixed(2)"></span>
                                 <span class="text-2xl font-bold text-gray-400" x-show="product.price === 0">Price unavailable</span>
-                                <a :href="'product.html?handle=' + product.handle" class="px-6 py-2 bg-brand-orange hover:bg-brand-orange/90 text-white rounded-lg transition-colors">
+                                <a :href="typeof ProductRouter !== 'undefined' ? ProductRouter.getProductUrl(product.handle) : ('product.html?handle=' + product.handle)" class="px-6 py-2 bg-brand-orange hover:bg-brand-orange/90 text-white rounded-lg transition-colors">
                                     View Details
                                 </a>
                             </div>

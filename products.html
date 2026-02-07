@@ -19,6 +19,7 @@
     <script src="app-init.js"></script>
     <script src="cookie-consent.js"></script>
     <script src="analytics.js"></script>
+    <script src="url-router.js"></script>
     <script src="shopify-cart.js"></script>
     
     <!-- Products Page Component -->
@@ -32,7 +33,7 @@
                 async init() {
                     try {
                         console.log('Loading products from JSON...');
-                        // Load products from JSON file first
+                        // Load featured products from JSON file first (existing behavior - unchanged)
                         const response = await fetch('products.json');
                         if (!response.ok) {
                             throw new Error(`Failed to load products: ${response.status}`);
@@ -44,29 +45,68 @@
                             throw new Error('Invalid products data');
                         }
                         
-                        console.log(`Found ${data.products.length} products`);
+                        console.log(`Found ${data.products.length} featured products`);
                         
-                        // First, populate products from JSON (without prices)
-                        this.products = data.products.map(product => ({
+                        // Featured products from JSON (existing behavior - unchanged)
+                        const featuredProducts = data.products.map(product => ({
                             id: product.id,
                             name: product.title,
                             price: 0,
                             category: product.category,
                             featured: product.featured || false,
                             handle: product.handle,
-                            shopifyId: product.id
+                            shopifyId: product.id,
+                            fromJson: true // Flag to identify featured products
                         }));
                         
-                        console.log('Products array:', this.products);
+                        // Create a set of featured product IDs and handles for filtering
+                        const featuredIds = new Set(featuredProducts.map(p => p.id));
+                        const featuredHandles = new Set(featuredProducts.map(p => p.handle));
+                        
+                        // Fetch all products from Shopify API (new functionality)
+                        let shopifyProducts = [];
+                        try {
+                            if (typeof Alpine !== 'undefined' && Alpine.store('cart') && Alpine.store('cart').fetchAllProducts) {
+                                console.log('Fetching all products from Shopify...');
+                                shopifyProducts = await Alpine.store('cart').fetchAllProducts(250);
+                                console.log(`Fetched ${shopifyProducts.length} products from Shopify`);
+                                
+                                // Filter out featured products (those in products.json)
+                                const nonFeaturedProducts = shopifyProducts.filter(product => {
+                                    const productId = product.id.toString();
+                                    return !featuredIds.has(productId) && !featuredHandles.has(product.handle);
+                                });
+                                
+                                console.log(`Found ${nonFeaturedProducts.length} non-featured products from Shopify`);
+                                
+                                // Merge featured products with non-featured products
+                                this.products = [...featuredProducts, ...nonFeaturedProducts];
+                            } else {
+                                // Fallback: just use featured products if Shopify fetch fails
+                                this.products = featuredProducts;
+                            }
+                        } catch (shopifyError) {
+                            console.error('Error fetching Shopify products:', shopifyError);
+                            // Fallback: just use featured products
+                            this.products = featuredProducts;
+                        }
+                        
+                        console.log('Total products:', this.products.length);
                         
                         // Set loading to false so products show immediately
                         this.loading = false;
                         
-                        // Then fetch prices from Shopify (in background)
+                        // Then fetch prices from Shopify for featured products (in background) - existing behavior
                         setTimeout(async () => {
                             try {
                                 if (typeof Alpine !== 'undefined' && Alpine.store('cart') && Alpine.store('cart').fetchProductDetails) {
                                     const productsWithPrices = await Promise.all(this.products.map(async (product) => {
+                                        // If product already has price from Shopify (non-featured), keep it
+                                        if (product.price > 0 && !product.fromJson) {
+                                            return product;
+                                        }
+                                        
+                                        // Fetch price for featured products (existing behavior)
                                         try {
                                             const details = await Alpine.store('cart').fetchProductDetails(product.shopifyId);
                                             if (details && details.price) {
@@ -287,7 +327,7 @@
         <!-- Products Grid -->
         <div x-show="!loading" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <template x-for="product in filteredProducts" :key="product.id">
-                <a :href="'product.html?handle=' + product.handle" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
+                <a :href="(function() { const url = typeof ProductRouter !== 'undefined' ? ProductRouter.getProductUrl(product.handle) : ('product.html?handle=' + product.handle); fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products.html:330',message:'Product link generated',data:{handle:product.handle,url:url,hasRouter:typeof ProductRouter !== 'undefined'},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{}); return url; })()" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
                     <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden" 
                          x-data="{ thumbnail: null, loading: true }"
                          x-init="
