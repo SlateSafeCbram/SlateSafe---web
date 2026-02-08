@@ -1,6 +1,6 @@
 # SlateSafe.com
 
-A modern e-commerce website for SlateSafe, providing cost-effective tablet accessories for visitor check-in kiosks, POS systems, and home automation mounts.
+A modern e-commerce website for SlateSafe, providing cost-effective tablet accessories for visitor check-in kiosks, POS systems, and home automation.
 
 ## Overview
 
