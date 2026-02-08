@@ -11,9 +11,6 @@
          * - Hash: /product.html#/PRODUCT_HANDLE
          */
         getProductHandle: function() {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'url-router.js:13',message:'getProductHandle called',data:{pathname:window.location.pathname,search:window.location.search,hash:window.location.hash,href:window.location.href},timestamp:Date.now(),runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-            // #endregion
             const pathname = window.location.pathname;
             // Try to get search params from search string, or parse from full href if search is empty
             let searchParams = new URLSearchParams(window.location.search);
@@ -30,9 +27,6 @@
             // This is important because static servers might rewrite /product.html?handle=X to /product and lose query string
             const handleParam = searchParams.get('handle');
             if (handleParam) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'url-router.js:22',message:'Handle extracted from query param',data:{handle:handleParam},timestamp:Date.now(),runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
                 return handleParam;
             }
             
@@ -41,18 +35,12 @@
             const pathMatch = pathname.match(/\/product\/([^\/\?]+?)(?:\.html)?\/?$/);
             if (pathMatch) {
                 const handle = decodeURIComponent(pathMatch[1]);
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'url-router.js:30',message:'Handle extracted from pathname',data:{handle:handle,pathMatch:pathMatch[1]},timestamp:Date.now(),runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
                 return handle;
             }
             
             // PRIORITY 3: Try hash: #/PRODUCT_HANDLE
             const hashMatch = hash.match(/#\/(.+)/);
             if (hashMatch) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'url-router.js:37',message:'Handle extracted from hash',data:{handle:hashMatch[1]},timestamp:Date.now(),runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
                 return hashMatch[1];
             }
             
@@ -60,9 +48,6 @@
             try {
                 const storedHandle = sessionStorage.getItem('productHandle');
                 if (storedHandle) {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'url-router.js:45',message:'Handle extracted from sessionStorage',data:{handle:storedHandle},timestamp:Date.now(),runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     // Clear it after use
                     sessionStorage.removeItem('productHandle');
                     return storedHandle;
@@ -71,9 +56,6 @@
                 // Ignore if sessionStorage not available
             }
             
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'url-router.js:55',message:'No handle found',data:{},timestamp:Date.now(),runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-            // #endregion
             return null;
         },
         
@@ -85,11 +67,7 @@
         getProductUrl: function(handle) {
             if (!handle) return '#';
             // Use clean URL format: /product/PRODUCT_HANDLE
-            const url = `/product/${handle}`;
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'url-router.js:47',message:'getProductUrl called',data:{handle:handle,url:url},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
-            return url;
+            return `/product/${handle}`;
         },
         
         /**

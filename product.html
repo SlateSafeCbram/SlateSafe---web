@@ -657,9 +657,6 @@
                 shippingNotice: null,
                 
                 async init() {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'product.html:634',message:'Product page init started',data:{pathname:window.location.pathname,search:window.location.search,hash:window.location.hash,href:window.location.href,hasRouter:typeof ProductRouter !== 'undefined'},timestamp:Date.now(),runId:'post-fix',hypothesisId:'D'})}).catch(()=>{});
-                    // #endregion
                     // Extract handle from URL using router (supports clean URLs and query parameters)
                     let handle = null;
                     if (typeof ProductRouter !== 'undefined') {
@@ -670,14 +667,7 @@
                         handle = urlParams.get('handle');
                     }
                     
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'product.html:645',message:'Handle extracted',data:{handle:handle},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                    // #endregion
-                    
                     if (!handle) {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'product.html:649',message:'No handle found - error',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                        // #endregion
                         this.error = 'Product handle not found in URL';
                         this.loading = false;
                         return;
