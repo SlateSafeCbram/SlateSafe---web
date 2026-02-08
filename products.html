@@ -327,7 +327,7 @@
         <!-- Products Grid -->
         <div x-show="!loading" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <template x-for="product in filteredProducts" :key="product.id">
-                <a :href="(function() { const url = typeof ProductRouter !== 'undefined' ? ProductRouter.getProductUrl(product.handle) : ('product.html?handle=' + product.handle); fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products.html:330',message:'Product link generated',data:{handle:product.handle,url:url,hasRouter:typeof ProductRouter !== 'undefined'},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{}); return url; })()" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
+                <a :href="typeof ProductRouter !== 'undefined' ? ProductRouter.getProductUrl(product.handle) : ('product.html?handle=' + product.handle)" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
                     <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden" 
                          x-data="{ thumbnail: null, loading: true }"
                          x-init="
