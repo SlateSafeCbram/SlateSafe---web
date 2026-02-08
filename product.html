@@ -104,17 +104,17 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="index.html" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+                    <a href="/index.html" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
                         <img src="logo.svg" alt="SlateSafe Logo" class="h-8 md:h-10 w-auto">
                     </a>
                 </div>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="index.html" class="text-white hover:text-brand-orange transition-colors">Home</a>
-                    <a href="products.html" class="text-white hover:text-brand-orange transition-colors">Products</a>
-                    <a href="about.html" class="text-white hover:text-brand-orange transition-colors">About</a>
-                    <a href="contact.html" class="text-white hover:text-brand-orange transition-colors">Contact</a>
+                    <a href="/index.html" class="text-white hover:text-brand-orange transition-colors">Home</a>
+                    <a href="/products.html" class="text-white hover:text-brand-orange transition-colors">Products</a>
+                    <a href="/about.html" class="text-white hover:text-brand-orange transition-colors">About</a>
+                    <a href="/contact.html" class="text-white hover:text-brand-orange transition-colors">Contact</a>
                     
                     <!-- Cart Icon -->
                     <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
@@ -175,10 +175,10 @@
              x-transition:leave-end="opacity-0 -translate-y-2"
              class="md:hidden bg-header-blue border-t border-header-blue/80">
             <div class="px-4 py-4 space-y-3">
-                <a href="index.html" class="block text-white hover:text-brand-orange transition-colors">Home</a>
-                <a href="products.html" class="block text-white hover:text-brand-orange transition-colors">Products</a>
-                <a href="about.html" class="block text-white hover:text-brand-orange transition-colors">About</a>
-                <a href="contact.html" class="block text-white hover:text-brand-orange transition-colors">Contact</a>
+                <a href="/index.html" class="block text-white hover:text-brand-orange transition-colors">Home</a>
+                <a href="/products.html" class="block text-white hover:text-brand-orange transition-colors">Products</a>
+                <a href="/about.html" class="block text-white hover:text-brand-orange transition-colors">About</a>
+                <a href="/contact.html" class="block text-white hover:text-brand-orange transition-colors">Contact</a>
             </div>
         </div>
     </nav>
@@ -187,9 +187,9 @@
     <div class="bg-gray-100 dark:bg-slate-dark border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav class="text-sm text-gray-600 dark:text-gray-400">
-                <a href="index.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
+                <a href="/index.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
                 <span class="mx-2">/</span>
-                <a href="products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
+                <a href="/products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
                 <span class="mx-2">/</span>
                 <span class="text-gray-900 dark:text-gray-300" x-text="productData ? productData.title : 'Loading...'"></span>
             </nav>
@@ -210,7 +210,7 @@
     <div x-show="error && !loading" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="text-center">
             <p class="text-red-600 dark:text-red-400 text-lg mb-4" x-text="error"></p>
-            <a href="products.html" class="text-brand-orange hover:text-brand-orange/80 transition-colors">Return to Products</a>
+            <a href="/products.html" class="text-brand-orange hover:text-brand-orange/80 transition-colors">Return to Products</a>
         </div>
     </div>
     
@@ -487,23 +487,23 @@
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Products</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="products.html" class="hover:text-brand-orange transition-colors">All Products</a></li>
+                        <li><a href="/products.html" class="hover:text-brand-orange transition-colors">All Products</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Company</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="about.html" class="hover:text-brand-orange transition-colors">About Us</a></li>
-                        <li><a href="contact.html" class="hover:text-brand-orange transition-colors">Contact</a></li>
+                        <li><a href="/about.html" class="hover:text-brand-orange transition-colors">About Us</a></li>
+                        <li><a href="/contact.html" class="hover:text-brand-orange transition-colors">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Legal</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
-                        <li><a href="shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
+                        <li><a href="/privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
+                        <li><a href="/shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
                     </ul>
                 </div>
             </div>
@@ -846,7 +846,7 @@
                     <h3 class="text-lg font-semibold text-white mb-3">Cookie Consent</h3>
                     <p class="text-sm text-gray-200 leading-relaxed mb-4">
                         We use cookies to analyze site usage and improve your experience. By clicking "Accept", you consent to our use of cookies. 
-                        <a href="privacy-policy.html" class="text-brand-orange hover:text-brand-orange/80 underline">Learn more in our Privacy Policy</a>.
+                        <a href="/privacy-policy.html" class="text-brand-orange hover:text-brand-orange/80 underline">Learn more in our Privacy Policy</a>.
                     </p>
                 </div>
                 <div class="flex gap-3 flex-shrink-0">
