@@ -344,7 +344,7 @@
                         <img x-show="thumbnail && !loading" 
                              :src="thumbnail.url + '?width=400'"
                              :alt="thumbnail.alt || product.name"
-                             class="w-full h-full object-cover">
+                             class="w-full h-full object-contain">
                         <!-- Placeholder while loading or if no thumbnail -->
                         <div x-show="!thumbnail || loading" class="bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900 flex items-center justify-center w-full h-full">
                             <div class="text-center">

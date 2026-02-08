@@ -169,7 +169,7 @@
                                     <template x-if="product.thumbnail">
                                         <img :src="product.thumbnail.url + '?width=800'" 
                                              :alt="product.thumbnail.alt || product.title"
-                                             class="w-full h-full object-cover">
+                                             class="w-full h-full object-contain">
                                     </template>
                                     <template x-if="!product.thumbnail">
                                         <div class="text-center p-8">
@@ -301,7 +301,7 @@
                             <template x-if="product.thumbnail">
                                 <img :src="product.thumbnail.url + '?width=600'" 
                                      :alt="product.thumbnail.alt || product.title"
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-contain">
                             </template>
                             <template x-if="!product.thumbnail">
                                 <div class="text-center">
