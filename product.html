@@ -224,7 +224,8 @@
             
             <!-- Product Media Gallery (Left Side) -->
             <template x-if="productId">
-                <div x-data="productGallery(productId)">
+                <div x-data="productGallery(productData ? (productData.handle || productId) : productId, selectedVariantId, selectedVariant?.image)" 
+                     x-effect="if (selectedVariantId !== undefined && (selectedVariantId !== $data.currentVariantId || selectedVariant?.image !== $data.variantImage)) { $data.updateVariant(selectedVariantId, selectedVariant?.image); }">
                     <!-- Loading State -->
                     <div x-show="loading" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
                     <div class="flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-dark dark:to-gray-900" style="min-height: 500px; max-height: 700px;">
@@ -353,6 +354,31 @@
                 <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white" x-text="productData ? productData.title : ''"></h1>
                 <p class="text-3xl font-bold text-brand-orange mb-6" x-text="productData ? productData.priceFormatted : ''"></p>
                 
+                <!-- Variant Selector -->
+                <div class="mb-8" x-show="productData && productData.variants && productData.variants.length > 1">
+                    <template x-for="option in (productData.options || [])" :key="option.name">
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3" x-text="option.name + ':'"></label>
+                            <div class="flex flex-wrap gap-3">
+                                <template x-for="optionValue in option.values" :key="optionValue">
+                                    <button
+                                        type="button"
+                                        @click="selectVariant(productData.variants.find(v => v.selectedOptions && v.selectedOptions.some(opt => opt.name === option.name && opt.value === optionValue)))"
+                                        class="px-4 py-2 rounded-lg border-2 transition-all font-medium text-sm"
+                                        :class="{
+                                            'border-brand-orange bg-brand-orange/10 text-brand-orange dark:bg-brand-orange/20': selectedVariant && selectedVariant.selectedOptions && selectedVariant.selectedOptions.some(opt => opt.name === option.name && opt.value === optionValue),
+                                            'border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-dark text-gray-900 dark:text-white hover:border-brand-orange/50': !selectedVariant || !selectedVariant.selectedOptions || !selectedVariant.selectedOptions.some(opt => opt.name === option.name && opt.value === optionValue),
+                                            'opacity-50 cursor-not-allowed': !productData.variants.find(v => v.selectedOptions && v.selectedOptions.some(opt => opt.name === option.name && opt.value === optionValue) && v.availableForSale)
+                                        }"
+                                        :disabled="!productData.variants.find(v => v.selectedOptions && v.selectedOptions.some(opt => opt.name === option.name && opt.value === optionValue) && v.availableForSale)"
+                                        x-text="optionValue">
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                
                 <!-- Product Description -->
                 <div class="mb-8" x-show="productData && productData.descriptionHtml">
                     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Description</h2>
@@ -446,8 +472,8 @@
                     </div>
                 </div>
 
-                <!-- Additional Info -->
-                <div class="border-t border-gray-200 dark:border-gray-800 pt-8">
+                <!-- Additional Info (Featured Products Only) -->
+                <div x-show="productIndex" class="border-t border-gray-200 dark:border-gray-800 pt-8">
                     <div class="space-y-4 text-sm text-gray-700 dark:text-gray-400">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -655,6 +681,8 @@
                 quantity: 1,
                 addingToCart: false,
                 shippingNotice: null,
+                selectedVariant: null,
+                selectedVariantId: null,
                 
                 async init() {
                     // Extract handle from URL using router (supports clean URLs and query parameters)
@@ -701,6 +729,9 @@
                             }
                             
                             this.productData = details;
+                            
+                            // Initialize selected variant with first available variant
+                            this.initializeSelectedVariant();
                             
                             // Use JSON keyFeatures if available, otherwise empty array
                             this.keyFeatures = productInJson.keyFeatures || [];
@@ -758,6 +789,9 @@
                             this.productData = details;
                             this.productId = details.id;
                             
+                            // Initialize selected variant with first available variant
+                            this.initializeSelectedVariant();
+                            
                             // Update canonical link
                             if (typeof ProductRouter !== 'undefined' && this.productData.handle) {
                                 const canonicalLink = document.getElementById('canonical-link');
@@ -805,12 +839,48 @@
                     }
                 },
                 
+                initializeSelectedVariant() {
+                    if (!this.productData || !this.productData.variants || this.productData.variants.length === 0) {
+                        this.selectedVariant = null;
+                        this.selectedVariantId = null;
+                        return;
+                    }
+                    
+                    // Find first available variant, or fallback to first variant
+                    const availableVariant = this.productData.variants.find(v => v.availableForSale) || this.productData.variants[0];
+                    this.selectedVariant = availableVariant;
+                    this.selectedVariantId = availableVariant.id;
+                },
+                
+                selectVariant(variant) {
+                    if (!variant || !variant.availableForSale) {
+                        return;
+                    }
+                    this.selectedVariant = variant;
+                    this.selectedVariantId = variant.id;
+                    
+                    // Update price display
+                    if (this.productData) {
+                        this.productData.price = variant.price;
+                        this.productData.priceFormatted = variant.priceFormatted;
+                    }
+                    
+                    // Update gallery to show variant's featured image
+                    // The gallery will automatically update via x-effect watching selectedVariantId
+                },
+                
+                
                 async addToCart() {
-                    if (!this.productId || this.addingToCart) return;
+                    if (!this.selectedVariantId || this.addingToCart) {
+                        if (!this.selectedVariantId) {
+                            Alpine.store('toast').show('Please select a variant', 'error');
+                        }
+                        return;
+                    }
                     
                     this.addingToCart = true;
                     try {
-                        await Alpine.store('cart').addProduct(this.productId, this.quantity);
+                        await Alpine.store('cart').addProduct(this.selectedVariantId, this.quantity, true);
                         Alpine.store('cart').openDrawer();
                         Alpine.store('toast').show('Product added to cart!', 'success');
                     } catch (error) {

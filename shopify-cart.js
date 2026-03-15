@@ -142,7 +142,22 @@ document.addEventListener('alpine:init', () => {
                 if (result.data?.cartCreate?.cart) {
                     this.checkoutId = result.data.cartCreate.cart.id;
                     localStorage.setItem('shopify_checkout_id', this.checkoutId);
-                    this.checkoutUrl = result.data.cartCreate.cart.checkoutUrl;
+                    
+                    const rawCheckoutUrl = result.data.cartCreate.cart.checkoutUrl;
+                    // Optional local debug hook (no network calls or PII)
+                    if (window && window.SlateSafeDebug && window.SlateSafeDebug.logCheckout) {
+                        try {
+                            window.SlateSafeDebug.logCheckout({
+                                source: 'createCart',
+                                checkoutId: this.checkoutId,
+                                checkoutUrl: rawCheckoutUrl
+                            });
+                        } catch (e) {
+                            // Ignore debug logging failures
+                        }
+                    }
+                    this.checkoutUrl = rawCheckoutUrl;
+                    
                     await this.fetchCart();
                 } else {
                     throw new Error('Failed to create cart: Invalid response from server');
@@ -209,7 +224,7 @@ document.addEventListener('alpine:init', () => {
                     const cart = result.data.cart;
                     this.items = cart.lines.edges.map(edge => ({
                         id: edge.node.id,
-                        title: edge.node.merchandise.product.title,
+                        title: this.stripHtmlTags(edge.node.merchandise.product.title),
                         quantity: edge.node.quantity,
                         variant: {
                             id: edge.node.merchandise.id,
@@ -220,7 +235,13 @@ document.addEventListener('alpine:init', () => {
                     }));
                     this.itemCount = this.items.reduce((sum, item) => sum + item.quantity, 0);
                     this.total = parseFloat(cart.cost.totalAmount.amount);
-                    this.checkoutUrl = cart.checkoutUrl;
+                    
+                    const rawCheckoutUrl = cart.checkoutUrl;
+                    try {
+                        this.checkoutUrl = rawCheckoutUrl;
+                    } catch (e) {
+                        this.checkoutUrl = rawCheckoutUrl;
+                    }
                 }
             } catch (error) {
                 this.handleError(error, 'fetching cart');
@@ -529,7 +550,7 @@ document.addEventListener('alpine:init', () => {
             }
         },
         
-        async fetchProductMedia(productIdOrHandle) {
+        async fetchProductMedia(productIdOrHandle, variantId = null) {
             // Determine if input is a product ID (numeric) or handle (string)
             const isNumericId = /^\d+$/.test(productIdOrHandle.toString());
             let productHandle = productIdOrHandle;
@@ -578,14 +599,16 @@ document.addEventListener('alpine:init', () => {
                 `;
                 const result = await this.shopifyRequest(query, { handle: productHandle });
                 if (result.data?.product?.media?.edges) {
-                    return result.data.product.media.edges.map(edge => {
+                    let media = result.data.product.media.edges.map(edge => {
                         const node = edge.node;
+                        
                         if (node.mediaContentType === 'IMAGE') {
                             return {
                                 type: 'IMAGE',
                                 url: node.image?.url || '',
                                 alt: node.alt || node.image?.altText || '',
-                                id: node.image?.url || Math.random().toString()
+                                id: node.image?.url || Math.random().toString(),
+                                variantId: null // MediaImage doesn't have variant field in Storefront API
                             };
                         } else if (node.mediaContentType === 'VIDEO') {
                             // Get the best video source (prefer mp4)
@@ -595,7 +618,8 @@ document.addEventListener('alpine:init', () => {
                                 url: videoSource?.url || '',
                                 previewUrl: null,
                                 alt: node.alt || '',
-                                id: videoSource?.url || Math.random().toString()
+                                id: videoSource?.url || Math.random().toString(),
+                                variantId: null // Video doesn't have variant field in Storefront API
                             };
                         } else if (node.mediaContentType === 'EXTERNAL_VIDEO') {
                             // External video (YouTube/Vimeo) - use embedUrl for iframe embedding
@@ -615,13 +639,20 @@ document.addEventListener('alpine:init', () => {
                                     host: node.host || '',
                                     thumbnailUrl: thumbnailUrl,
                                     alt: node.alt || '',
-                                    id: node.id || node.embedUrl || Math.random().toString()
+                                    id: node.id || node.embedUrl || Math.random().toString(),
+                                    variantId: null // ExternalVideo doesn't have variant field in Storefront API
                                 };
                             }
                             return null;
                         }
                         return null;
                     }).filter(item => item !== null);
+                    
+                    // Note: Shopify Storefront API doesn't expose variant association on media directly
+                    // Variant-specific media filtering would need to be handled via product.variants.media
+                    // For now, return all media (variant filtering can be implemented later if needed)
+                    
+                    return media;
                 }
                 return [];
             } catch (error) {
@@ -686,8 +717,20 @@ document.addEventListener('alpine:init', () => {
                                             currencyCode
                                         }
                                         availableForSale
+                                        selectedOptions {
+                                            name
+                                            value
+                                        }
+                                        image {
+                                            url
+                                            altText
+                                        }
                                     }
                                 }
+                            }
+                            options {
+                                name
+                                values
                             }
                         }
                     }
@@ -711,7 +754,7 @@ document.addEventListener('alpine:init', () => {
                 return {
                     id: productId,
                     handle: productHandle,
-                    title: product.title,
+                    title: this.stripHtmlTags(product.title),
                     descriptionHtml: product.descriptionHtml,
                     description: product.descriptionHtml ? this.stripHtmlTags(product.descriptionHtml) : '',
                     price: parseFloat(price),
@@ -729,7 +772,19 @@ document.addEventListener('alpine:init', () => {
                         price: parseFloat(edge.node.price.amount),
                         priceFormatted: `$${parseFloat(edge.node.price.amount).toFixed(2)}`,
                         currencyCode: edge.node.price.currencyCode,
-                        availableForSale: edge.node.availableForSale
+                        availableForSale: edge.node.availableForSale,
+                        selectedOptions: edge.node.selectedOptions.map(opt => ({
+                            name: opt.name,
+                            value: opt.value
+                        })),
+                        image: edge.node.image ? {
+                            url: edge.node.image.url,
+                            alt: edge.node.image.altText || ''
+                        } : null
+                    })),
+                    options: product.options.map(opt => ({
+                        name: opt.name,
+                        values: opt.values
                     })),
                     media: media
                 };
@@ -795,18 +850,19 @@ document.addEventListener('alpine:init', () => {
                     const productId = product.id.replace('gid://shopify/Product/', '');
                     const image = product.images.edges[0]?.node || null;
                     
+                    const sanitizedTitle = this.stripHtmlTags(product.title);
                     return {
                         id: productId,
                         handle: product.handle,
-                        title: product.title,
-                        name: product.title, // Alias for compatibility
+                        title: sanitizedTitle,
+                        name: sanitizedTitle, // Alias for compatibility
                         price: parseFloat(product.priceRange.minVariantPrice.amount) || 0,
                         currencyCode: product.priceRange.minVariantPrice.currencyCode,
                         availableForSale: product.availableForSale,
                         featured: false, // Non-featured products
                         thumbnail: image ? {
                             url: image.url,
-                            alt: image.altText || product.title
+                            alt: image.altText || sanitizedTitle
                         } : null,
                         shopifyId: productId
                     };
