@@ -524,25 +524,6 @@ document.addEventListener('alpine:init', () => {
                     total: this.total
                 });
             }
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({
-                    runId:'initial',
-                    hypothesisId:'H3',
-                    location:'shopify-cart.js:498',
-                    message:'getCheckoutUrl called',
-                    data:{
-                        checkoutId:this.checkoutId,
-                        checkoutUrl:this.checkoutUrl,
-                        itemCount:this.itemCount,
-                        total:this.total
-                    },
-                    timestamp:Date.now()
-                })
-            }).catch(()=>{});
-            // #endregion
             return this.checkoutUrl || '#';
         },
         
