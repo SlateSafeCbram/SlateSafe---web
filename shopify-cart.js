@@ -144,11 +144,19 @@ document.addEventListener('alpine:init', () => {
                     localStorage.setItem('shopify_checkout_id', this.checkoutId);
                     
                     const rawCheckoutUrl = result.data.cartCreate.cart.checkoutUrl;
-                    try {
-                        this.checkoutUrl = rawCheckoutUrl;
-                    } catch (e) {
-                        this.checkoutUrl = rawCheckoutUrl;
+                    // Optional local debug hook (no network calls or PII)
+                    if (window && window.SlateSafeDebug && window.SlateSafeDebug.logCheckout) {
+                        try {
+                            window.SlateSafeDebug.logCheckout({
+                                source: 'createCart',
+                                checkoutId: this.checkoutId,
+                                checkoutUrl: rawCheckoutUrl
+                            });
+                        } catch (e) {
+                            // Ignore debug logging failures
+                        }
                     }
+                    this.checkoutUrl = rawCheckoutUrl;
                     
                     await this.fetchCart();
                 } else {
