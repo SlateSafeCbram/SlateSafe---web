@@ -142,7 +142,43 @@ document.addEventListener('alpine:init', () => {
                 if (result.data?.cartCreate?.cart) {
                     this.checkoutId = result.data.cartCreate.cart.id;
                     localStorage.setItem('shopify_checkout_id', this.checkoutId);
-                    this.checkoutUrl = result.data.cartCreate.cart.checkoutUrl;
+                    
+                    // Normalize checkout URL to always use the Storefront API domain
+                    const rawCheckoutUrl = result.data.cartCreate.cart.checkoutUrl;
+                    let rewritten = false;
+                    try {
+                        const url = new URL(rawCheckoutUrl);
+                        if (url.hostname !== this.shopDomain) {
+                            url.hostname = this.shopDomain;
+                            this.checkoutUrl = url.toString();
+                            rewritten = true;
+                        } else {
+                            this.checkoutUrl = rawCheckoutUrl;
+                        }
+                    } catch (e) {
+                        this.checkoutUrl = rawCheckoutUrl;
+                    }
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify({
+                            runId:'post-fix',
+                            hypothesisId:'H2-domain-rewrite',
+                            location:'shopify-cart.js:145',
+                            message:'checkoutUrl set in createCart (normalized)',
+                            data:{
+                                checkoutId:this.checkoutId,
+                                rawCheckoutUrl:rawCheckoutUrl,
+                                normalizedCheckoutUrl:this.checkoutUrl,
+                                rewritten:rewritten,
+                                shopDomain:this.shopDomain
+                            },
+                            timestamp:Date.now()
+                        })
+                    }).catch(()=>{});
+                    // #endregion
                     await this.fetchCart();
                 } else {
                     throw new Error('Failed to create cart: Invalid response from server');
@@ -220,7 +256,45 @@ document.addEventListener('alpine:init', () => {
                     }));
                     this.itemCount = this.items.reduce((sum, item) => sum + item.quantity, 0);
                     this.total = parseFloat(cart.cost.totalAmount.amount);
-                    this.checkoutUrl = cart.checkoutUrl;
+                    
+                    // Normalize checkout URL to always use the Storefront API domain
+                    const rawCheckoutUrl = cart.checkoutUrl;
+                    let rewritten = false;
+                    try {
+                        const url = new URL(rawCheckoutUrl);
+                        if (url.hostname !== this.shopDomain) {
+                            url.hostname = this.shopDomain;
+                            this.checkoutUrl = url.toString();
+                            rewritten = true;
+                        } else {
+                            this.checkoutUrl = rawCheckoutUrl;
+                        }
+                    } catch (e) {
+                        this.checkoutUrl = rawCheckoutUrl;
+                    }
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify({
+                            runId:'post-fix',
+                            hypothesisId:'H2-domain-rewrite',
+                            location:'shopify-cart.js:223',
+                            message:'checkoutUrl set in fetchCart (normalized)',
+                            data:{
+                                checkoutId:this.checkoutId,
+                                rawCheckoutUrl:rawCheckoutUrl,
+                                normalizedCheckoutUrl:this.checkoutUrl,
+                                rewritten:rewritten,
+                                itemCount:this.itemCount,
+                                total:this.total,
+                                shopDomain:this.shopDomain
+                            },
+                            timestamp:Date.now()
+                        })
+                    }).catch(()=>{});
+                    // #endregion
                 }
             } catch (error) {
                 this.handleError(error, 'fetching cart');
@@ -503,6 +577,25 @@ document.addEventListener('alpine:init', () => {
                     total: this.total
                 });
             }
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({
+                    runId:'initial',
+                    hypothesisId:'H3',
+                    location:'shopify-cart.js:498',
+                    message:'getCheckoutUrl called',
+                    data:{
+                        checkoutId:this.checkoutId,
+                        checkoutUrl:this.checkoutUrl,
+                        itemCount:this.itemCount,
+                        total:this.total
+                    },
+                    timestamp:Date.now()
+                })
+            }).catch(()=>{});
+            // #endregion
             return this.checkoutUrl || '#';
         },
         
