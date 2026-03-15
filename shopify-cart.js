@@ -142,7 +142,22 @@ document.addEventListener('alpine:init', () => {
                 if (result.data?.cartCreate?.cart) {
                     this.checkoutId = result.data.cartCreate.cart.id;
                     localStorage.setItem('shopify_checkout_id', this.checkoutId);
-                    this.checkoutUrl = result.data.cartCreate.cart.checkoutUrl;
+                    
+                    const rawCheckoutUrl = result.data.cartCreate.cart.checkoutUrl;
+                    // Optional local debug hook (no network calls or PII)
+                    if (window && window.SlateSafeDebug && window.SlateSafeDebug.logCheckout) {
+                        try {
+                            window.SlateSafeDebug.logCheckout({
+                                source: 'createCart',
+                                checkoutId: this.checkoutId,
+                                checkoutUrl: rawCheckoutUrl
+                            });
+                        } catch (e) {
+                            // Ignore debug logging failures
+                        }
+                    }
+                    this.checkoutUrl = rawCheckoutUrl;
+                    
                     await this.fetchCart();
                 } else {
                     throw new Error('Failed to create cart: Invalid response from server');
@@ -220,7 +235,13 @@ document.addEventListener('alpine:init', () => {
                     }));
                     this.itemCount = this.items.reduce((sum, item) => sum + item.quantity, 0);
                     this.total = parseFloat(cart.cost.totalAmount.amount);
-                    this.checkoutUrl = cart.checkoutUrl;
+                    
+                    const rawCheckoutUrl = cart.checkoutUrl;
+                    try {
+                        this.checkoutUrl = rawCheckoutUrl;
+                    } catch (e) {
+                        this.checkoutUrl = rawCheckoutUrl;
+                    }
                 }
             } catch (error) {
                 this.handleError(error, 'fetching cart');
