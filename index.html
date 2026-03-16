@@ -75,81 +75,7 @@
     </div>
     
     <!-- Navigation -->
-    <nav class="sticky top-0 z-50 transition-all duration-300" 
-         x-data="{ open: false, scrolled: false }"
-         x-init="
-           // Disable browser scroll restoration
-           if ('scrollRestoration' in history) {
-             history.scrollRestoration = 'manual';
-           }
-           // Force initial state to transparent (scrolled = false)
-           scrolled = false;
-           // Function to force scroll to top and verify it worked
-           const forceScrollToTop = () => {
-             window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-             document.documentElement.scrollTop = 0;
-             document.body.scrollTop = 0;
-             // Use requestAnimationFrame to check after browser has processed the scroll
-             requestAnimationFrame(() => {
-               const actualScroll = window.scrollY || document.documentElement.scrollTop || window.pageYOffset || 0;
-               // If still not at top, try again
-               if (actualScroll > 0) {
-                 setTimeout(() => {
-                   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                   document.documentElement.scrollTop = 0;
-                   document.body.scrollTop = 0;
-                 }, 0);
-               }
-             });
-           };
-           // Force scroll to top immediately
-           forceScrollToTop();
-           // Function to update scroll state
-           const updateScrollState = () => {
-             const currentScroll = window.scrollY || document.documentElement.scrollTop || window.pageYOffset || 0;
-             const shouldBeScrolled = currentScroll > 50;
-             if (shouldBeScrolled !== scrolled) {
-               scrolled = shouldBeScrolled;
-             }
-           };
-           // Check initial scroll position after page fully loads
-           const checkInitialScroll = () => {
-             // Force scroll to top again and wait for it to actually be 0
-             forceScrollToTop();
-             // Wait a bit for scroll to settle, then check
-             setTimeout(() => {
-               const initialScroll = window.scrollY || document.documentElement.scrollTop || window.pageYOffset || 0;
-               // Only update state if we're actually at the top
-               if (initialScroll <= 50) {
-                 scrolled = false;
-               } else {
-                 updateScrollState();
-               }
-             }, 150);
-           };
-           // Wait for page to be fully loaded before checking scroll
-           if (document.readyState === 'complete') {
-             checkInitialScroll();
-           } else {
-             window.addEventListener('load', checkInitialScroll, { once: true });
-           }
-           // Listen for scroll events with throttling
-           let ticking = false;
-           const handleScroll = () => {
-             if (!ticking) {
-               window.requestAnimationFrame(() => {
-                 updateScrollState();
-                 ticking = false;
-               });
-               ticking = true;
-             }
-           };
-           window.addEventListener('scroll', handleScroll, { passive: true });
-         "
-         :class="{
-           'bg-header-blue border-b border-header-blue/80': scrolled,
-           'bg-transparent backdrop-blur-sm': !scrolled
-         }">
+    <nav class="sticky top-0 z-50 bg-header-blue border-b border-header-blue/80" x-data="{ open: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
@@ -203,7 +129,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                     </button>
-                    <button @click="open = !open" class="text-white hover:text-brand-orange">
+                    <button @click="open = !open" class="p-2 rounded-lg text-white hover:text-brand-orange transition-colors" aria-label="Toggle menu">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -214,7 +140,8 @@
         </div>
         
         <!-- Mobile Navigation -->
-        <div x-show="open" 
+        <div x-show="open"
+             x-cloak
              style="display: none;"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 -translate-y-2"
@@ -222,10 +149,8 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 -translate-y-2"
-             :class="{
-               'bg-header-blue border-t border-header-blue/80': scrolled,
-               'bg-black/50 backdrop-blur-sm border-t border-white/20': !scrolled
-             }">
+             @click.outside="open = false"
+             class="bg-header-blue border-t border-header-blue/80">
             <div class="px-4 py-4 space-y-3">
                 <a href="index.html" class="block text-white hover:text-brand-orange transition-colors">Home</a>
                 <a href="products.html" class="block text-white hover:text-brand-orange transition-colors">Products</a>
@@ -414,59 +339,53 @@
         <section class="min-h-screen flex items-center bg-midnight-black dark:bg-midnight-black py-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                 <div class="grid lg:grid-cols-2 gap-12 items-center">
-                    <!-- Left: Lifestyle Image -->
-                    <div class="scroll-fade-in lg:order-2">
-                        <img data-src="/images/tabletop-lifestyle.jpg" alt="Clean retail/countertop lifestyle shot with tablet in SlateSafe enclosure" class="w-full h-96 md:h-[600px] object-cover rounded-lg">
+                    <!-- Left: Lifestyle Image (full image visible, no crop) -->
+                    <div class="scroll-fade-in lg:order-2 flex items-center justify-center">
+                        <div class="w-full max-h-[28rem] md:max-h-[600px] flex items-center justify-center rounded-lg overflow-hidden bg-black/20">
+                            <img data-src="/images/tabletop-install.png" alt="Exploded view of SlateSafe tablet enclosure, stand, and power adapter for tabletop installation" class="max-w-full max-h-[28rem] md:max-h-[600px] w-auto h-auto object-contain rounded-lg">
+                        </div>
                     </div>
                     
                     <!-- Right: Technical Details -->
                     <div class="scroll-fade-in lg:order-1">
-                        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Tabletop Solutions</h2>
+                        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">The Versatile Desktop Interface</h2>
                         <p class="text-xl text-gray-300 mb-8 leading-relaxed">
-                            Flexible power solutions for countertop and desk installations. Professional appearance without permanent modifications.
+                            Professional-grade utility for kitchen hubs, retail POS, and restaurant systems.
                         </p>
                         
-                        <div class="blueprint-border p-6 rounded-lg mb-6">
-                            <h3 class="text-xl font-bold text-brand-orange mb-4">10ft Anker USB-C Solutions</h3>
-                            <ul class="space-y-3 text-gray-300">
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span>Extended reach for flexible positioning</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span>30W power delivery</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span>Low-profile right-angle connectors</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-brand-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span>Ideal for POS and kiosk applications</span>
-                                </li>
-                            </ul>
+                        <div class="blueprint-border p-6 rounded-lg space-y-6">
+                            <div>
+                                <h3 class="text-lg font-bold text-brand-orange mb-1">VESA 75mm Standard</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed">Integrated mounting threads on the back of every enclosure allow for a seamless, "no-hack" fit with any standard VESA tabletop stand or mounting arm.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-brand-orange mb-1">Anker Powered</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed">Optimized to pair with our tested Anker 10ft USB-C cables and 30W power supplies for a high-performance setup that is as reliable as it is sleek.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-brand-orange mb-1">Discreet Cable Management</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed">Engineered to secure and hide long-reach cables internally, eliminating the cluttered "dangling wire" look common in consumer setups.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-brand-orange mb-1">Purpose-Built for Any Surface</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed">A refined solution for Home Assistant dashboards, retail points-of-sale, or high-demand Kitchen Display Systems (KDS).</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
         
-        <!-- 6. The Flat USB-C Engineering -->
+        <!-- 6. Engineered for the Slimmest Profile -->
         <section class="min-h-screen flex items-center justify-center bg-midnight-black dark:bg-midnight-black py-20">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-16 scroll-fade-in">
-                    <h2 class="text-4xl md:text-6xl font-bold text-white mb-8">The Flat USB-C Engineering</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                        Why our cases are the slimmest. Custom-engineered flat cable routing eliminates bulk while maintaining full functionality.
+                    <h2 class="text-4xl md:text-6xl font-bold text-white mb-8">Engineered for the Slimmest Profile</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-6">
+                        The secret to a professional installation isn't just the case—it's the cable.
+                    </p>
+                    <p class="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                        Most tablet enclosures are bulky because they are forced to hide thick, rounded consumer charging cords. We built a better way. By designing every SlateSafe enclosure around our custom-engineered Flat USB-C Extension, we eliminated the internal bulk, allowing for a flush, low-profile fit that makes the tablet look like a native part of the wall or counter.
                     </p>
                 </div>
                 
@@ -476,58 +395,49 @@
                         <h3 class="text-2xl font-bold text-brand-blue mb-6">Technical Specifications</h3>
                         <dl class="space-y-4 text-gray-300">
                             <div>
-                                <dt class="font-semibold text-white mb-1">Cable Profile</dt>
-                                <dd>Ultra-flat FPC ribbon design</dd>
+                                <dt class="font-semibold text-white mb-1">Profile</dt>
+                                <dd>Ultra-thin FPC Ribbon design for zero-bulk internal routing.</dd>
                             </div>
                             <div>
                                 <dt class="font-semibold text-white mb-1">Power Delivery</dt>
-                                <dd>Up to 30W (6A) charging capability</dd>
+                                <dd>Supports up to 30W (6A) for fast, reliable charging.</dd>
                             </div>
                             <div>
                                 <dt class="font-semibold text-white mb-1">Data Transfer</dt>
-                                <dd>USB 2.0 speeds (480 Mbps)</dd>
+                                <dd>USB 2.0 (480 Mbps) for hardwired network and POS peripherals.</dd>
                             </div>
                             <div>
-                                <dt class="font-semibold text-white mb-1">Connector Angle</dt>
-                                <dd>90° right-angle for tight spaces</dd>
+                                <dt class="font-semibold text-white mb-1">Geometry</dt>
+                                <dd>90° right-angle connectors to reduce cable strain and depth.</dd>
                             </div>
                             <div>
-                                <dt class="font-semibold text-white mb-1">Cable Length</dt>
-                                <dd>20cm (7.9 inches) optimal routing</dd>
+                                <dt class="font-semibold text-white mb-1">Length</dt>
+                                <dd>20cm (7.9") precision-sized for internal enclosure management.</dd>
                             </div>
                         </dl>
                     </div>
                     
                     <!-- Macro Close-up Image -->
                     <div class="scroll-fade-in">
-                        <img data-src="/images/flat-cable-macro.jpg" alt="Macro close-up of flat cable routing showing slim profile" class="w-full h-96 md:h-[500px] object-cover rounded-lg">
+                        <img data-src="/images/flat-cable-macro.png" alt="Close-up of SlateSafe enclosure showing flat ribbon cable and 90° right-angle connector" class="w-full h-96 md:h-[500px] object-cover rounded-lg">
                     </div>
                 </div>
             </div>
         </section>
         
-        <!-- 7. The $500 Rule -->
+        <!-- 7. Intentional Focus. Professional Standards. -->
         <section class="min-h-screen flex items-center justify-center bg-midnight-black dark:bg-midnight-black py-20">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <div class="scroll-fade-in">
-                    <h2 class="text-4xl md:text-6xl font-bold text-white mb-8">Intentional Performance</h2>
-                    <p class="text-2xl md:text-3xl text-brand-orange font-semibold mb-8">The $500 Rule</p>
+                    <h2 class="text-4xl md:text-6xl font-bold text-white mb-8">Intentional Focus. Professional Standards.</h2>
+                    <p class="text-2xl md:text-3xl text-brand-orange font-semibold mb-8">We don't just support hardware; we validate it.</p>
                     <p class="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12">
-                        When your tablet integration costs $500+, Samsung is the professional choice. Superior build quality, enterprise support, and long-term reliability deliver ROI that budget tablets can't match.
+                        At SlateSafe, our catalog is curated by performance, not popularity. We intentionally launched with the Samsung Galaxy Tab A9 series because it represents the gold standard for dedicated, high-uptime applications. But our mission is broader: providing a professional-grade home for the world's most reliable tablets.
                     </p>
                     
-                    <div class="grid md:grid-cols-3 gap-8 mt-16">
-                        <div class="glass-card p-6 rounded-lg">
-                            <div class="text-4xl font-bold text-brand-orange mb-2">3+</div>
-                            <p class="text-gray-300">Years Enterprise Support</p>
-                        </div>
-                        <div class="glass-card p-6 rounded-lg">
-                            <div class="text-4xl font-bold text-brand-blue mb-2">99%</div>
-                            <p class="text-gray-300">Uptime Reliability</p>
-                        </div>
-                        <div class="glass-card p-6 rounded-lg">
-                            <div class="text-4xl font-bold text-brand-orange mb-2">5x</div>
-                            <p class="text-gray-300">Longer Lifespan</p>
+                    <div class="mt-16 flex justify-center">
+                        <div class="max-w-md w-full">
+                            <img data-src="/images/samsung-tab-a9.png" alt="SlateSafe tablet enclosure components: backplate, bezel, and assembly hardware" class="w-full h-auto object-contain rounded-lg">
                         </div>
                     </div>
                 </div>
@@ -582,8 +492,7 @@
                     
                     <!-- 3D Printing Time-lapse Video Placeholder -->
                     <div class="scroll-fade-in">
-                        <div class="video-placeholder h-96 md:h-[500px] rounded-lg" data-label="VIDEO_PLACEHOLDER: 3D printing time-lapse video showing additive manufacturing process">
-                        </div>
+                        <img data-src="/images/3d-print.png" alt="3D printer in operation — additive manufacturing in West Chester, Pennsylvania" class="w-full h-96 md:h-[500px] object-cover rounded-lg">
                     </div>
                 </div>
             </div>
@@ -600,18 +509,16 @@
                 </div>
                 
                 <div class="grid md:grid-cols-2 gap-8 mb-12">
-                    <!-- Contact Form -->
+                    <!-- Contact Form (same fields and behavior as contact.html) -->
                     <div class="glass-card p-8 rounded-lg scroll-fade-in">
                         <h3 class="text-2xl font-bold text-white mb-6">Get in Touch</h3>
-                        <form id="contact-form" 
-                              x-data="{ loading: false, formType: 'general' }"
+                        <form id="contact-form"
+                              x-data="{ loading: false }"
                               @submit.prevent="
                                 loading = true;
                                 const form = $el;
                                 const formData = new FormData(form);
                                 formData.append('access_key', 'c20450fb-5174-47ae-af89-e616644926d1');
-                                formData.append('subject', formType === 'custom' ? 'Custom Project Inquiry' : formType === 'bulk' ? 'Bulk Order Inquiry' : 'General Inquiry');
-                                
                                 fetch('https://api.web3forms.com/submit', {
                                     method: 'POST',
                                     body: formData
@@ -635,39 +542,32 @@
                                     console.error('Form submission error:', error);
                                 });
                               ">
-                            <div class="space-y-4">
+                            <div class="space-y-6">
                                 <div>
-                                    <label for="contact-name" class="block text-sm font-medium text-gray-300 mb-2">Name *</label>
+                                    <label for="contact-name" class="block text-sm font-medium text-gray-300 mb-2">Name <span class="text-brand-orange">*</span></label>
                                     <input type="text" id="contact-name" name="name" required
                                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-brand-orange transition-colors"
-                                           placeholder="Your name">
+                                           placeholder="Your full name">
                                 </div>
                                 <div>
-                                    <label for="contact-email" class="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+                                    <label for="contact-email" class="block text-sm font-medium text-gray-300 mb-2">Email <span class="text-brand-orange">*</span></label>
                                     <input type="email" id="contact-email" name="email" required
                                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-brand-orange transition-colors"
                                            placeholder="your.email@example.com">
                                 </div>
                                 <div>
-                                    <label for="contact-type" class="block text-sm font-medium text-gray-300 mb-2">Inquiry Type</label>
-                                    <select id="contact-type" name="type" x-model="formType"
-                                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-brand-orange transition-colors">
-                                        <option value="general">General Inquiry</option>
-                                        <option value="custom">Custom Project</option>
-                                        <option value="bulk">Bulk Order</option>
-                                    </select>
+                                    <label for="contact-message" class="block text-sm font-medium text-gray-300 mb-2">Message <span class="text-brand-orange">*</span></label>
+                                    <textarea id="contact-message" name="message" rows="6" required
+                                              class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-brand-orange transition-colors resize-none"
+                                              placeholder="Tell us how we can help..."></textarea>
                                 </div>
                                 <div>
-                                    <label for="contact-message" class="block text-sm font-medium text-gray-300 mb-2">Message *</label>
-                                    <textarea id="contact-message" name="message" rows="5" required
-                                              class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-brand-orange transition-colors resize-none"
-                                              placeholder="Tell us about your project..."></textarea>
+                                    <button type="submit" :disabled="loading"
+                                            class="w-full px-8 py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-lg">
+                                        <span x-show="!loading">Send Message</span>
+                                        <span x-show="loading">Sending...</span>
+                                    </button>
                                 </div>
-                                <button type="submit" :disabled="loading"
-                                        class="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors">
-                                    <span x-show="!loading">Send Message</span>
-                                    <span x-show="loading">Sending...</span>
-                                </button>
                             </div>
                         </form>
                     </div>
