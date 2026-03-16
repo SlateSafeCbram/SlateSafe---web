@@ -42,8 +42,8 @@
         initScrollAnimations();
     }
 
-    // Re-initialize when Alpine.js finishes loading (for dynamically added content)
-    document.addEventListener('alpine:init', () => {
+    // Re-initialize after Alpine.js has finished initializing (for dynamically added content)
+    document.addEventListener('alpine:initialized', () => {
         setTimeout(initScrollAnimations, 100);
     });
 })();
