@@ -649,6 +649,52 @@
             </div>
         </div>
     </div>
+    
+    <!-- #region agent log: image loading diagnostics -->
+    <script>
+      window.addEventListener('load', () => {
+        try {
+          const imgs = Array.from(document.querySelectorAll('img')).map((img) => ({
+            src: img.getAttribute('src') || null,
+            dataSrc: img.getAttribute('data-src') || null,
+            alt: img.getAttribute('alt') || null
+          }));
+          fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: 'log_' + Date.now(),
+              timestamp: Date.now(),
+              location: 'index.html:image-scan',
+              message: 'Image tags on load',
+              data: {
+                host: window.location.host,
+                count: imgs.length,
+                images: imgs
+              },
+              runId: 'gh-pages-image-debug',
+              hypothesisId: 'images-have-data-src-no-src'
+            })
+          }).catch(() => {});
+        } catch (e) {
+          fetch('http://127.0.0.1:7242/ingest/3c34470d-74b7-4ebc-bc6d-b4d99fcd0496', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: 'log_' + Date.now(),
+              timestamp: Date.now(),
+              location: 'index.html:image-scan-error',
+              message: 'Failed to scan images',
+              data: { error: String(e && e.message ? e.message : e) },
+              runId: 'gh-pages-image-debug',
+              hypothesisId: 'images-have-data-src-no-src'
+            })
+          }).catch(() => {});
+        }
+      });
+    </script>
+    <!-- #endregion agent log -->
 </body>
 </html>
+
 
