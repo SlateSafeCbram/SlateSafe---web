@@ -24,6 +24,17 @@
     <script src="cookie-consent.js"></script>
     <script src="analytics.js"></script>
     <script src="url-router.js"></script>
+    <script>
+        (function() {
+            if (typeof ProductRouter === 'undefined') return;
+            const handle = ProductRouter.getProductHandle();
+            if (!handle) return;
+            const canonicalLink = document.getElementById('canonical-link');
+            if (canonicalLink) {
+                canonicalLink.href = 'https://slatesafe.com' + ProductRouter.getProductUrl(handle);
+            }
+        })();
+    </script>
     <script src="shopify-cart.js"></script>
     
     <style>
