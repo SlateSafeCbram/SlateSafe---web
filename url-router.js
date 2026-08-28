@@ -66,8 +66,8 @@
          */
         getProductUrl: function(handle) {
             if (!handle) return '#';
-            // Use clean URL format: /product/PRODUCT_HANDLE
-            return `/product/${handle}`;
+            // Use clean URL format: /product/PRODUCT_HANDLE/
+            return `/product/${handle}/`;
         },
         
         /**
@@ -82,13 +82,13 @@
             const currentPath = window.location.pathname;
             const currentSearch = window.location.search;
             
-            // Only update if current URL is not already the clean format
-            // Check if we're on product.html with query params or 404.html
-            const needsUpdate = currentPath.includes('product.html') || 
-                              currentPath.includes('404.html') ||
-                              (currentSearch && currentSearch.includes('handle='));
+            // Canonical is only /product/<handle>/ with no handle query.
+            // Slashless /product/<handle> and ?handle= are not canonical
+            // (GitHub Pages may serve the directory without a trailing slash).
+            const isCanonicalPath = currentPath === `/product/${handle}/`;
+            const hasHandleQuery = /(?:^|[?&])handle=/.test(currentSearch);
             
-            if (needsUpdate && !currentPath.match(/^\/product\/[^\/]+$/)) {
+            if (!isCanonicalPath || hasHandleQuery) {
                 // Update URL using History API (replaceState to avoid adding to history)
                 window.history.replaceState(
                     { handle: handle, title: title },

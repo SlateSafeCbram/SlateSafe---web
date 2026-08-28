@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse all SlateSafe products - Modern Tablet Solutions for visitor kiosks, POS systems, and home automation mounts">
-    <title>Products | SlateSafe - Modern Tablet Solutions</title>
+    <meta name="description" content="Shop the Samsung Tab A9+ tablet enclosure for visitor kiosks and POS, plus our USB-C right-angle cable. SlateSafe kiosk accessories with Shopify checkout.">
+    <title>Samsung Tab A9+ Enclosure &amp; Kiosk Accessories | SlateSafe</title>
+    <link rel="canonical" href="https://slatesafe.com/products.html">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
     
     <!-- Compiled Tailwind CSS -->
     <link rel="stylesheet" href="dist/output.css">
+    
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     
     <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -129,6 +134,10 @@
                         this.loading = false;
                         this.products = [];
                     }
+                },
+                
+                get catalogExtras() {
+                    return this.filteredProducts.filter(p => !p.fromJson);
                 },
                 
                 get filteredProducts() {
@@ -286,8 +295,8 @@
     <!-- Page Header -->
     <div class="bg-gray-100 dark:bg-slate-dark border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Product Catalog</h1>
-            <p class="text-xl text-gray-600 dark:text-gray-400">Browse our complete range of practical tablet accessories</p>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Samsung Tab A9+ Enclosure and Kiosk Accessories</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400">First-party tablet enclosures and cables for visitor kiosks, POS, and wall mounts</p>
         </div>
     </div>
     
@@ -316,17 +325,61 @@
             </div>
         </div>
         
-        <!-- Loading State -->
-        <div x-show="loading" class="text-center py-12">
+        <!-- Loading State (copy is JS-only so crawlers do not see empty-catalog placeholders) -->
+        <div x-show="loading" x-cloak class="text-center py-12" style="display: none;">
             <svg class="w-12 h-12 mx-auto mb-4 text-brand-orange animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            <p class="text-gray-600 dark:text-gray-400">Loading products...</p>
+            <p class="text-gray-600 dark:text-gray-400" x-text="'Loading additional products...'"></p>
         </div>
         
-        <!-- Products Grid -->
-        <div x-show="!loading" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <template x-for="product in filteredProducts" :key="product.id">
+        <!-- Products Grid: owned SKUs are real HTML (no JS). Anker Collective items hydrate into this grid. -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <a href="/product/tablet-enclosure-kit-samsung-tab-a9/"
+               x-show="filterCategory === 'all' || filterCategory === 'enclosures'"
+               class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
+                <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden">
+                    <img src="images/samsung-tab-a9.png"
+                         alt="Tablet Enclosure Kit - Samsung Tab A9+"
+                         class="w-full h-full object-contain">
+                    <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        Featured
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-brand-orange transition-colors">Tablet Enclosure Kit - Samsung Tab A9+</h3>
+                    <p class="text-2xl font-bold text-brand-orange mb-4">$56.00</p>
+                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 group-hover:text-brand-orange dark:group-hover:text-white transition-colors">
+                        <span>View Details</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </div>
+            </a>
+            <a href="/product/flat-90-degree-usb-c-ribbon-extension-cable/"
+               x-show="filterCategory === 'all' || filterCategory === 'cables'"
+               class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
+                <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden">
+                    <img src="images/flat-cable-macro.png"
+                         alt="USB-C Right Angle Cable"
+                         class="w-full h-full object-contain">
+                    <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        Featured
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-brand-orange transition-colors">USB-C Right Angle Cable</h3>
+                    <p class="text-2xl font-bold text-brand-orange mb-4">$11.99</p>
+                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 group-hover:text-brand-orange dark:group-hover:text-white transition-colors">
+                        <span>View Details</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </div>
+            </a>
+            <template x-for="product in catalogExtras" :key="product.id">
                 <a :href="typeof ProductRouter !== 'undefined' ? ProductRouter.getProductUrl(product.handle) : ('product.html?handle=' + product.handle)" class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
                     <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden" 
                          x-data="{ thumbnail: null, loading: true }"
@@ -371,9 +424,12 @@
             </template>
         </div>
         
-        <!-- Empty State -->
-        <div x-show="!loading && filteredProducts.length === 0" class="text-center py-12">
-            <p class="text-gray-600 dark:text-gray-400 text-lg">No products found matching your criteria.</p>
+        <!-- Empty State (hidden from crawlers; owned SKUs are always in the grid above) -->
+        <div x-show="!loading && catalogExtras.length === 0 && filterCategory !== 'all' && filterCategory !== 'cables' && filterCategory !== 'enclosures'"
+             x-cloak
+             class="text-center py-12"
+             style="display: none;">
+            <p class="text-gray-600 dark:text-gray-400 text-lg" x-text="'No products found matching your criteria.'"></p>
         </div>
     </main>
     
