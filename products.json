@@ -6,6 +6,10 @@
       "title": "USB-C Right Angle Cable",
       "category": "cables",
       "featured": true,
+      "price": 11.99,
+      "sku": "CAB-RA20CM-MF-BLK-V1",
+      "image": "images/flat-cable-macro.png",
+      "url": "https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/",
       "featureHighlight": "Perfect for low profile cases and mounts",
       "keyFeatures": [
         "90-degree right-angle connector design for tight spaces",
@@ -29,6 +33,10 @@
       "title": "Tablet Enclosure Kit - Samsung Tab A9+",
       "category": "enclosures",
       "featured": true,
+      "price": 56.00,
+      "sku": "tablet-enclosure-kit-samsung-tab-a9",
+      "image": "images/samsung-tab-a9.png",
+      "url": "https://slatesafe.com/product/tablet-enclosure-kit-samsung-tab-a9/",
       "featureHighlight": "Tamper-resistant, low-profile design",
       "keyFeatures": [
         "3D printed construction using premium ABS material",
@@ -47,4 +55,3 @@
     }
   ]
 }
-

@@ -66,8 +66,8 @@
          */
         getProductUrl: function(handle) {
             if (!handle) return '#';
-            // Use clean URL format: /product/PRODUCT_HANDLE
-            return `/product/${handle}`;
+            // Use clean URL format: /product/PRODUCT_HANDLE/
+            return `/product/${handle}/`;
         },
         
         /**
