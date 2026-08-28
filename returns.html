@@ -3,19 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Shop the Samsung Tab A9+ tablet enclosure for visitor kiosks and POS, plus our USB-C right-angle cable. SlateSafe kiosk accessories.">
-    <title>Samsung Tab A9+ Enclosure &amp; Kiosk Accessories | SlateSafe</title>
-    <link rel="canonical" href="https://slatesafe.com/products.html">
+    <meta name="description" content="SlateSafe 30-day returns policy. Request a return and send items to West Chester, Pennsylvania.">
+    <title>Returns | SlateSafe - Modern Tablet Solutions</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
     
     <!-- Compiled Tailwind CSS -->
     <link rel="stylesheet" href="dist/output.css">
-    
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
     
     <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -24,20 +19,7 @@
     <script src="app-init.js"></script>
     <script src="cookie-consent.js"></script>
     <script src="analytics.js"></script>
-    <script src="url-router.js"></script>
     <script src="shopify-cart.js"></script>
-    
-    <!-- Products Page Component -->
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('productsPage', () => ({
-                sortBy: 'featured',
-                filterCategory: 'all',
-                loading: false
-            }));
-        });
-    </script>
-    
 </head>
 <body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
     
@@ -86,7 +68,7 @@
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="index.html" class="text-white hover:text-brand-orange transition-colors">Home</a>
-                    <a href="products.html" class="text-white hover:text-brand-orange transition-colors font-semibold text-brand-orange">Products</a>
+                    <a href="products.html" class="text-white hover:text-brand-orange transition-colors">Products</a>
                     <a href="about.html" class="text-white hover:text-brand-orange transition-colors">About</a>
                     <a href="contact.html" class="text-white hover:text-brand-orange transition-colors">Contact</a>
                     
@@ -112,23 +94,13 @@
                 <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center space-x-2">
                     <!-- Cart Icon (Mobile) -->
-                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Shopping cart">
+                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span x-show="$store.cart.itemCount > 0" class="absolute top-0 right-0 bg-brand-orange text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" x-text="$store.cart.itemCount"></span>
                     </button>
-                    
-                    <!-- Theme Toggle (Mobile) -->
-                    <button @click="$store.theme.toggle()" class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle theme">
-                        <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                        <svg x-show="$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </button>
-                    <button @click="open = !open" class="text-gray-700 dark:text-gray-300 hover:text-brand-orange dark:hover:text-white">
+                    <button @click="open = !open" class="text-white hover:text-brand-orange">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -150,7 +122,7 @@
              class="md:hidden bg-header-blue border-t border-header-blue/80">
             <div class="px-4 py-4 space-y-3">
                 <a href="index.html" class="block text-white hover:text-brand-orange transition-colors">Home</a>
-                <a href="products.html" class="block text-white hover:text-brand-orange transition-colors font-semibold text-brand-orange">Products</a>
+                <a href="products.html" class="block text-white hover:text-brand-orange transition-colors">Products</a>
                 <a href="about.html" class="block text-white hover:text-brand-orange transition-colors">About</a>
                 <a href="contact.html" class="block text-white hover:text-brand-orange transition-colors">Contact</a>
             </div>
@@ -159,134 +131,111 @@
     
     <!-- Page Header -->
     <div class="bg-gray-100 dark:bg-slate-dark border-b border-gray-200 dark:border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Samsung Tab A9+ Enclosure and Kiosk Accessories</h1>
-            <p class="text-xl text-gray-600 dark:text-gray-400">First-party tablet enclosures and cables for visitor kiosks, POS, and wall mounts</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav class="text-sm text-gray-600 dark:text-gray-400">
+                <a href="index.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <span class="text-gray-900 dark:text-gray-300">Returns</span>
+            </nav>
         </div>
     </div>
     
-    <!-- Products Section -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="productsPage">
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h1 class="text-4xl md:text-5xl font-bold mb-8 text-gray-900 dark:text-white">Returns</h1>
         
-        <!-- Filter and Sort Controls -->
-        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex flex-wrap gap-4">
-                <label class="text-gray-700 dark:text-gray-300">Filter:</label>
-                <select x-model="filterCategory" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-300 focus:outline-none focus:border-brand-orange">
-                    <option value="all">All Products</option>
-                    <option value="cables">Cables</option>
-                    <option value="enclosures">Enclosures</option>
-                </select>
-            </div>
-            
-            <div class="flex flex-wrap gap-4">
-                <label class="text-gray-700 dark:text-gray-300">Sort:</label>
-                <select x-model="sortBy" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-300 focus:outline-none focus:border-brand-orange">
-                    <option value="featured">Featured</option>
-                    <option value="name">Name A-Z</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- Loading State (copy is JS-only so crawlers do not see empty-catalog placeholders) -->
-        <div x-show="loading" x-cloak class="text-center py-12" style="display: none;">
-            <svg class="w-12 h-12 mx-auto mb-4 text-brand-orange animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <p class="text-gray-600 dark:text-gray-400">Loading products...</p>
-        </div>
-        
-        <!-- Products Grid: owned SKUs are real HTML (no JS). -->
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <a href="/product/tablet-enclosure-kit-samsung-tab-a9/"
-               x-show="filterCategory === 'all' || filterCategory === 'enclosures'"
-               class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
-                <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden">
-                    <img src="images/samsung-tab-a9.png"
-                         alt="Tablet Enclosure Kit - Samsung Tab A9+"
-                         class="w-full h-full object-contain">
-                    <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        Featured
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-brand-orange transition-colors">Tablet Enclosure Kit - Samsung Tab A9+</h3>
-                    <p class="text-2xl font-bold text-brand-orange mb-4">$56.00</p>
-                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 group-hover:text-brand-orange dark:group-hover:text-white transition-colors">
-                        <span>View Details</span>
-                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </div>
-            </a>
-            <a href="/product/flat-90-degree-usb-c-ribbon-extension-cable/"
-               x-show="filterCategory === 'all' || filterCategory === 'cables'"
-               class="bg-white dark:bg-slate-deep rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-brand-orange transition-all hover:shadow-2xl group">
-                <div class="h-64 bg-gray-200 dark:bg-slate-dark flex items-center justify-center relative overflow-hidden">
-                    <img src="images/flat-cable-macro.png"
-                         alt="USB-C Right Angle Cable"
-                         class="w-full h-full object-contain">
-                    <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        Featured
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-brand-orange transition-colors">USB-C Right Angle Cable</h3>
-                    <p class="text-2xl font-bold text-brand-orange mb-4">$11.99</p>
-                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 group-hover:text-brand-orange dark:group-hover:text-white transition-colors">
-                        <span>View Details</span>
-                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </div>
-            </a>
+        <div class="prose prose-lg max-w-none dark:prose-invert">
+            <p class="text-lg text-gray-700 dark:text-gray-300">
+                We have a 30-day return policy. You have 30 days after receiving your item to request a return.
+            </p>
+
+            <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">Eligibility</h3>
+            <p class="text-gray-700 dark:text-gray-300">
+                To be eligible for a return, your item must be in the same condition that you received it, unused, with tags, and in its original packaging. You will also need the receipt or proof of purchase.
+            </p>
+
+            <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">How to start a return</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                Contact us at <a href="mailto:cbrammell@slatesafe.com" class="text-brand-orange hover:underline">cbrammell@slatesafe.com</a> to start a return. Please do not send an item back until we have confirmed the return.
+            </p>
+            <p class="text-gray-700 dark:text-gray-300">
+                Returns should be sent to:
+            </p>
+            <p class="text-gray-700 dark:text-gray-300 mt-2">
+                1442 Pottstown Pike #306<br>
+                West Chester, PA 19380-1271<br>
+                United States
+            </p>
+            <p class="text-gray-700 dark:text-gray-300 mt-4">
+                If your return is accepted, we will send a return shipping label and instructions. Items sent back without first requesting a return will not be accepted.
+            </p>
+
+            <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">Damages and issues</h3>
+            <p class="text-gray-700 dark:text-gray-300">
+                Please inspect your order when it arrives and contact us immediately if the item is defective, damaged, or if you received the wrong item so we can make it right.
+            </p>
+
+            <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">Non-returnable items</h3>
+            <p class="text-gray-700 dark:text-gray-300">
+                Custom products, special orders, and personalized items cannot be returned. We also cannot accept returns on sale items or gift cards.
+            </p>
+
+            <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">Exchanges</h3>
+            <p class="text-gray-700 dark:text-gray-300">
+                The fastest way to get a different item is to return what you have. Once the return is accepted, place a new order for the item you want.
+            </p>
+
+            <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">Refunds</h3>
+            <p class="text-gray-700 dark:text-gray-300">
+                We will notify you once we have received and inspected your return and let you know if the refund was approved. If approved, we will refund your original payment method within 10 business days. Your bank or card issuer may take additional time to post the refund. If more than 15 business days have passed since we approved your return, contact us at <a href="mailto:cbrammell@slatesafe.com" class="text-brand-orange hover:underline">cbrammell@slatesafe.com</a>.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300 mt-8">
+                Questions? Email <a href="mailto:cbrammell@slatesafe.com" class="text-brand-orange hover:underline">cbrammell@slatesafe.com</a>.
+            </p>
         </div>
     </main>
-    
+
     <!-- Footer -->
     <footer class="bg-header-blue border-t border-header-blue/80 mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
                     <img src="logo.svg" alt="SlateSafe Logo" class="h-10 mb-4 w-auto">
-                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    <p class="text-gray-200 text-sm">
                         Modern Tablet Solutions - Cost-effective, practical accessories for visitor kiosks, POS systems, and home automation
                     </p>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Products</h4>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <li><a href="products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">All Products</a></li>
+                    <h4 class="font-semibold mb-4 text-white">Products</h4>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        <li><a href="products.html" class="hover:text-brand-orange transition-colors">All Products</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Company</h4>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <li><a href="about.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="contact.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Contact</a></li>
+                    <h4 class="font-semibold mb-4 text-white">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        <li><a href="about.html" class="hover:text-brand-orange transition-colors">About Us</a></li>
+                        <li><a href="contact.html" class="hover:text-brand-orange transition-colors">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">Legal</h4>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <li><a href="privacy-policy.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><a href="shipping-policy.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Shipping Policy</a></li>
-                        <li><a href="returns.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Returns</a></li>
-                        <li><a href="terms.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Terms of Service</a></li>
+                    <h4 class="font-semibold mb-4 text-white">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        <li><a href="privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
+                        <li><a href="shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
+                        <li><a href="returns.html" class="hover:text-brand-orange transition-colors font-semibold text-brand-orange">Returns</a></li>
+                        <li><a href="terms.html" class="hover:text-brand-orange transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
             
-            <div class="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 md:mb-0">
-                    &copy; 2024 SlateSafe. All rights reserved.
+            <div class="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-200 text-sm mb-4 md:mb-0">
+                    &copy; 2025 SlateSafe. All rights reserved.
                 </p>
                 <div class="flex space-x-6">
                     <div class="relative group">

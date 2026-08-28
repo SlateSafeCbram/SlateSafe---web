@@ -88,10 +88,13 @@
                 <span class="text-lg font-semibold text-gray-900 dark:text-white">Subtotal:</span>
                 <span class="text-xl font-bold text-brand-orange" x-text="'$' + $store.cart.total.toFixed(2)"></span>
             </div>
-            <a :href="$store.cart.getCheckoutUrl()" 
-               class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
+            <button type="button"
+                    @click="$store.cart.checkout()"
+                    class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
                 Checkout
-            </a>
+            </button>
+            <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
+            <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
             <button @click="$store.cart.closeDrawer()" 
                     class="block w-full mt-3 py-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
                 Continue Shopping

@@ -459,22 +459,25 @@
                     </div>
                 </div>
                 
-                <!-- Add to Cart Button -->
+                <!-- Buy / Add to Cart -->
                 <div class="mb-8">
-                    <button @click="addToCart()" 
+                    <p class="text-center text-red-600 dark:text-red-400 text-sm mb-3" x-show="buyMessage" x-text="buyMessage"></p>
+                    <button type="button"
+                            @click="buyNow()"
+                            class="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors shadow-lg">
+                        Buy
+                    </button>
+                    <button type="button"
+                            @click="addToCart()"
                             :disabled="addingToCart"
-                            class="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg transition-colors shadow-lg">
+                            class="w-full mt-3 py-3 bg-white dark:bg-slate-dark border-2 border-gray-300 dark:border-gray-700 hover:border-brand-orange disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white font-semibold rounded-lg transition-colors">
                         <span x-show="!addingToCart">Add to Cart</span>
                         <span x-show="addingToCart" class="flex items-center justify-center">
-                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
                             Adding...
                         </span>
                     </button>
                     <p class="text-center text-gray-600 dark:text-gray-400 text-sm mt-4">
-                        Secure checkout via Shopify
+                        Secure checkout via Stripe. United States shipping only. Sales tax is calculated at checkout.
                     </p>
                 </div>
                 
@@ -510,7 +513,7 @@
                             <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span>Free shipping on orders over $100</span>
+                            <span>Free shipping on orders over $40</span>
                         </div>
                     </div>
                 </div>
@@ -549,6 +552,8 @@
                     <ul class="space-y-2 text-sm text-gray-200">
                         <li><a href="/privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
                         <li><a href="/shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
+                        <li><a href="/returns.html" class="hover:text-brand-orange transition-colors">Returns</a></li>
+                        <li><a href="/terms.html" class="hover:text-brand-orange transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
@@ -674,10 +679,13 @@
                     <span class="text-lg font-semibold text-gray-900 dark:text-white">Subtotal:</span>
                     <span class="text-xl font-bold text-brand-orange" x-text="'$' + $store.cart.total.toFixed(2)"></span>
                 </div>
-                <a :href="$store.cart.getCheckoutUrl()" 
-                   class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
+                <button type="button"
+                        @click="$store.cart.checkout()"
+                        class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
                     Checkout
-                </a>
+                </button>
+                <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
+                <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
                 <button @click="$store.cart.open = false" 
                         type="button"
                         class="block w-full mt-3 py-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
@@ -699,6 +707,7 @@
                 specifications: {},
                 quantity: 1,
                 addingToCart: false,
+                buyMessage: '',
                 shippingNotice: null,
                 selectedVariant: null,
                 selectedVariantId: null,
@@ -721,135 +730,58 @@
                     }
                     
                     try {
-                        // Check if product exists in products.json (featured product)
-                        let productInJson = null;
+                        await Alpine.store('cart').loadCatalog();
+                        const productInJson = Alpine.store('cart').findProduct(handle);
+
+                        if (!productInJson) {
+                            this.error = 'Product not found';
+                            this.loading = false;
+                            return;
+                        }
+
+                        this.productIndex = productInJson;
+                        this.productId = productInJson.sku || productInJson.handle || productInJson.id;
+
+                        const details = await Alpine.store('cart').fetchProductDetails(this.productId);
+                        if (!details) {
+                            this.error = 'Failed to load product details';
+                            this.loading = false;
+                            return;
+                        }
+
+                        this.productData = details;
+                        this.initializeSelectedVariant();
+                        this.keyFeatures = productInJson.keyFeatures || [];
+                        this.specifications = productInJson.specifications || {};
+
+                        if (typeof ProductRouter !== 'undefined' && this.productData.handle) {
+                            const canonicalLink = document.getElementById('canonical-link');
+                            if (canonicalLink) {
+                                canonicalLink.href = 'https://slatesafe.com' + ProductRouter.getProductUrl(this.productData.handle);
+                            }
+                        }
+
                         try {
-                            const productsResponse = await fetch('products.json');
-                            if (productsResponse.ok) {
-                                const productsData = await productsResponse.json();
-                                productInJson = productsData.products.find(p => p.handle === handle);
+                            const shippingResponse = await fetch('/shipping-notice.json');
+                            if (shippingResponse.ok) {
+                                this.shippingNotice = await shippingResponse.json();
                             }
                         } catch (err) {
-                            console.error('Error loading products.json:', err);
-                            // Continue - product might not be in JSON (non-featured)
+                            console.error('Error loading shipping notice:', err);
                         }
-                        
-                        // If product is in products.json, use existing logic (featured product - unchanged)
-                        if (productInJson) {
-                            this.productIndex = productInJson;
-                            this.productId = productInJson.id;
-                            
-                            // Fetch full product details from Shopify
-                            const details = await Alpine.store('cart').fetchProductDetails(productInJson.id);
-                            if (!details) {
-                                this.error = 'Failed to load product details';
-                                this.loading = false;
-                                return;
-                            }
-                            
-                            this.productData = details;
-                            
-                            // Initialize selected variant with first available variant
-                            this.initializeSelectedVariant();
-                            
-                            // Use JSON keyFeatures if available, otherwise empty array
-                            this.keyFeatures = productInJson.keyFeatures || [];
-                            
-                            // Use JSON specifications if available, otherwise empty object
-                            this.specifications = productInJson.specifications || {};
-                            
-                            // Update canonical link
-                            if (typeof ProductRouter !== 'undefined' && this.productData.handle) {
-                                const canonicalLink = document.getElementById('canonical-link');
-                                if (canonicalLink) {
-                                    canonicalLink.href = window.location.origin + ProductRouter.getProductUrl(this.productData.handle);
-                                }
-                            }
-                            
-                            // Load shipping notice
-                            try {
-                                const shippingResponse = await fetch('shipping-notice.json');
-                                if (shippingResponse.ok) {
-                                    const shippingData = await shippingResponse.json();
-                                    this.shippingNotice = shippingData;
-                                }
-                            } catch (err) {
-                                console.error('Error loading shipping notice:', err);
-                                // Continue without shipping notice
-                            }
-                            
-                            this.loading = false;
-                            
-                            // Update URL to clean format and page title
-                            if (typeof ProductRouter !== 'undefined') {
-                                ProductRouter.updateUrl(handle, this.productData.title);
-                            }
-                            
-                            // Track product view
-                            if (typeof SlateSafeAnalytics !== 'undefined' && this.productData) {
-                                SlateSafeAnalytics.trackProductView({
-                                    id: this.productData.id || this.productId,
-                                    title: this.productData.title,
-                                    price: this.productData.price || 0
-                                });
-                            }
-                        } else {
-                            // Product NOT in products.json - load everything from Shopify (new functionality)
-                            console.log('Product not in products.json, loading from Shopify:', handle);
-                            
-                            // Fetch product details from Shopify using handle
-                            const details = await Alpine.store('cart').fetchProductDetails(handle);
-                            if (!details) {
-                                this.error = 'Product not found';
-                                this.loading = false;
-                                return;
-                            }
-                            
-                            this.productData = details;
-                            this.productId = details.id;
-                            
-                            // Initialize selected variant with first available variant
-                            this.initializeSelectedVariant();
-                            
-                            // Update canonical link
-                            if (typeof ProductRouter !== 'undefined' && this.productData.handle) {
-                                const canonicalLink = document.getElementById('canonical-link');
-                                if (canonicalLink) {
-                                    canonicalLink.href = window.location.origin + ProductRouter.getProductUrl(this.productData.handle);
-                                }
-                            }
-                            
-                            // For non-featured products, no keyFeatures or specifications from JSON
-                            this.keyFeatures = [];
-                            this.specifications = {};
-                            
-                            // Load shipping notice (same as featured products)
-                            try {
-                                const shippingResponse = await fetch('shipping-notice.json');
-                                if (shippingResponse.ok) {
-                                    const shippingData = await shippingResponse.json();
-                                    this.shippingNotice = shippingData;
-                                }
-                            } catch (err) {
-                                console.error('Error loading shipping notice:', err);
-                                // Continue without shipping notice
-                            }
-                            
-                            this.loading = false;
-                            
-                            // Update URL to clean format and page title
-                            if (typeof ProductRouter !== 'undefined') {
-                                ProductRouter.updateUrl(handle, this.productData.title);
-                            }
-                            
-                            // Track product view
-                            if (typeof SlateSafeAnalytics !== 'undefined' && this.productData) {
-                                SlateSafeAnalytics.trackProductView({
-                                    id: this.productData.id || this.productId,
-                                    title: this.productData.title,
-                                    price: this.productData.price || 0
-                                });
-                            }
+
+                        this.loading = false;
+
+                        if (typeof ProductRouter !== 'undefined') {
+                            ProductRouter.updateUrl(handle, this.productData.title);
+                        }
+
+                        if (typeof SlateSafeAnalytics !== 'undefined' && this.productData) {
+                            SlateSafeAnalytics.trackProductView({
+                                id: this.productData.sku || this.productData.id || this.productId,
+                                title: this.productData.title,
+                                price: this.productData.price || 0
+                            });
                         }
                     } catch (err) {
                         console.error('Error loading product:', err);
@@ -890,23 +822,34 @@
                 
                 
                 async addToCart() {
-                    if (!this.selectedVariantId || this.addingToCart) {
-                        if (!this.selectedVariantId) {
-                            Alpine.store('toast').show('Please select a variant', 'error');
+                    const id = this.selectedVariantId || this.productId;
+                    if (!id || this.addingToCart) {
+                        if (!id) {
+                            Alpine.store('toast').show('Please select a product', 'error');
                         }
                         return;
                     }
-                    
+
                     this.addingToCart = true;
                     try {
-                        await Alpine.store('cart').addProduct(this.selectedVariantId, this.quantity, true);
-                        Alpine.store('cart').openDrawer();
-                        Alpine.store('toast').show('Product added to cart!', 'success');
+                        await Alpine.store('cart').addProduct(id, this.quantity);
                     } catch (error) {
                         Alpine.store('toast').show('Failed to add product to cart. Please try again.', 'error');
                     } finally {
                         this.addingToCart = false;
                     }
+                },
+
+                async buyNow() {
+                    const id = this.productData?.sku || this.productData?.handle || this.productId;
+                    const result = await Alpine.store('cart').resolveBuy(id);
+                    if (result.error) {
+                        this.buyMessage = result.error;
+                        Alpine.store('toast').show(result.error, 'error');
+                        return;
+                    }
+                    this.buyMessage = '';
+                    window.location.href = result.url;
                 }
             }
         }

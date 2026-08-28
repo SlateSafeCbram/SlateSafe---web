@@ -1,5 +1,4 @@
-// Product Gallery Component - Reusable gallery for Shopify product media
-// Usage: Add to product page with x-data="productGallery(productId, selectedVariantId, selectedVariantImage)" 
+// Product Gallery Component - local first-party media from products.json
 document.addEventListener('alpine:init', () => {
     Alpine.data('productGallery', (productId, selectedVariantId = null, selectedVariantImage = null) => ({
         media: [],
@@ -10,36 +9,29 @@ document.addEventListener('alpine:init', () => {
         currentProductId: productId,
         currentVariantId: selectedVariantId,
         variantImage: selectedVariantImage,
-        
+
         async init() {
             if (!this.currentProductId) {
                 this.error = 'Product ID not provided';
                 this.loading = false;
                 return;
             }
-            
             await this.loadMedia();
         },
-        
+
         async loadMedia() {
             if (!this.currentProductId) return;
-            
+
             this.loading = true;
             try {
-                const fetchedMedia = await Alpine.store('cart').fetchProductMedia(
-                    this.currentProductId,
-                    null // Don't filter by variant - we'll prioritize variant image instead
-                );
-                
-                // If variant has a featured image, prioritize it
+                const fetchedMedia = await Alpine.store('cart').fetchProductMedia(this.currentProductId);
+
                 if (this.variantImage && this.variantImage.url) {
-                    // Check if variant image is already in media array
-                    const variantImageInMedia = fetchedMedia.find(m => 
+                    const variantImageInMedia = fetchedMedia.find((m) =>
                         m.type === 'IMAGE' && m.url === this.variantImage.url
                     );
-                    
+
                     if (!variantImageInMedia) {
-                        // Add variant image as first item
                         fetchedMedia.unshift({
                             type: 'IMAGE',
                             url: this.variantImage.url,
@@ -49,7 +41,6 @@ document.addEventListener('alpine:init', () => {
                             isVariantImage: true
                         });
                     } else {
-                        // Move variant image to front
                         const index = fetchedMedia.indexOf(variantImageInMedia);
                         if (index > 0) {
                             fetchedMedia.splice(index, 1);
@@ -57,11 +48,11 @@ document.addEventListener('alpine:init', () => {
                         }
                     }
                 }
-                
+
                 if (fetchedMedia.length > 0) {
                     this.media = fetchedMedia;
-                    // Reset to first image when media changes
                     this.selectedIndex = 0;
+                    this.error = null;
                 } else {
                     this.error = 'No media found for this product';
                 }
@@ -72,8 +63,7 @@ document.addEventListener('alpine:init', () => {
                 this.loading = false;
             }
         },
-        
-        // Method to update variant and reload media
+
         updateVariant(newVariantId, newVariantImage) {
             if (newVariantId !== this.currentVariantId || newVariantImage !== this.variantImage) {
                 this.currentVariantId = newVariantId;
@@ -81,19 +71,23 @@ document.addEventListener('alpine:init', () => {
                 this.loadMedia();
             }
         },
-        
+
         selectMedia(index) {
             if (index >= 0 && index < this.media.length) {
                 this.userHasInteracted = true;
                 this.selectedIndex = index;
             }
         },
-        
+
+        isRemoteCdn(url) {
+            return /^https?:\/\//i.test(url || '');
+        },
+
         getOptimizedImageUrl(url) {
             if (!url) return '';
-            // Add width parameter for image optimization - only if not already present
+            // First-party files on GitHub Pages do not accept Shopify-style width params.
+            if (!this.isRemoteCdn(url)) return url;
             if (url.includes('?')) {
-                // Check if width parameter already exists
                 if (url.includes('width=')) {
                     return url.replace(/width=\d+/, 'width=800');
                 }
@@ -101,10 +95,10 @@ document.addEventListener('alpine:init', () => {
             }
             return `${url}?width=800`;
         },
-        
+
         getThumbnailUrl(url) {
             if (!url) return '';
-            // Smaller size for thumbnails
+            if (!this.isRemoteCdn(url)) return url;
             if (url.includes('?')) {
                 if (url.includes('width=')) {
                     return url.replace(/width=\d+/, 'width=200');
@@ -113,7 +107,7 @@ document.addEventListener('alpine:init', () => {
             }
             return `${url}?width=200`;
         },
-        
+
         getSelectedMedia() {
             return this.media[this.selectedIndex] || null;
         }

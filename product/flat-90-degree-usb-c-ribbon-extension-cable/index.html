@@ -112,7 +112,8 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="{
         quantity: 1,
         addingToCart: false,
-        shopifyId: '9593037586679',
+        buyMessage: '',
+        sku: 'CAB-RA20CM-MF-BLK-V1',
         addToCart() {
             const qty = Number(this.quantity);
             if (!Number.isInteger(qty) || qty < 1) {
@@ -120,15 +121,22 @@
                 return;
             }
             this.addingToCart = true;
-            Alpine.store('cart').addProduct(this.shopifyId, qty)
-                .then(() => {
-                    Alpine.store('cart').openDrawer();
-                    Alpine.store('toast').show('Product added to cart!', 'success');
-                })
+            Alpine.store('cart').addProduct(this.sku, qty)
                 .catch(() => {
                     Alpine.store('toast').show('Failed to add product to cart. Please try again.', 'error');
                 })
                 .finally(() => { this.addingToCart = false; });
+        },
+        buyNow() {
+            Alpine.store('cart').resolveBuy(this.sku).then((result) => {
+                if (result.error) {
+                    this.buyMessage = result.error;
+                    if (Alpine.store('toast')) Alpine.store('toast').show(result.error, 'error');
+                    return;
+                }
+                this.buyMessage = '';
+                window.location.href = result.url;
+            });
         }
     }">
         <div class="grid lg:grid-cols-2 gap-12">
@@ -215,14 +223,20 @@
                     </div>
                 </div>
                 <div class="mb-8">
+                    <p class="text-center text-red-600 dark:text-red-400 text-sm mb-3" x-show="buyMessage" x-text="buyMessage"></p>
+                    <button type="button"
+                            @click="buyNow()"
+                            class="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors shadow-lg">
+                        Buy
+                    </button>
                     <button type="button"
                             @click="addToCart()"
                             :disabled="addingToCart"
-                            class="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg transition-colors shadow-lg">
+                            class="w-full mt-3 py-3 bg-white dark:bg-slate-dark border-2 border-gray-300 dark:border-gray-700 hover:border-brand-orange disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white font-semibold rounded-lg transition-colors">
                         <span x-show="!addingToCart">Add to Cart</span>
                         <span x-show="addingToCart" x-cloak>Adding...</span>
                     </button>
-                    <p class="text-center text-gray-600 dark:text-gray-400 text-sm mt-4">Secure checkout via Shopify</p>
+                    <p class="text-center text-gray-600 dark:text-gray-400 text-sm mt-4">Secure checkout via Stripe. United States shipping only. Sales tax is calculated at checkout.</p>
                 </div>
             </div>
         </div>
@@ -253,6 +267,8 @@
                     <ul class="space-y-2 text-sm text-gray-200">
                         <li><a href="/privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
                         <li><a href="/shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
+                        <li><a href="/returns.html" class="hover:text-brand-orange transition-colors">Returns</a></li>
+                        <li><a href="/terms.html" class="hover:text-brand-orange transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
@@ -304,7 +320,9 @@
                     <span class="text-lg font-semibold text-gray-900 dark:text-white">Subtotal:</span>
                     <span class="text-xl font-bold text-brand-orange" x-text="'$' + $store.cart.total.toFixed(2)"></span>
                 </div>
-                <a :href="$store.cart.getCheckoutUrl()" class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">Checkout</a>
+                <button type="button" @click="$store.cart.checkout()" class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">Checkout</button>
+                <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
+                <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
             </div>
         </div>
     </div>
