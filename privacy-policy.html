@@ -12,6 +12,9 @@
     
     <!-- Compiled Tailwind CSS -->
     <link rel="stylesheet" href="dist/output.css">
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     
     <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -236,8 +239,9 @@
             </p>
             <p class="mb-6">
                 <button type="button"
+                        x-data
                         class="px-6 py-3 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold rounded-lg transition-colors"
-                        @click="if ($store.cookieConsent) { $store.cookieConsent.showBannerAgain(); }">
+                        @click="$store.cookieConsent.showBannerAgain()">
                     Manage cookie preferences
                 </button>
             </p>
@@ -424,14 +428,9 @@
     </div>
     
     <!-- Cookie Consent Banner -->
-    <div x-data="{ bannerOpen: false }"
-         x-init="
-             if ($store.cookieConsent && $store.cookieConsent.showBanner) {
-                 bannerOpen = true;
-             }
-             $watch('$store.cookieConsent.showBanner', value => bannerOpen = value);
-         "
-         x-show="bannerOpen"
+    <div x-data
+         x-cloak
+         x-show="$store.cookieConsent.showBanner"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="translate-y-full opacity-0"
          x-transition:enter-end="translate-y-0 opacity-100"
@@ -450,11 +449,11 @@
                     </p>
                 </div>
                 <div class="flex gap-3 flex-shrink-0">
-                    <button @click="$store.cookieConsent.reject(); bannerOpen = false;"
+                    <button @click="$store.cookieConsent.reject()"
                             class="px-6 py-2 bg-transparent border-2 border-white text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
                         Reject
                     </button>
-                    <button @click="$store.cookieConsent.accept(); bannerOpen = false; if (typeof SlateSafeAnalytics !== 'undefined') SlateSafeAnalytics.init();"
+                    <button @click="$store.cookieConsent.accept(); if (typeof SlateSafeAnalytics !== 'undefined') SlateSafeAnalytics.init();"
                             class="px-6 py-2 bg-brand-orange hover:bg-brand-orange/90 text-white rounded-lg transition-colors font-medium">
                         Accept
                     </button>
