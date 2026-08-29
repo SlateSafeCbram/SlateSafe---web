@@ -12,6 +12,7 @@
       "url": "https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/",
       "stripePaymentLink": "https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00",
       "description": "Flat 90-degree USB-C ribbon extension cable designed for tight spaces, tablet enclosures, and clean kiosk installs. 20cm length with up to 30W power delivery.",
+      "descriptionHtml": "<p><strong>Low-Profile USB-C Ribbon Extension Cable – 90° Male to Female</strong></p><p>Designed for tight spaces and clean, professional installs, this ultra-slim USB-C ribbon extension cable features a flat 90-degree male connector, making it ideal for mounting behind tablets, phones, kiosks, or smart home panels. The low-profile design blends seamlessly into your setup, offering a nearly invisible cable run for a clean, clutter-free look.</p><p>The female USB-C end allows easy connection to your preferred power source or USB-C accessory.</p><p>USB 2.0 data transfer speeds</p><p>Flexible ribbon design for discreet routing</p><blockquote><p>⚠️ <em>Note: Not compatible with all USB-C fast charging protocols or high-speed data accessories (e.g. video output or USB 3.x devices).</em></p></blockquote>",
       "featureHighlight": "Perfect for low profile cases and mounts",
       "galleryDir": "images/products/CAB-RA20CM-MF-BLK-V1/",
       "media": [
@@ -19,6 +20,71 @@
           "type": "IMAGE",
           "url": "images/flat-cable-macro.png",
           "alt": "SlateSafe USB-C right-angle ribbon cable in a tablet enclosure"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/01-black-studio-both-ends.jpg",
+          "alt": "Black studio shot of the 90-degree male USB-C plug and female ribbon extension"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/02-white-studio-both-ends.jpg",
+          "alt": "White-background view of the low-profile male plug and female USB-C end"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/03-white-full-length.jpg",
+          "alt": "Full-length flat USB-C ribbon extension cable on a white background"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/04-black-female-side.jpg",
+          "alt": "Side profile of the matte black female USB-C housing on the ribbon cable"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/05-black-male-profile.jpg",
+          "alt": "Side profile of the 90-degree male USB-C connector showing the thin ribbon"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/06-black-male-angle.jpg",
+          "alt": "Angled close-up of the metallic 90-degree USB-C male connector"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/07-white-male-macro.jpg",
+          "alt": "Macro of the 90-degree male USB-C plug and flat ribbon on white"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/08-black-female-port.jpg",
+          "alt": "Close-up of the female USB-C port on the ribbon extension"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/09-black-female-port-detail.jpg",
+          "alt": "Detail of the female USB-C socket on the low-profile ribbon cable"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/10-black-male-head-on.jpg",
+          "alt": "Head-on view of the brushed metal USB-C male connector"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/11-installed-tablet-profile.jpg",
+          "alt": "Low-profile USB-C ribbon cable plugged into a tablet showing a flush install"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/CAB-RA20CM-MF-BLK-V1/12-installed-enclosure-edge.jpg",
+          "alt": "Right-angle ribbon cable routed from a tablet enclosure edge"
+        },
+        {
+          "type": "EXTERNAL_VIDEO",
+          "url": "https://www.youtube.com/embed/kKh0tnXnm_Q",
+          "alt": "USB-C right-angle ribbon cable product video"
         }
       ],
       "keyFeatures": [
@@ -49,6 +115,7 @@
       "url": "https://slatesafe.com/product/tablet-enclosure-kit-samsung-tab-a9/",
       "stripePaymentLink": "https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01",
       "description": "Precision-engineered tablet enclosure for the Samsung Galaxy Tab A9+. Built for visitor kiosks, POS systems, and wall-mounted dashboards, with a low-profile USB-C cable included.",
+      "descriptionHtml": "<h3>The Professional Standard for Secure Tablet Mounting</h3><p>Elevate your digital interface with the SlateSafe™ Enclosure, a precision-engineered mounting solution designed exclusively for the Samsung Galaxy Tab A9+. Whether you are deploying a high-traffic Point-of-Sale (POS) system, a corporate visitor check-in kiosk, or a dedicated Home Assistant dashboard, SlateSafe provides a secure, sleek, and fully functional housing that looks like part of the architecture, not an afterthought.</p><h3>Engineered for Performance &amp; Security</h3><ul><li><strong>Tamper-Resistant Security:</strong> Our fully enclosed design protects your hardware in public and commercial spaces, ensuring your device stays exactly where it belongs.</li><li><strong>Full Hardware Access:</strong> Unlike “universal” mounts that block essential features, SlateSafe provides dedicated access to power and volume buttons, as well as precision cutouts for front and rear cameras.</li><li><strong>Crystal Clear Communication:</strong> Designed specifically for video conferencing, the enclosure features unobstructed front-facing microphone access, ensuring your audio remains crisp for every call or voice command.</li><li><strong>Ultra-Slim, Modern Bezel:</strong> We believe the best mount is the one you don't notice. Our slim-profile bezel maintains the modern aesthetic of the Tab A9+ while providing rugged protection.</li><li><strong>USB-C Cable Included:</strong> Getting your tablet set-up and running should be an out-of-box experience. We include a flat USB-C cable that perfectly routes within the case in this kit.</li></ul><h3>The Cleanest Install on the Market</h3><p>Every SlateSafe enclosure is built around our signature <strong>Low-Profile USB-C Cable</strong> (included). This custom right-angle cable allows the tablet to sit nearly flush against the wall, eliminating the bulk and clutter of standard wiring.</p><ul><li><strong>Integrated Cable Management:</strong> A rear exit port ensures all wiring is hidden from view for a professional, “wireless” look.</li><li><strong>PoE Ready:</strong> The included USB-C cable supports both power and USB 2.0 data speeds, making it fully compatible with PoE (Power over Ethernet) adapters for a simplified, single-cable deployment.</li></ul><h3>Versatile Mounting Options</h3><p>Designed to adapt to your environment, the SlateSafe enclosure is VESA 75mm compatible. It can be mounted to any standard desktop stand or arm, or fixed directly to a wall.</p><h3>What’s in the box:</h3><ul><li>SlateSafe™ Professional Enclosure</li><li>Custom Low-Profile Right-Angle USB-C Cable</li><li>Complete Assembly &amp; Hardware Kit</li></ul><p><em>Note: Tablet and power adapter are not included.</em></p>",
       "featureHighlight": "Tamper-resistant, low-profile design",
       "galleryDir": "images/products/ENC-SAM-A9-V1/",
       "media": [
@@ -56,6 +123,41 @@
           "type": "IMAGE",
           "url": "images/samsung-tab-a9.png",
           "alt": "SlateSafe Samsung Tab A9+ tablet enclosure kit components"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/ENC-SAM-A9-V1/01-assembled-welcome.jpg",
+          "alt": "Assembled Samsung Tab A9+ enclosure showing the slim bezel and included cable"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/ENC-SAM-A9-V1/02-pos-counter.jpg",
+          "alt": "SlateSafe tablet enclosure used as a retail POS display on a counter"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/ENC-SAM-A9-V1/03-kit-contents.jpg",
+          "alt": "Enclosure kit contents: front bezel, backplate, flat USB-C cable, and hardware"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/ENC-SAM-A9-V1/04-assembly-layout.jpg",
+          "alt": "Samsung Tab A9+ seated in the enclosure base with bezel, screws, and cable"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/ENC-SAM-A9-V1/05-button-cutouts-cable-exit.jpg",
+          "alt": "Close-up of button cutouts and cable exit on the tablet enclosure"
+        },
+        {
+          "type": "IMAGE",
+          "url": "images/products/ENC-SAM-A9-V1/06-rear-vesa.jpg",
+          "alt": "Rear view of the enclosure showing VESA 75 mounting inserts and cable ports"
+        },
+        {
+          "type": "EXTERNAL_VIDEO",
+          "url": "https://www.youtube.com/embed/kq2gwY2MTuQ",
+          "alt": "Samsung Tab A9+ tablet enclosure kit product video"
         }
       ],
       "keyFeatures": [

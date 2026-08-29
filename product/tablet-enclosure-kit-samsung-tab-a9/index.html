@@ -10,6 +10,15 @@
     <link rel="stylesheet" href="/dist/output.css">
     <style>
         [x-cloak] { display: none !important; }
+        .gallery-thumbnail { cursor: pointer; transition: all 0.2s ease; }
+        .gallery-thumbnail.active { border-color: #e69137; opacity: 1; }
+        .gallery-thumbnail:not(.active) { opacity: 0.6; }
+        .gallery-thumbnail:hover { opacity: 1; }
+        .product-description p { margin-bottom: 1rem; }
+        .product-description h3 { font-size: 1.125rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: inherit; }
+        .product-description ul { list-style: disc; padding-left: 1.25rem; margin: 0 0 1rem; }
+        .product-description li { margin-bottom: 0.5rem; }
+        .product-description blockquote { border-left: 3px solid #e69137; padding-left: 1rem; margin: 1rem 0; }
     </style>
     <script type="application/ld+json">
     {
@@ -31,6 +40,7 @@
     }
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/product-gallery.js"></script>
     <script src="/app-init.js"></script>
     <script src="/cookie-consent.js"></script>
     <script src="/analytics.js"></script>
@@ -138,15 +148,99 @@
         }
     }">
         <div class="grid lg:grid-cols-2 gap-12">
-            <div>
-                <div class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
-                    <img src="/images/samsung-tab-a9.png" alt="SlateSafe Samsung Tab A9+ tablet enclosure kit components" class="w-full h-auto object-contain bg-white" style="min-height: 320px; max-height: 640px;">
+            <div x-data="productGallery('tablet-enclosure-kit-samsung-tab-a9')">
+                <div x-show="loading" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="flex items-center justify-center bg-white dark:bg-header-blue" style="min-height: 320px; max-height: 640px;">
+                        <p class="text-gray-600 dark:text-gray-400">Loading gallery...</p>
+                    </div>
+                </div>
+                <div x-show="!loading && media.length > 0" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="bg-white dark:bg-header-blue flex items-center justify-center relative" style="min-height: 320px; max-height: 640px;">
+                        <template x-for="(item, index) in media" :key="item.id">
+                            <div x-show="selectedIndex === index" class="absolute inset-0 w-full h-full">
+                                <img x-show="item.type === 'IMAGE'"
+                                     :src="getOptimizedImageUrl(item.url)"
+                                     :alt="item.alt"
+                                     class="w-full h-full object-contain"
+                                     loading="lazy">
+                                <div x-show="item.type === 'EXTERNAL_VIDEO'" class="w-full h-full">
+                                    <iframe
+                                        :src="selectedIndex === index ? (item.url + (item.url.includes('?') ? '&' : '?') + 'autoplay=1&rel=0') : (item.url + (item.url.includes('?') ? '&' : '?') + 'rel=0')"
+                                        class="w-full h-full"
+                                        title="Product video"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <noscript>
+                    <div class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                        <img src="/images/samsung-tab-a9.png" alt="SlateSafe Samsung Tab A9+ tablet enclosure kit components" class="w-full h-auto object-contain bg-white" style="min-height: 320px; max-height: 640px;">
+                    </div>
+                </noscript>
+                <div x-show="!loading && media.length > 1" class="grid grid-cols-4 gap-4">
+                    <template x-for="(item, index) in media" :key="item.id">
+                        <button
+                            type="button"
+                            @click="selectMedia(index)"
+                            class="gallery-thumbnail aspect-square rounded-lg overflow-hidden border-2 transition-all bg-gray-100 dark:bg-slate-dark"
+                            :class="selectedIndex === index ? 'border-brand-orange opacity-100' : 'border-gray-300 dark:border-gray-700 opacity-60 hover:opacity-100'"
+                        >
+                            <img x-show="item.type === 'IMAGE'"
+                                 :src="getThumbnailUrl(item.url)"
+                                 :alt="item.alt"
+                                 class="w-full h-full object-cover">
+                            <div x-show="item.type === 'EXTERNAL_VIDEO'" class="w-full h-full relative bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
                 </div>
             </div>
             <div>
                 <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Samsung Tab A9+ Tablet Enclosure Kit</h1>
                 <p class="text-3xl font-bold text-brand-orange mb-6">$56.00</p>
-                <p class="text-gray-700 dark:text-gray-400 leading-relaxed mb-8">Precision-engineered tablet enclosure for the Samsung Galaxy Tab A9+. Built for visitor kiosks, POS systems, and wall-mounted dashboards, with a low-profile USB-C cable included.</p>
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Description</h2>
+                    <div class="product-description text-gray-700 dark:text-gray-400 leading-relaxed">
+                        <h3>The Professional Standard for Secure Tablet Mounting</h3>
+                        <p>Elevate your digital interface with the SlateSafe™ Enclosure, a precision-engineered mounting solution designed exclusively for the Samsung Galaxy Tab A9+. Whether you are deploying a high-traffic Point-of-Sale (POS) system, a corporate visitor check-in kiosk, or a dedicated Home Assistant dashboard, SlateSafe provides a secure, sleek, and fully functional housing that looks like part of the architecture, not an afterthought.</p>
+                        <h3>Engineered for Performance &amp; Security</h3>
+                        <ul>
+                            <li><strong>Tamper-Resistant Security:</strong> Our fully enclosed design protects your hardware in public and commercial spaces, ensuring your device stays exactly where it belongs.</li>
+                            <li><strong>Full Hardware Access:</strong> Unlike “universal” mounts that block essential features, SlateSafe provides dedicated access to power and volume buttons, as well as precision cutouts for front and rear cameras.</li>
+                            <li><strong>Crystal Clear Communication:</strong> Designed specifically for video conferencing, the enclosure features unobstructed front-facing microphone access, ensuring your audio remains crisp for every call or voice command.</li>
+                            <li><strong>Ultra-Slim, Modern Bezel:</strong> We believe the best mount is the one you don't notice. Our slim-profile bezel maintains the modern aesthetic of the Tab A9+ while providing rugged protection.</li>
+                            <li><strong>USB-C Cable Included:</strong> Getting your tablet set-up and running should be an out-of-box experience. We include a flat USB-C cable that perfectly routes within the case in this kit.</li>
+                        </ul>
+                        <h3>The Cleanest Install on the Market</h3>
+                        <p>Every SlateSafe enclosure is built around our signature <strong>Low-Profile USB-C Cable</strong> (included). This custom right-angle cable allows the tablet to sit nearly flush against the wall, eliminating the bulk and clutter of standard wiring.</p>
+                        <ul>
+                            <li><strong>Integrated Cable Management:</strong> A rear exit port ensures all wiring is hidden from view for a professional, “wireless” look.</li>
+                            <li><strong>PoE Ready:</strong> The included USB-C cable supports both power and USB 2.0 data speeds, making it fully compatible with PoE (Power over Ethernet) adapters for a simplified, single-cable deployment.</li>
+                        </ul>
+                        <h3>Versatile Mounting Options</h3>
+                        <p>Designed to adapt to your environment, the SlateSafe enclosure is VESA 75mm compatible. It can be mounted to any standard desktop stand or arm, or fixed directly to a wall.</p>
+                        <h3>What’s in the box:</h3>
+                        <ul>
+                            <li>SlateSafe™ Professional Enclosure</li>
+                            <li>Custom Low-Profile Right-Angle USB-C Cable</li>
+                            <li>Complete Assembly &amp; Hardware Kit</li>
+                        </ul>
+                        <p><em>Note: Tablet and power adapter are not included.</em></p>
+                    </div>
+                </div>
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Key Features</h2>
                     <ul class="space-y-3 text-gray-700 dark:text-gray-400">

@@ -10,6 +10,15 @@
     <link rel="stylesheet" href="/dist/output.css">
     <style>
         [x-cloak] { display: none !important; }
+        .gallery-thumbnail { cursor: pointer; transition: all 0.2s ease; }
+        .gallery-thumbnail.active { border-color: #e69137; opacity: 1; }
+        .gallery-thumbnail:not(.active) { opacity: 0.6; }
+        .gallery-thumbnail:hover { opacity: 1; }
+        .product-description p { margin-bottom: 1rem; }
+        .product-description h3 { font-size: 1.125rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: inherit; }
+        .product-description ul { list-style: disc; padding-left: 1.25rem; margin: 0 0 1rem; }
+        .product-description li { margin-bottom: 0.5rem; }
+        .product-description blockquote { border-left: 3px solid #e69137; padding-left: 1rem; margin: 1rem 0; }
     </style>
     <script type="application/ld+json">
     {
@@ -31,6 +40,7 @@
     }
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/product-gallery.js"></script>
     <script src="/app-init.js"></script>
     <script src="/cookie-consent.js"></script>
     <script src="/analytics.js"></script>
@@ -138,15 +148,82 @@
         }
     }">
         <div class="grid lg:grid-cols-2 gap-12">
-            <div>
-                <div class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
-                    <img src="/images/flat-cable-macro.png" alt="SlateSafe USB-C right-angle ribbon cable in a tablet enclosure" class="w-full h-auto object-contain bg-white" style="min-height: 320px; max-height: 640px;">
+            <div x-data="productGallery('flat-90-degree-usb-c-ribbon-extension-cable')">
+                <div x-show="loading" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="flex items-center justify-center bg-white dark:bg-header-blue" style="min-height: 320px; max-height: 640px;">
+                        <p class="text-gray-600 dark:text-gray-400">Loading gallery...</p>
+                    </div>
+                </div>
+                <div x-show="!loading && media.length > 0" class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                    <div class="bg-white dark:bg-header-blue flex items-center justify-center relative" style="min-height: 320px; max-height: 640px;">
+                        <template x-for="(item, index) in media" :key="item.id">
+                            <div x-show="selectedIndex === index" class="absolute inset-0 w-full h-full">
+                                <img x-show="item.type === 'IMAGE'"
+                                     :src="getOptimizedImageUrl(item.url)"
+                                     :alt="item.alt"
+                                     class="w-full h-full object-contain"
+                                     loading="lazy">
+                                <div x-show="item.type === 'EXTERNAL_VIDEO'" class="w-full h-full">
+                                    <iframe
+                                        :src="selectedIndex === index ? (item.url + (item.url.includes('?') ? '&' : '?') + 'autoplay=1&rel=0') : (item.url + (item.url.includes('?') ? '&' : '?') + 'rel=0')"
+                                        class="w-full h-full"
+                                        title="Product video"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <noscript>
+                    <div class="mb-6 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-dark border border-gray-200 dark:border-gray-800">
+                        <img src="/images/flat-cable-macro.png" alt="SlateSafe USB-C right-angle ribbon cable in a tablet enclosure" class="w-full h-auto object-contain bg-white" style="min-height: 320px; max-height: 640px;">
+                    </div>
+                </noscript>
+                <div x-show="!loading && media.length > 1" class="grid grid-cols-4 gap-4">
+                    <template x-for="(item, index) in media" :key="item.id">
+                        <button
+                            type="button"
+                            @click="selectMedia(index)"
+                            class="gallery-thumbnail aspect-square rounded-lg overflow-hidden border-2 transition-all bg-gray-100 dark:bg-slate-dark"
+                            :class="selectedIndex === index ? 'border-brand-orange opacity-100' : 'border-gray-300 dark:border-gray-700 opacity-60 hover:opacity-100'"
+                        >
+                            <img x-show="item.type === 'IMAGE'"
+                                 :src="getThumbnailUrl(item.url)"
+                                 :alt="item.alt"
+                                 class="w-full h-full object-cover">
+                            <div x-show="item.type === 'EXTERNAL_VIDEO'" class="w-full h-full relative bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
                 </div>
             </div>
             <div>
                 <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">USB-C Right Angle Cable</h1>
                 <p class="text-3xl font-bold text-brand-orange mb-6">$11.99</p>
-                <p class="text-gray-700 dark:text-gray-400 leading-relaxed mb-8">Flat 90-degree USB-C ribbon extension cable designed for tight spaces, tablet enclosures, and clean kiosk installs. 20cm length with up to 30W power delivery.</p>
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Description</h2>
+                    <div class="product-description text-gray-700 dark:text-gray-400 leading-relaxed">
+                        <p><strong>Low-Profile USB-C Ribbon Extension Cable – 90° Male to Female</strong></p>
+                        <p>Designed for tight spaces and clean, professional installs, this ultra-slim USB-C ribbon extension cable features a flat 90-degree male connector, making it ideal for mounting behind tablets, phones, kiosks, or smart home panels. The low-profile design blends seamlessly into your setup, offering a nearly invisible cable run for a clean, clutter-free look.</p>
+                        <p>The female USB-C end allows easy connection to your preferred power source or USB-C accessory.</p>
+                        <p>USB 2.0 data transfer speeds</p>
+                        <p>Flexible ribbon design for discreet routing</p>
+                        <blockquote>
+                            <p>⚠️ <em>Note: Not compatible with all USB-C fast charging protocols or high-speed data accessories (e.g. video output or USB 3.x devices).</em></p>
+                        </blockquote>
+                    </div>
+                </div>
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Key Features</h2>
                     <ul class="space-y-3 text-gray-700 dark:text-gray-400">
