@@ -26,6 +26,17 @@ function slatesafeEscapeHtml(text) {
         .replace(/"/g, '&quot;');
 }
 
+function slatesafeDescriptionHtml(product) {
+    const html = product && product.descriptionHtml;
+    if (typeof html === 'string' && html.trim()
+        && !/<script/i.test(html)
+        && !/<img\b/i.test(html)) {
+        return html;
+    }
+    const description = (product && (product.description || product.featureHighlight)) || '';
+    return description ? `<p>${slatesafeEscapeHtml(description)}</p>` : '';
+}
+
 function slatesafePaymentLink(url) {
     if (typeof url !== 'string') return null;
     const trimmed = url.trim();
@@ -106,12 +117,20 @@ document.addEventListener('alpine:init', () => {
                 .map((item, index) => {
                     const url = slatesafeMediaUrl(item.url || item);
                     if (!url) return null;
-                    return {
-                        type: (item.type || 'IMAGE').toUpperCase(),
+                    const type = (item.type || 'IMAGE').toUpperCase();
+                    const mapped = {
+                        type,
                         url,
                         alt: item.alt || product.title || '',
                         id: item.id || url || `${product.sku || product.handle}-media-${index}`
                     };
+                    if (item.thumbnailUrl) {
+                        mapped.thumbnailUrl = slatesafeMediaUrl(item.thumbnailUrl);
+                    }
+                    if (item.previewUrl) {
+                        mapped.previewUrl = slatesafeMediaUrl(item.previewUrl);
+                    }
+                    return mapped;
                 })
                 .filter(Boolean);
 
@@ -138,7 +157,7 @@ document.addEventListener('alpine:init', () => {
                 handle: product.handle,
                 title: product.title,
                 description,
-                descriptionHtml: description ? `<p>${slatesafeEscapeHtml(description)}</p>` : '',
+                descriptionHtml: slatesafeDescriptionHtml(product),
                 price,
                 priceFormatted: slatesafeFormatPrice(price),
                 currencyCode: 'USD',
