@@ -193,7 +193,7 @@
                 <li>Store events such as product views, add to cart, and checkout started</li>
             </ul>
             <p class="text-lg text-gray-700 dark:text-gray-300 mb-4">
-                We configure GA4 to anonymize IP addresses, disable Google Signals, and disable ad personalization. Analytics is not loaded if you click Reject, or if you have not made a choice yet.
+                We configure GA4 to anonymize IP addresses, disable Google Signals, and disable ad personalization. Analytics is not loaded if you click Reject, or if you have not made a choice yet. Events that happen before you Accept are not stored or sent later. If you Accept and later click Reject, we stop sending analytics events.
             </p>
             <p class="text-lg text-gray-700 dark:text-gray-300 mb-6">
                 Google’s use of this data is described in Google’s
@@ -210,7 +210,7 @@
             </p>
             <ul class="list-disc list-inside text-lg text-gray-700 dark:text-gray-300 mb-6 space-y-2">
                 <li><strong>Accept:</strong> Google Analytics 4 loads with the settings above.</li>
-                <li><strong>Reject:</strong> Google Analytics 4 is not loaded.</li>
+                <li><strong>Reject:</strong> Google Analytics 4 is not loaded. If it was already loaded, we stop sending events.</li>
             </ul>
             <p class="text-lg text-gray-700 dark:text-gray-300 mb-6">
                 The cart also uses browser storage so items stay in your cart while you shop. Checkout itself happens on Shopify.
