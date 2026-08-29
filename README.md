@@ -10,7 +10,7 @@ SlateSafe offers practical, professionally designed tablet accessories including
 
 - **Alpine.js** - Lightweight JavaScript framework for interactive components
 - **Tailwind CSS** - Utility-first CSS framework (compiled via PostCSS)
-- **Shopify Storefront API** - E-commerce functionality and checkout integration
+- **Stripe Payment Links** - Checkout for first-party SKUs
 - **GitHub Pages** - Static site hosting
 
 ## Development Setup
@@ -45,7 +45,8 @@ SlateSafe offers practical, professionally designed tablet accessories including
 ├── product-*.html                # Individual product pages
 ├── about.html                    # Company information
 ├── contact.html                  # Contact form
-├── shopify-cart.js               # Cart functionality
+├── shopify-cart.js               # Local cart + Stripe Payment Link checkout
+├── products.json                 # First-party catalog (source of truth)
 ├── app-init.js                   # Application initialization
 ├── styles.css                    # Custom styles
 ├── src/
@@ -62,7 +63,7 @@ SlateSafe offers practical, professionally designed tablet accessories including
 - Fully responsive design with mobile-first approach
 - Dark mode support
 - Shopping cart with slide-out drawer
-- Shopify checkout integration
+- Stripe Payment Link checkout (one SKU at a time)
 - Product filtering and search
 - Form handling via Formspree
 - Optimized for performance and SEO

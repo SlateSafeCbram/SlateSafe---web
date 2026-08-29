@@ -159,15 +159,15 @@
             
             <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">U.S. Domestic Shipping</h3>
             <p class="text-gray-700 dark:text-gray-300 mb-6">
-                We offer the following shipping options for all orders within the United States. Please note that the delivery times listed below are carrier estimates and are not guaranteed by SlateSafe.
+                Checkout is currently available for United States shipping addresses. Sales tax is calculated at checkout. We offer the following shipping options for all orders within the United States. Please note that the delivery times listed below are carrier estimates and are not guaranteed by SlateSafe.
             </p>
             
             <div class="space-y-6">
                 <div class="bg-gray-50 dark:bg-slate-deep p-6 rounded-lg border border-gray-200 dark:border-gray-800">
                     <h4 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Standard Shipping</h4>
                     <ul class="space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Cost:</strong> $5.50 (Or free for orders over $40!)</li>
-                        <li><strong>Carrier:</strong> Shipped via USPS First-Class Mail or Ground Advantage.</li>
+                        <li><strong>Cost:</strong> USPS Ground $5.75 on the USB-C right-angle cable. Free USPS Ground on the Samsung Tab A9+ enclosure (orders over $40).</li>
+                        <li><strong>Carrier:</strong> Shipped via USPS Ground.</li>
                         <li><strong>Estimated Delivery:</strong> Typically delivered in <strong>3-5 business days</strong> after your order has been processed.</li>
                     </ul>
                 </div>
@@ -249,6 +249,8 @@
                     <ul class="space-y-2 text-sm text-gray-200">
                         <li><a href="privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
                         <li><a href="shipping-policy.html" class="hover:text-brand-orange transition-colors font-semibold text-brand-orange">Shipping Policy</a></li>
+                        <li><a href="returns.html" class="hover:text-brand-orange transition-colors">Returns</a></li>
+                        <li><a href="terms.html" class="hover:text-brand-orange transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
@@ -375,10 +377,13 @@
                     <span class="text-lg font-semibold text-gray-900 dark:text-white">Subtotal:</span>
                     <span class="text-xl font-bold text-brand-orange" x-text="'$' + $store.cart.total.toFixed(2)"></span>
                 </div>
-                <a :href="$store.cart.getCheckoutUrl()" 
-                   class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
+                <button type="button"
+                        @click="$store.cart.checkout()"
+                        class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
                     Checkout
-                </a>
+                </button>
+                <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
+                <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
                 <button @click="$store.cart.open = false" 
                         type="button"
                         class="block w-full mt-3 py-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
