@@ -26,6 +26,17 @@ function slatesafeEscapeHtml(text) {
         .replace(/"/g, '&quot;');
 }
 
+function slatesafePaymentLink(url) {
+    if (typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (!/^https:\/\/buy\.stripe\.com\/[A-Za-z0-9]+$/.test(trimmed)) return null;
+    return trimmed;
+}
+
+function slatesafeOpenPaymentLink(url) {
+    window.location.assign(url);
+}
+
 document.addEventListener('alpine:init', () => {
     Alpine.store('cart', {
         open: false,
@@ -132,7 +143,7 @@ document.addEventListener('alpine:init', () => {
                 priceFormatted: slatesafeFormatPrice(price),
                 currencyCode: 'USD',
                 image: slatesafeMediaUrl(product.image),
-                stripePaymentLink: product.stripePaymentLink || null,
+                stripePaymentLink: slatesafePaymentLink(product.stripePaymentLink),
                 galleryDir: product.galleryDir || '',
                 media,
                 keyFeatures: product.keyFeatures || [],
@@ -197,7 +208,7 @@ document.addEventListener('alpine:init', () => {
                 quantity: safeQty,
                 sku: product.sku,
                 handle: product.handle,
-                stripePaymentLink: product.stripePaymentLink || null,
+                stripePaymentLink: slatesafePaymentLink(product.stripePaymentLink),
                 variant: {
                     id: lineId,
                     title: '',
@@ -238,7 +249,9 @@ document.addEventListener('alpine:init', () => {
             }
             const item = this.items[0];
             const product = this.findProduct(item.sku || item.handle || item.id);
-            const link = (product && product.stripePaymentLink) || item.stripePaymentLink;
+            const link = slatesafePaymentLink(
+                (product && product.stripePaymentLink) || item.stripePaymentLink
+            );
             if (!link) {
                 return {
                     error: 'Checkout is not configured yet. Add stripePaymentLink for this product in products.json.'
@@ -253,12 +266,13 @@ document.addEventListener('alpine:init', () => {
             if (!product) {
                 return { error: 'Product not found.' };
             }
-            if (!product.stripePaymentLink) {
+            const link = slatesafePaymentLink(product.stripePaymentLink);
+            if (!link) {
                 return {
                     error: 'Checkout is not configured yet. Add stripePaymentLink for this product in products.json.'
                 };
             }
-            return { url: product.stripePaymentLink };
+            return { url: link };
         },
 
         async buyProduct(idOrHandle) {
@@ -271,7 +285,7 @@ document.addEventListener('alpine:init', () => {
                 return result;
             }
             this.checkoutNotice = '';
-            window.location.href = result.url;
+            slatesafeOpenPaymentLink(result.url);
             return result;
         },
 
@@ -291,7 +305,21 @@ document.addEventListener('alpine:init', () => {
                 return result;
             }
             this.checkoutNotice = '';
-            window.location.href = result.url;
+            slatesafeOpenPaymentLink(result.url);
+            return result;
+        },
+
+        async checkoutItem(idOrHandle) {
+            const result = await this.resolveBuy(idOrHandle);
+            if (result.error) {
+                this.checkoutNotice = result.error;
+                if (Alpine.store('toast')) {
+                    Alpine.store('toast').show(result.error, 'error');
+                }
+                return result;
+            }
+            this.checkoutNotice = '';
+            slatesafeOpenPaymentLink(result.url);
             return result;
         },
 
@@ -388,7 +416,9 @@ document.addEventListener('alpine:init', () => {
             if (!this.items.length || this.uniqueSkus().length > 1) return '#';
             const item = this.items[0];
             const product = this.findProduct(item.sku || item.handle || item.id);
-            return (product && product.stripePaymentLink) || item.stripePaymentLink || '#';
+            return slatesafePaymentLink(
+                (product && product.stripePaymentLink) || item.stripePaymentLink
+            ) || '#';
         },
 
         async fetchAllProducts() {
@@ -407,7 +437,7 @@ document.addEventListener('alpine:init', () => {
                     featured: !!product.featured,
                     thumbnail: details.media[0] ? { url: details.media[0].url, alt: details.media[0].alt } : null,
                     image: details.image,
-                    stripePaymentLink: product.stripePaymentLink || null,
+                    stripePaymentLink: slatesafePaymentLink(product.stripePaymentLink),
                     fromJson: true
                 };
             });

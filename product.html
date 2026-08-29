@@ -842,14 +842,8 @@
 
                 async buyNow() {
                     const id = this.productData?.sku || this.productData?.handle || this.productId;
-                    const result = await Alpine.store('cart').resolveBuy(id);
-                    if (result.error) {
-                        this.buyMessage = result.error;
-                        Alpine.store('toast').show(result.error, 'error');
-                        return;
-                    }
-                    this.buyMessage = '';
-                    window.location.href = result.url;
+                    const result = await Alpine.store('cart').buyProduct(id);
+                    this.buyMessage = result.error || '';
                 }
             }
         }

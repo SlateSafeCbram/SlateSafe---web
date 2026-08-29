@@ -128,14 +128,12 @@
                 .finally(() => { this.addingToCart = false; });
         },
         buyNow() {
-            Alpine.store('cart').resolveBuy(this.sku).then((result) => {
+            Alpine.store('cart').buyProduct(this.sku).then((result) => {
                 if (result.error) {
                     this.buyMessage = result.error;
-                    if (Alpine.store('toast')) Alpine.store('toast').show(result.error, 'error');
-                    return;
+                } else {
+                    this.buyMessage = '';
                 }
-                this.buyMessage = '';
-                window.location.href = result.url;
             });
         }
     }">
