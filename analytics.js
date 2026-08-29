@@ -6,16 +6,34 @@
     let gtagLoaded = false;
     let gtagQueue = [];
     
+    function hasConsent() {
+        return typeof Alpine !== 'undefined'
+            && Alpine.store('cookieConsent')
+            && Alpine.store('cookieConsent').hasConsented();
+    }
+    
+    function revokeGA() {
+        gtagQueue = [];
+        gtagLoaded = false;
+        if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
+            return;
+        }
+        try {
+            window.gtag('consent', 'update', { analytics_storage: 'denied' });
+        } catch (e) {
+            // Ignore revoke failures; the client is still dropped below.
+        }
+        try {
+            delete window.gtag;
+        } catch (e) {
+            window.gtag = undefined;
+        }
+    }
+    
     // Initialize gtag if consent is given
     function initGA() {
         if (gtagLoaded) return;
-        
-        // Check if user has consented
-        if (typeof Alpine !== 'undefined' && Alpine.store('cookieConsent')) {
-            if (!Alpine.store('cookieConsent').hasConsented()) {
-                return;
-            }
-        }
+        if (!hasConsent()) return;
         
         // Load Google Analytics script
         const script1 = document.createElement('script');
@@ -37,7 +55,7 @@
         
         gtagLoaded = true;
         
-        // Process queued events
+        // Flush events generated after consent while gtag was still loading
         if (gtagQueue.length > 0) {
             gtagQueue.forEach(event => {
                 if (event.type === 'event') {
@@ -50,28 +68,19 @@
         }
     }
     
-    // Check consent and send event
+    // Send only after consent. Pre-consent events are discarded, not replayed.
     function trackEvent(eventType, eventName, eventParams = {}) {
-        // Check if consent is given
-        if (typeof Alpine !== 'undefined' && Alpine.store('cookieConsent')) {
-            if (!Alpine.store('cookieConsent').hasConsented()) {
-                // Queue event if consent not yet given (user might accept later)
-                gtagQueue.push({ type: eventType, name: eventName, params: eventParams });
-                return;
-            }
+        if (!hasConsent()) {
+            return;
         }
         
-        // If gtag is not loaded yet, initialize it
         if (!gtagLoaded && typeof window !== 'undefined') {
             initGA();
         }
         
-        // Send event if gtag is available
         if (typeof window !== 'undefined' && window.gtag) {
-            // GA4 format: gtag('event', eventName, eventParams)
             window.gtag('event', eventName, eventParams);
         } else {
-            // Queue for later if gtag not ready
             gtagQueue.push({ type: eventType, name: eventName, params: eventParams });
         }
     }
@@ -81,15 +90,12 @@
         // Initialize GA (call after consent is given)
         init: initGA,
         
-        // Track page view (GA4 tracks this automatically, but we can track custom page views)
+        // Track page view (same consent gate as other events)
         trackPageView: function(path, title) {
-            // GA4 automatically tracks page views, but we can send custom page_view events
-            if (typeof window !== 'undefined' && window.gtag) {
-                window.gtag('event', 'page_view', {
-                    page_path: path || window.location.pathname,
-                    page_title: title || document.title
-                });
-            }
+            trackEvent('event', 'page_view', {
+                page_path: path || window.location.pathname,
+                page_title: title || document.title
+            });
         },
         
         // Track product view
@@ -154,6 +160,8 @@
         window.addEventListener('cookieConsentChanged', function(event) {
             if (event.detail.consented) {
                 initGA();
+            } else {
+                revokeGA();
             }
         });
     }
