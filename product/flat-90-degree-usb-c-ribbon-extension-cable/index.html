@@ -295,11 +295,8 @@
 
                 <div class="mb-8">
                     <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity</label>
-                    <div class="flex items-center space-x-4">
-                        <button type="button" @click="if (quantity > 1) quantity--" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white">-</button>
-                        <input id="quantity" type="number" x-model.number="quantity" min="1" step="1" class="w-20 px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-center text-gray-900 dark:text-white focus:outline-none focus:border-brand-orange">
-                        <button type="button" @click="quantity++" class="px-4 py-2 bg-white dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-gray-900 dark:text-white">+</button>
-                    </div>
+                    <input id="quantity" type="number" value="1" min="1" max="1" readonly class="w-20 px-4 py-2 bg-gray-50 dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-center text-gray-900 dark:text-white cursor-not-allowed">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Additional quantity can be set on the Stripe checkout page.</p>
                 </div>
                 <div class="mb-8">
                     <p class="text-center text-red-600 dark:text-red-400 text-sm mb-3" x-show="buyMessage" x-text="buyMessage"></p>
@@ -384,9 +381,7 @@
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate" x-text="item.title"></h3>
                                 <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
                                 <div class="flex items-center space-x-3 mt-2">
-                                    <button @click="$store.cart.updateLineItem(item.id, item.quantity - 1)" :disabled="item.quantity <= 1" class="w-8 h-8 rounded border border-gray-300 dark:border-gray-700">-</button>
-                                    <span x-text="item.quantity"></span>
-                                    <button @click="$store.cart.updateLineItem(item.id, item.quantity + 1)" class="w-8 h-8 rounded border border-gray-300 dark:border-gray-700">+</button>
+                                    <span class="text-gray-900 dark:text-white font-medium">Quantity 1</span>
                                     <button @click="$store.cart.removeLineItem(item.id)" class="ml-auto text-red-600 text-sm">Remove</button>
                                 </div>
                             </div>
