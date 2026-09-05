@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Shipping and Delivery Policy for SlateSafe. Learn about our shipping options, delivery times, and international shipping terms.">
+    <meta name="description" content="Shipping and Delivery Policy for SlateSafe. Learn about our USPS Ground rates, delivery times, and United States shipping terms.">
     <title>Shipping Policy | SlateSafe - Modern Tablet Solutions</title>
+    <link rel="canonical" href="https://slatesafe.com/shipping-policy.html">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -159,34 +160,17 @@
             
             <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">U.S. Domestic Shipping</h3>
             <p class="text-gray-700 dark:text-gray-300 mb-6">
-                Checkout is currently available for United States shipping addresses. Sales tax is calculated at checkout. We offer the following shipping options for all orders within the United States. Please note that the delivery times listed below are carrier estimates and are not guaranteed by SlateSafe.
+                Checkout is currently available for United States shipping addresses. Sales tax is calculated at checkout. Checkout offers USPS Ground at the rates below. Please note that the delivery times listed are carrier estimates and are not guaranteed by SlateSafe.
             </p>
             
             <div class="space-y-6">
                 <div class="bg-gray-50 dark:bg-slate-deep p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <h4 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Standard Shipping</h4>
+                    <h4 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Standard / Ground Shipping</h4>
                     <ul class="space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Cost:</strong> USPS Ground $5.75 on the USB-C right-angle cable. Free USPS Ground on the Samsung Tab A9+ enclosure (orders over $40).</li>
+                        <li><strong>USB-C cable:</strong> USPS Ground $5.75</li>
+                        <li><strong>Samsung Tab A9+ enclosure:</strong> USPS Ground free</li>
                         <li><strong>Carrier:</strong> Shipped via USPS Ground.</li>
                         <li><strong>Estimated Delivery:</strong> Typically delivered in <strong>3-5 business days</strong> after your order has been processed.</li>
-                    </ul>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-slate-deep p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <h4 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Expedited Shipping</h4>
-                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Cost:</strong> $15.50-$18.50 depending on order size</li>
-                        <li><strong>Carrier:</strong> Shipped via USPS Priority Mail.</li>
-                        <li><strong>Estimated Delivery:</strong> Typically delivered in <strong>2-3 business days</strong> after your order has been processed.</li>
-                    </ul>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-slate-deep p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <h4 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Priority Mail Express</h4>
-                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Cost:</strong> $21.50</li>
-                        <li><strong>Carrier:</strong> Shipped via USPS Priority Mail Express.</li>
-                        <li><strong>Estimated Delivery:</strong> The fastest option available. Delivery times are specific to your zip code and the time of day your order is placed.</li>
                     </ul>
                 </div>
             </div>
@@ -198,14 +182,9 @@
             <hr class="my-8 border-gray-200 dark:border-gray-800">
             
             <h3 class="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">International Shipping</h3>
-            <p class="text-gray-700 dark:text-gray-300 mb-4">
-                For our valued international customers and bulk orders, please note the following terms regarding shipping and customs.
+            <p class="text-gray-700 dark:text-gray-300">
+                Checkout is currently available for United States shipping addresses only. For bulk or international inquiries, please <a href="contact.html" class="text-brand-orange hover:underline">contact us</a>.
             </p>
-            <ul class="space-y-3 text-gray-700 dark:text-gray-300">
-                <li><strong>Shipping Method:</strong> International shipments are managed through reliable carriers such as DHL, FedEx, or UPS to ensure secure delivery.</li>
-                <li><strong>Incoterms:</strong> All international shipments are sent on a <strong>DDU (Delivered Duty Unpaid)</strong> basis. This means the buyer is the Importer of Record and is solely responsible for paying any and all applicable import duties, customs fees, and taxes (including Value-Added Tax, or VAT) at the time of delivery or customs clearance.</li>
-                <li><strong>Customs Delays:</strong> International shipments are subject to inspection by local customs authorities, which may cause unpredictable delays. We cannot be held responsible for any delays that occur due to the customs clearance process.</li>
-            </ul>
             
             <hr class="my-8 border-gray-200 dark:border-gray-800">
             
@@ -348,18 +327,7 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400" x-text="item.variant?.title || ''"></p>
                                 <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
                                 <div class="flex items-center space-x-3 mt-2">
-                                    <button @click="$store.cart.updateLineItem(item.id, item.quantity - 1)" 
-                                            :disabled="item.quantity <= 1"
-                                            class="w-8 h-8 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-dark text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                            aria-label="Decrease quantity">
-                                        -
-                                    </button>
-                                    <span class="text-gray-900 dark:text-white font-medium" x-text="item.quantity"></span>
-                                    <button @click="$store.cart.updateLineItem(item.id, item.quantity + 1)"
-                                            class="w-8 h-8 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-dark text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                            aria-label="Increase quantity">
-                                        +
-                                    </button>
+                                    <span class="text-gray-900 dark:text-white font-medium">Quantity 1</span>
                                     <button @click="$store.cart.removeLineItem(item.id)" 
                                             class="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
                                         Remove

@@ -207,24 +207,24 @@ document.addEventListener('alpine:init', () => {
             this.items = saved.map((item) => {
                 const product = this.findProduct(item.sku || item.handle || item.id);
                 if (product) {
-                    return this.lineItemFromProduct(product, item.quantity || 1);
+                    return this.lineItemFromProduct(product, 1);
                 }
-                return item;
+                if (!item) return null;
+                return { ...item, quantity: 1 };
             }).filter((item) => item && item.quantity > 0);
 
             this.recalculate();
         },
 
         lineItemFromProduct(product, quantity) {
-            const qty = Number(quantity);
-            const safeQty = Number.isInteger(qty) && qty > 0 ? qty : 1;
+            void quantity; // Site cart is locked to qty 1; Stripe checkout can adjust after landing.
             const price = Number(product.price) || 0;
             const imageUrl = slatesafeMediaUrl(product.image);
             const lineId = product.sku || product.handle || product.id;
             return {
                 id: lineId,
                 title: product.title,
-                quantity: safeQty,
+                quantity: 1,
                 sku: product.sku,
                 handle: product.handle,
                 stripePaymentLink: slatesafePaymentLink(product.stripePaymentLink),
@@ -238,10 +238,13 @@ document.addEventListener('alpine:init', () => {
         },
 
         recalculate() {
+            this.items.forEach((item) => {
+                item.quantity = 1;
+            });
             this.itemCount = this.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
             this.total = this.items.reduce((sum, item) => {
                 const amount = parseFloat(item.variant?.price?.amount || 0);
-                return sum + (amount * (item.quantity || 0));
+                return sum + (amount * 1);
             }, 0);
             this.persistCart();
             this.checkoutNotice = '';
@@ -368,10 +371,11 @@ document.addEventListener('alpine:init', () => {
         async addProduct(productOrVariantId, quantity = 1, isVariantId = false) {
             try {
                 await this.loadCatalog();
-                const qty = Number(quantity);
-                if (!Number.isInteger(qty) || qty < 1) {
+                const requestedQty = Number(quantity);
+                if (!Number.isInteger(requestedQty) || requestedQty < 1) {
                     throw new Error('Please enter a valid quantity');
                 }
+                const qty = 1;
 
                 const product = this.findProduct(productOrVariantId);
                 if (!product) {
@@ -381,7 +385,7 @@ document.addEventListener('alpine:init', () => {
                 const lineId = product.sku || product.handle || product.id;
                 const existing = this.items.find((item) => item.id === lineId);
                 if (existing) {
-                    existing.quantity += qty;
+                    existing.quantity = 1;
                 } else {
                     this.items.push(this.lineItemFromProduct(product, qty));
                 }
@@ -419,7 +423,7 @@ document.addEventListener('alpine:init', () => {
             }
             const item = this.items.find((line) => line.id === lineItemId);
             if (!item) return;
-            item.quantity = qty;
+            item.quantity = 1;
             this.recalculate();
         },
 

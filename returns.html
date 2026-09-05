@@ -318,18 +318,7 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400" x-text="item.variant?.title || ''"></p>
                                 <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
                                 <div class="flex items-center space-x-3 mt-2">
-                                    <button @click="$store.cart.updateLineItem(item.id, item.quantity - 1)" 
-                                            :disabled="item.quantity <= 1"
-                                            class="w-8 h-8 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-dark text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                            aria-label="Decrease quantity">
-                                        -
-                                    </button>
-                                    <span class="text-gray-900 dark:text-white font-medium" x-text="item.quantity"></span>
-                                    <button @click="$store.cart.updateLineItem(item.id, item.quantity + 1)"
-                                            class="w-8 h-8 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-dark text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                            aria-label="Increase quantity">
-                                        +
-                                    </button>
+                                    <span class="text-gray-900 dark:text-white font-medium">Quantity 1</span>
                                     <button @click="$store.cart.removeLineItem(item.id)" 
                                             class="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
                                         Remove
