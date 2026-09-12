@@ -93,7 +93,7 @@
     <div x-data="productPage()" x-cloak>
     
     <!-- Toast Notifications -->
-    <div class="fixed top-20 right-4 z-50 space-y-2" x-data>
+    <div class="fixed top-20 right-4 z-50 space-y-2" style="z-index: 70" x-data>
         <template x-for="toast in $store.toast.messages" :key="toast.id">
             <div x-show="true"
                  x-transition:enter="transition ease-out duration-300 transform"
