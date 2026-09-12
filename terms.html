@@ -355,6 +355,7 @@
                     Checkout
                 </button>
                 <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
+                <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice" x-text="$store.cart.cableBundleNotice"></p>
                 <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
                 <button @click="$store.cart.open = false" 
                         type="button"

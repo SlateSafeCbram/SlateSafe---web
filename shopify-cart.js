@@ -48,6 +48,30 @@ function slatesafeOpenPaymentLink(url) {
     window.location.assign(url);
 }
 
+const ENCLOSURE_KIT_IDS = new Set([
+    'ENC-SAM-A9-V1',
+    'tablet-enclosure-kit-samsung-tab-a9'
+]);
+const STANDALONE_CABLE_IDS = new Set([
+    'CAB-RA20CM-MF-BLK-V1',
+    'flat-90-degree-usb-c-ribbon-extension-cable'
+]);
+const CABLE_BUNDLE_NOTICE = 'Heads up: the enclosure kit in your cart already includes a USB-C cable. Adding the standalone cable means this order would include 2 cables.';
+
+function slatesafeItemKeys(item) {
+    if (!item) return [];
+    return [item.sku, item.handle, item.id].filter(Boolean).map(String);
+}
+
+function slatesafeCartHasIds(items, ids) {
+    return (items || []).some((item) => slatesafeItemKeys(item).some((key) => ids.has(key)));
+}
+
+function slatesafeHasEnclosureAndCable(items) {
+    return slatesafeCartHasIds(items, ENCLOSURE_KIT_IDS)
+        && slatesafeCartHasIds(items, STANDALONE_CABLE_IDS);
+}
+
 document.addEventListener('alpine:init', () => {
     Alpine.store('cart', {
         open: false,
@@ -58,6 +82,7 @@ document.addEventListener('alpine:init', () => {
         catalogLoaded: false,
         catalogPromise: null,
         checkoutNotice: '',
+        cableBundleNotice: '',
         checkoutUrl: '#',
 
         async init() {
@@ -248,6 +273,9 @@ document.addEventListener('alpine:init', () => {
             }, 0);
             this.persistCart();
             this.checkoutNotice = '';
+            this.cableBundleNotice = slatesafeHasEnclosureAndCable(this.items)
+                ? CABLE_BUNDLE_NOTICE
+                : '';
             this.checkoutUrl = this.getCheckoutUrl();
         },
 
@@ -394,6 +422,9 @@ document.addEventListener('alpine:init', () => {
 
                 if (Alpine.store('toast')) {
                     Alpine.store('toast').show('Item added to cart!', 'success');
+                    if (this.cableBundleNotice) {
+                        Alpine.store('toast').show(this.cableBundleNotice, 'success');
+                    }
                 }
 
                 if (typeof SlateSafeAnalytics !== 'undefined') {
