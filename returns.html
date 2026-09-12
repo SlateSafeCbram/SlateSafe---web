@@ -24,7 +24,7 @@
 <body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
     
     <!-- Toast Notifications -->
-    <div class="fixed top-20 right-4 z-50 space-y-2" x-data>
+    <div class="fixed top-20 right-4 z-50 space-y-2" style="z-index: 70" x-data>
         <template x-for="toast in $store.toast.messages" :key="toast.id">
             <div x-show="true"
                  x-transition:enter="transition ease-out duration-300 transform"
@@ -362,6 +362,7 @@
                     Checkout
                 </button>
                 <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
+                <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice" x-text="$store.cart.cableBundleNotice"></p>
                 <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
                 <button @click="$store.cart.open = false" 
                         type="button"

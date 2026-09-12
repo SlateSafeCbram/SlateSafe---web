@@ -29,8 +29,9 @@
         // Toast notification store
         Alpine.store('toast', {
             messages: [],
+            nextId: 0,
             show(message, type = 'error') {
-                const id = Date.now();
+                const id = ++this.nextId;
                 this.messages.push({ id, message, type });
                 // Auto-remove after 8 seconds
                 setTimeout(() => {
