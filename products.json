@@ -12,7 +12,7 @@
       "url": "https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/",
       "stripePaymentLink": "https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00",
       "description": "Flat 90-degree USB-C ribbon extension cable designed for tight spaces, tablet enclosures, and clean kiosk installs. 20cm length with up to 30W power delivery.",
-      "descriptionHtml": "<p><strong>Low-Profile USB-C Ribbon Extension Cable – 90° Male to Female</strong></p><p>Flat 90° USB-C ribbon extension (male to female) for mounting behind tablets, kiosks, and panels. 20cm, up to 30W, low profile so the run stays flush.</p><p>It also works as a standalone 20cm FPC extension for POS counters, Raspberry Pi or other single-board setups, and flush wall dashboards—anywhere a thick round cable adds depth. Use it alone to finish an existing kiosk or panel. If you need a complete VESA / single-gang Tab A9+ mount, our enclosure kit already includes this cable.</p><p>The female USB-C end allows easy connection to your preferred power source or USB-C accessory.</p><p>USB 2.0 data transfer speeds</p><p>Flexible ribbon design for discreet routing</p><blockquote><p>⚠️ <em>Note: Not compatible with all USB-C fast charging protocols or high-speed data accessories (e.g. video output or USB 3.x devices).</em></p></blockquote>",
+      "descriptionHtml": "<p><strong>Low-Profile USB-C Ribbon Extension Cable – 90° Male to Female</strong></p><p>Flat 90° USB-C ribbon extension (male to female) for mounting behind tablets, kiosks, and panels. 20cm, up to 30W, low profile so the run stays flush.</p><p>It also works as a standalone 20cm FPC extension for POS counters, Raspberry Pi or other single-board setups, and flush wall dashboards—anywhere a thick round cable adds depth. Use it alone to finish an existing kiosk or panel. If you need a complete VESA / single-gang Tab A11+ / A9+ mount, our enclosure kit already includes this cable.</p><p>The female USB-C end allows easy connection to your preferred power source or USB-C accessory.</p><p>USB 2.0 data transfer speeds</p><p>Flexible ribbon design for discreet routing</p><blockquote><p>⚠️ <em>Note: Not compatible with all USB-C fast charging protocols or high-speed data accessories (e.g. video output or USB 3.x devices).</em></p></blockquote>",
       "featureHighlight": "Perfect for low profile cases and mounts",
       "galleryDir": "images/products/CAB-RA20CM-MF-BLK-V1/",
       "media": [
@@ -106,7 +106,7 @@
     {
       "id": "9872488694007",
       "handle": "tablet-enclosure-kit-samsung-tab-a9",
-      "title": "Tablet Enclosure Kit - Samsung Tab A9+",
+      "title": "Tablet Enclosure Kit - Samsung Galaxy Tab A11+ / A9+",
       "category": "enclosures",
       "featured": true,
       "price": 56.00,
@@ -114,8 +114,8 @@
       "image": "images/samsung-tab-a9.png",
       "url": "https://slatesafe.com/product/tablet-enclosure-kit-samsung-tab-a9/",
       "stripePaymentLink": "https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01",
-      "description": "Tab A9+ enclosure for kiosks, POS, and wall mounts. VESA / single-gang. Flat USB-C cable included.",
-      "descriptionHtml": "<p><strong>Samsung Tab A9+ Enclosure Kit</strong></p><p>Tamper-resistant enclosure for the Samsung Galaxy Tab A9+. Built for visitor kiosks, POS, and wall-mounted dashboards. Mounts on VESA 75 or a US single-gang wall box.</p><p>The kit includes our flat right-angle USB-C cable so the tablet can sit flush—no thick round cord behind the case. Buttons, cameras, and mics stay accessible.</p><p>3D printed in the USA (ABS). Tablet and power adapter not included.</p><h3>What’s in the box</h3><ul><li>SlateSafe enclosure for Galaxy Tab A9+</li><li>Low-profile right-angle USB-C cable</li><li>Assembly hardware</li></ul>",
+      "description": "Tab A11+ / A9+ enclosure for kiosks, POS, and wall mounts. Same body, same fit. VESA / single-gang. Flat USB-C cable included.",
+      "descriptionHtml": "<p><strong>Samsung Galaxy Tab A11+ / A9+ Enclosure Kit</strong></p><p>Tamper-resistant enclosure for the Samsung Galaxy Tab A11 Plus and Galaxy Tab A9+. Built for visitor kiosks, POS, and wall-mounted dashboards. Mounts on VESA 75 or a US single-gang wall box.</p><p>One enclosure for both 11&quot; Galaxy Tab A models. Upgrade the tablet, keep the mount.</p><p>The kit includes our flat right-angle USB-C cable so the tablet can sit flush—no thick round cord behind the case. Buttons, cameras, and mics stay accessible.</p><p>3D printed in the USA (ABS). Tablet and power adapter not included.</p><h3>What’s in the box</h3><ul><li>SlateSafe enclosure for Galaxy Tab A11+ and Tab A9+</li><li>Low-profile right-angle USB-C cable</li><li>Assembly hardware</li></ul><h3>Compatible models</h3><ul><li>Galaxy Tab A11+ (SM-X230, SM-X236/X236B, SM-X238U)</li><li>Galaxy Tab A9+ (SM-X210, SM-X215, SM-X216B/X216R)</li><li>Both share the same 257.1 x 168.7 x 6.9 mm body.</li><li>Not compatible with the 8.7&quot; Galaxy Tab A11 (non-Plus) or the Galaxy Tab S10 Lite.</li></ul>",
       "featureHighlight": "Tamper-resistant, low-profile design",
       "galleryDir": "images/products/ENC-SAM-A9-V1/",
       "media": [
@@ -172,7 +172,7 @@
       "specifications": {
         "Operating Temperature": "-20°C to 60°C",
         "Mounting": "VESA & Single gang wall box",
-        "Supported Tablet Models": "Samsung Tab A9+"
+        "Supported Tablet Models": "Samsung Galaxy Tab A11+ / A9+"
       }
     }
   ]
