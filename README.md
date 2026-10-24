@@ -45,7 +45,7 @@ SlateSafe offers practical, professionally designed tablet accessories including
 ├── product-*.html                # Individual product pages
 ├── about.html                    # Company information
 ├── contact.html                  # Contact form
-├── shopify-cart.js               # Local cart + Stripe Payment Link checkout
+├── cart.js               # Local cart + Stripe Payment Link checkout
 ├── products.json                 # First-party catalog (source of truth)
 ├── app-init.js                   # Application initialization
 ├── styles.css                    # Custom styles
