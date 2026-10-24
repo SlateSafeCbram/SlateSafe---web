@@ -1,6 +1,6 @@
 // Local cart store. Catalog source of truth is products.json.
 // Checkout uses Stripe Payment Links on each product (stripePaymentLink).
-// Filename kept so existing <script src="shopify-cart.js"> tags keep working.
+// Previously shopify-cart.js. Pages load cart.js.
 // No Shopify Storefront API, no myshopify.com, no shop.slatesafe.com.
 
 const SLATESAFE_CART_KEY = 'slatesafe_cart';
