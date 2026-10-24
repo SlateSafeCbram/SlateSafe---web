@@ -661,9 +661,9 @@
                                 <div class="flex items-center space-x-3 mt-2">
                                     <span class="text-gray-900 dark:text-white font-medium" x-show="!$store.cart.sessionCheckout">Quantity 1</span>
                                 <div class="inline-flex items-center space-x-2" x-show="$store.cart.sessionCheckout" x-cloak>
-                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white" aria-label="Decrease quantity" @click="$store.cart.updateLineItem(item.id, item.quantity - 1)">−</button>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" :aria-label="'Decrease quantity of ' + item.title" :disabled="item.quantity <= 1" @click="$store.cart.updateLineItem(item.id, Math.max(1, item.quantity - 1))">−</button>
                                     <span class="w-8 text-center text-gray-900 dark:text-white font-medium" x-text="item.quantity"></span>
-                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white" aria-label="Increase quantity" @click="$store.cart.updateLineItem(item.id, item.quantity + 1)">+</button>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white" :aria-label="'Increase quantity of ' + item.title" @click="$store.cart.updateLineItem(item.id, item.quantity + 1)">+</button>
                                 </div>
                                     <button @click="$store.cart.removeLineItem(item.id)" 
                                             class="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">

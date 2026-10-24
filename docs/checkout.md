@@ -35,7 +35,7 @@ Stripe Payment Link "after completion" URLs live in the Stripe Dashboard, not in
 - Success: `https://slatesafe.com/order-complete.html?session_id={CHECKOUT_SESSION_ID}`
 - Cancel: `https://slatesafe.com/`
 
-`order-complete.html` does not claim the payment succeeded. It tells the buyer that a Stripe receipt email arrives if Stripe confirms payment. The page is not linked from the nav.
+`order-complete.html` does not claim the payment succeeded. It says Stripe emails a receipt only when receipt emails are enabled and Stripe confirms the payment, and that test mode sends none. The page is not linked from the nav.
 
 ## What the browser sends
 
@@ -81,7 +81,7 @@ npm test
 
 That runs `api/checkout-lib.test.js` with a mocked Stripe client. The required case is one kit plus two cables: one session, two line items, cable quantity 2, free shipping, `automatic_tax` enabled, and no client-supplied amounts.
 
-A real test-mode session, once env vars exist:
+A real test-mode session, once env vars exist. `PRICE_CABLE` and `PRICE_KIT` must be test-mode Price IDs. The live Payment Link prices will not work with an `rk_test_` key.
 
 ```bash
 STRIPE_SECRET_KEY=rk_test_... PRICE_CABLE=price_... PRICE_KIT=price_... \
@@ -97,10 +97,13 @@ Do these in order. Merging this pull request does not turn session checkout on.
 1. Stripe Dashboard, **test mode** (a sandbox is better than the shared test mode if one is available).
 2. Create a restricted key (`rk_test_...`) with only **Checkout Sessions: Write**. Do not grant Prices or Products read. Do not create a webhook for this change.
 3. Confirm Stripe Tax: either an active registration exists, or accept that `automatic_tax` will collect $0 until one does. Put the product tax code on each Stripe Product. This repo does not set tax codes.
-4. Open the existing Payment Link prices (or Products) and copy the Price IDs:
-   - Cable `CAB-RA20CM-MF-BLK-V1`, Payment Link `https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00` → `PRICE_CABLE`
-   - Kit `ENC-SAM-A9-V1`, Payment Link `https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01` → `PRICE_KIT`
-5. Optional, and preferred by the command-deck order parser: on each of those Stripe Prices, set `lookup_key` equal to the SKU (`CAB-RA20CM-MF-BLK-V1` on the cable Price, `ENC-SAM-A9-V1` on the kit Price). This function does not read `lookup_key`. It sends the Price ID. Skip this if the Price already has a different lookup key you need to keep.
+4. Create or select **test-mode** Price IDs for the first end-to-end run. The existing Payment Links are live-mode (those URLs have no `test_` prefix). A live-mode Price does not work with the `rk_test_` key from step 2.
+   - Cable `CAB-RA20CM-MF-BLK-V1` → test-mode Price ID in `PRICE_CABLE`
+   - Kit `ENC-SAM-A9-V1` → test-mode Price ID in `PRICE_KIT`
+   Leave the live Payment Links in place. Copy their Price IDs in step 12, not for this test run:
+   - Cable Payment Link `https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00`
+   - Kit Payment Link `https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01`
+5. Optional, and preferred by the command-deck order parser: on each test-mode Price from step 4, set `lookup_key` equal to the SKU (`CAB-RA20CM-MF-BLK-V1` on the cable Price, `ENC-SAM-A9-V1` on the kit Price). This function does not read `lookup_key`. It sends the Price ID. Skip this if the Price already has a different lookup key you need to keep.
 6. Create a Vercel project from this repo on the **Hobby** plan. Root directory is the repository root. Do not add `slatesafe.com` as a project domain.
 7. Vercel environment variables, **Production** (sensitive):
    - `STRIPE_SECRET_KEY` = the test `rk_test_` key for the first end-to-end run, then the live `rk_live_` key only after that run succeeds
@@ -111,8 +114,11 @@ Do these in order. Merging this pull request does not turn session checkout on.
 9. Turn on Vercel Deployment Protection for Preview if previews stay enabled.
 10. DNS: add a CNAME `checkout` on the `slatesafe.com` zone pointing at `cname.vercel-dns.com` (Vercel shows the exact target when the domain is added). In the Vercel project, add `checkout.slatesafe.com` and let Vercel manage the certificate. Do not point the apex at Vercel.
 11. Run `scripts/checkout-session-e2e.mjs` with the test key. Open the printed Checkout URL and confirm one kit, cable quantity 2, free shipping, and a phone field. Do not use a live key for that check.
-12. Repeat the restricted key in **live mode** (`rk_live_`, Checkout Sessions write only) and copy the live Price IDs into Production env vars. Remove the test key from Production.
-13. Change `checkout-config.js` `mode` from `payment_links` to `session` in a follow-up commit, and update the privacy-policy sentences that still say Payment Links.
-14. Place one real live test order, then refund it.
+12. Repeat the restricted key in **live mode** (`rk_live_`, Checkout Sessions write only). Copy the Price IDs from the existing live Payment Links into the Production env vars, then remove the test key from Production:
+   - Cable `CAB-RA20CM-MF-BLK-V1`, Payment Link `https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00` → `PRICE_CABLE`
+   - Kit `ENC-SAM-A9-V1`, Payment Link `https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01` → `PRICE_KIT`
+13. In the live-mode Stripe Dashboard, turn on customer emails for successful payments (Settings → Emails). Checkout collects an email address, and Stripe sends a receipt only when that email is on. Test mode does not send receipts. `order-complete.html` does not promise one.
+14. Change `checkout-config.js` `mode` from `payment_links` to `session` in a follow-up commit, and update the privacy-policy sentences that still say Payment Links.
+15. Place one real live test order, then refund it.
 
 Shipping awkwardness to accept before launch: one server-chosen rate, free whenever the kit is in the cart, $5.75 for cable-only, tax stays $0 until Stripe Tax is actually configured, phone is required, and there is no webhook so nothing fulfills automatically.

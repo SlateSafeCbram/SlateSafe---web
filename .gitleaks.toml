@@ -9,7 +9,7 @@ paths = ['''(^|/)node_modules/''', '''package-lock\.json''']
 
 [[allowlists]]
 description = "Known generic-api-key hits only: the public Web3Forms form id and the retired Shopify Storefront token. Stripe key rules stay active."
-ruleIDs = ["generic-api-key"]
+targetRules = ["generic-api-key"]
 paths = [
   '''(^|/)index\.html$''',
   '''(^|/)contact\.html$''',

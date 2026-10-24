@@ -16,3 +16,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
+          # gitleaks-action@v2 installs 8.24.3 unless this is set. 8.24.3
+          # reads only the singular [allowlist] table and ignores [[allowlists]].
+          GITLEAKS_VERSION: "8.28.0"

@@ -94,6 +94,28 @@ function slatesafeHasEnclosureAndCable(items) {
         && slatesafeCartHasIds(items, STANDALONE_CABLE_IDS);
 }
 
+// Quantity stays at least 1. Decrement must not delete a line; Remove does that.
+// Payment Links mode keeps every line at 1.
+function slatesafeLineQuantity(quantity, sessionCheckout) {
+    const qty = Number(quantity);
+    if (!sessionCheckout || !Number.isInteger(qty) || qty < 1) {
+        return 1;
+    }
+    if (qty > SESSION_MAX_QTY) {
+        return SESSION_MAX_QTY;
+    }
+    return qty;
+}
+
+// Back-forward cache restores Alpine state, including checkoutBusy, after
+// the buyer presses Back on the Stripe page.
+function slatesafeOnPageShow(event, cart) {
+    if (event && event.persisted && cart) {
+        cart.checkoutBusy = false;
+    }
+}
+
+if (typeof document !== 'undefined') {
 document.addEventListener('alpine:init', () => {
     Alpine.store('cart', {
         open: false,
@@ -116,6 +138,9 @@ document.addEventListener('alpine:init', () => {
             this.sessionCheckout = settings.session;
             this.checkoutMode = settings.mode;
             this.checkoutEndpoint = settings.endpoint;
+            window.addEventListener('pageshow', (event) => {
+                slatesafeOnPageShow(event, this);
+            });
             this.open = false;
             try {
                 localStorage.removeItem('shopify_checkout_id');
@@ -576,23 +601,15 @@ document.addEventListener('alpine:init', () => {
         },
 
         async updateLineItem(lineItemId, quantity) {
-            const qty = Number(quantity);
-            if (!Number.isInteger(qty) || qty < 1) {
-                await this.removeLineItem(lineItemId);
-                return;
-            }
             const item = this.items.find((line) => line.id === lineItemId);
             if (!item) return;
-            if (!this.sessionCheckout) {
-                item.quantity = 1;
-            } else if (qty > SESSION_MAX_QTY) {
-                item.quantity = SESSION_MAX_QTY;
+            const requested = Number(quantity);
+            if (this.sessionCheckout && Number.isInteger(requested) && requested > SESSION_MAX_QTY) {
                 if (Alpine.store('toast')) {
                     Alpine.store('toast').show('Maximum quantity is 10.', 'error');
                 }
-            } else {
-                item.quantity = qty;
             }
+            item.quantity = slatesafeLineQuantity(requested, this.sessionCheckout);
             this.recalculate();
         },
 
@@ -674,3 +691,12 @@ document.addEventListener('alpine:init', () => {
         });
     }
 });
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        slatesafeLineQuantity,
+        slatesafeOnPageShow,
+        SESSION_MAX_QTY
+    };
+}

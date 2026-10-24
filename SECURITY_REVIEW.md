@@ -8,7 +8,7 @@ No secret value is written below. Findings list file, commit, and type only.
 
 Full-history scan with the default gitleaks rules (allowing only `node_modules` and `package-lock.json`) found **no** `stripe-access-token`, restricted key, webhook secret (`whsec_`), Vercel token, or `.env` file. The same scan of the working tree found none of those either. GitHub issue bodies (51), issue comments (52), pull request bodies (51), and review comments (22) had no `sk_live_` / `sk_test_` / `rk_live_` / `rk_test_` / `whsec_` / `vercel_` token patterns.
 
-`.gitignore` now ignores `.env` and `.env.*` and keeps `.env.example` (empty names only). `.github/workflows/gitleaks.yml` runs `gitleaks/gitleaks-action@v2` on pull requests with full history. That action is free on public repositories.
+`.gitignore` now ignores `.env` and `.env.*` and keeps `.env.example` (empty names only). `.github/workflows/gitleaks.yml` runs `gitleaks/gitleaks-action@v2` on pull requests with full history and sets `GITLEAKS_VERSION` to `8.28.0`. Without that pin the action installs 8.24.3, which ignores `[[allowlists]]`. That action is free on public repositories.
 
 The unfiltered generic-api-key rule did match other tokens. They are not Stripe keys:
 
@@ -18,7 +18,7 @@ The unfiltered generic-api-key rule did match other tokens. They are not Stripe 
 | generic-api-key (same Web3Forms form id) | `contact.html` | `8d8e89ef86ed` | Yes |
 | generic-api-key (retired Shopify Storefront token) | `shopify-cart.js`, `product-tablet-enclosure.html`, `product-usb-c-cable.html`, `contact.html` | `2134940d1938` | No |
 
-`.gitleaks.toml` allowlists **only** rule `generic-api-key` on those five paths so CI does not fail on the public form id and the retired Storefront token. Stripe rules stay active. With that config, the full-history scan reports 0 findings.
+`.gitleaks.toml` allowlists **only** rule `generic-api-key` (`targetRules`) on those five paths so CI does not fail on the public form id and the retired Storefront token. Stripe rules stay active. With that config, the full-history scan reports 0 findings.
 
 Follow-up, not done here: in the Web3Forms dashboard, domain-lock the form to `slatesafe.com` (and rotate the form id if it was never locked). Revoke the old Shopify Storefront token if that store still exists. Do not delete the form id from the HTML until a replacement is in place, or the contact form stops working. No Stripe key was found, so no Stripe rotation is indicated by this scan.
 
@@ -105,10 +105,10 @@ GitHub (repo is public):
 Stripe:
 
 1. Create an `rk_test_` restricted key with **Checkout Sessions: Write** only. No Prices or Products read. No webhook in this change.
-2. Copy Price IDs into `PRICE_CABLE` and `PRICE_KIT` (see `docs/checkout.md`).
+2. For the first end-to-end run, copy **test-mode** Price IDs into `PRICE_CABLE` and `PRICE_KIT`. The live Payment Link prices do not work with an `rk_test_` key (see `docs/checkout.md`).
 3. Optional, preferred by the command-deck parser: set each Price `lookup_key` to its SKU (`CAB-RA20CM-MF-BLK-V1`, `ENC-SAM-A9-V1`). Checkout does not read lookup keys.
 4. Confirm Stripe Tax registration and product tax codes, or accept that `automatic_tax` collects $0 until then.
-5. After a test-mode purchase works, create the live `rk_live_` key with the same single scope and put it only in Vercel Production.
+5. After a test-mode purchase works, create the live `rk_live_` key with the same single scope, copy the live Payment Link Price IDs into Production, turn on successful-payment receipt emails, and put the live key only in Vercel Production.
 6. No Stripe key rotation is indicated by the scan. Domain-lock or rotate the Web3Forms form id, and revoke the retired Shopify Storefront token if that store still exists.
 
 Vercel:
