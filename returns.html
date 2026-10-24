@@ -357,7 +357,14 @@
                     <span class="text-lg font-semibold text-gray-900 dark:text-white">Subtotal:</span>
                     <span class="text-xl font-bold text-brand-orange" x-text="'$' + $store.cart.total.toFixed(2)"></span>
                 </div>
+                <div x-show="$store.cart.mixedCheckout" class="space-y-3">
+                    <p class="text-sm text-gray-700 dark:text-gray-300">Checkout is two payments. Each Stripe Payment Link sells one product. Step 1 pays for the kit. Step 2 pays for the cable. Each button opens that product's existing Payment Link in a new tab.</p>
+                    <template x-for="step in $store.cart.checkoutSteps" :key="step.id">
+                        <a :href="step.url" target="_blank" rel="noopener noreferrer" @click="$store.cart.trackCheckoutStep()" class="block w-full py-4 px-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center" x-text="step.label"></a>
+                    </template>
+                </div>
                 <button type="button"
+                        x-show="!$store.cart.mixedCheckout"
                         @click="$store.cart.checkout()"
                         class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
                     Checkout

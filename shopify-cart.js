@@ -1,5 +1,8 @@
 // Local cart store. Catalog source of truth is products.json.
 // Checkout uses Stripe Payment Links on each product (stripePaymentLink).
+// A cart that contains both the enclosure kit and the standalone cable
+// cannot use one Payment Link. That cart checks out in two steps, and each
+// step opens the product's existing Payment Link.
 // Filename kept so existing <script src="shopify-cart.js"> tags keep working.
 // No Shopify Storefront API, no myshopify.com, no shop.slatesafe.com.
 
@@ -84,6 +87,8 @@ document.addEventListener('alpine:init', () => {
         checkoutNotice: '',
         cableBundleNotice: '',
         checkoutUrl: '#',
+        mixedCheckout: false,
+        checkoutSteps: [],
 
         async init() {
             this.open = false;
@@ -92,8 +97,20 @@ document.addEventListener('alpine:init', () => {
             } catch (e) {
                 // Ignore storage errors
             }
+            this.markMixedFromStorage();
             await this.loadCatalog();
             this.loadCart();
+        },
+
+        markMixedFromStorage() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(SLATESAFE_CART_KEY) || '[]');
+                if (Array.isArray(saved) && slatesafeHasEnclosureAndCable(saved)) {
+                    this.mixedCheckout = true;
+                }
+            } catch (e) {
+                // Ignore storage errors
+            }
         },
 
         async loadCatalog() {
@@ -276,7 +293,58 @@ document.addEventListener('alpine:init', () => {
             this.cableBundleNotice = slatesafeHasEnclosureAndCable(this.items)
                 ? CABLE_BUNDLE_NOTICE
                 : '';
+            this.checkoutSteps = this.buildCheckoutSteps();
+            this.mixedCheckout = this.checkoutSteps.length === 2;
             this.checkoutUrl = this.getCheckoutUrl();
+        },
+
+        paymentLinkForItem(item) {
+            if (!item) return null;
+            const product = this.findProduct(item.sku || item.handle || item.id);
+            return slatesafePaymentLink(
+                (product && product.stripePaymentLink) || item.stripePaymentLink
+            );
+        },
+
+        buildCheckoutSteps() {
+            if (this.uniqueSkus().length !== 2 || !slatesafeHasEnclosureAndCable(this.items)) {
+                return [];
+            }
+            const kit = this.items.find((item) => (
+                slatesafeItemKeys(item).some((key) => ENCLOSURE_KIT_IDS.has(key))
+            ));
+            const cable = this.items.find((item) => (
+                slatesafeItemKeys(item).some((key) => STANDALONE_CABLE_IDS.has(key))
+            ));
+            const kitUrl = this.paymentLinkForItem(kit);
+            const cableUrl = this.paymentLinkForItem(cable);
+            if (!kit || !kitUrl || !cable || !cableUrl) return [];
+            const kitAmount = parseFloat(kit.variant?.price?.amount || 0);
+            const cableAmount = parseFloat(cable.variant?.price?.amount || 0);
+            return [
+                {
+                    id: 'kit',
+                    url: kitUrl,
+                    label: `Step 1: Pay for the enclosure kit (${slatesafeFormatPrice(kitAmount)})`
+                },
+                {
+                    id: 'cable',
+                    url: cableUrl,
+                    label: `Step 2: Pay for the cable (${slatesafeFormatPrice(cableAmount)})`
+                }
+            ];
+        },
+
+        trackCheckoutStep() {
+            if (typeof SlateSafeAnalytics === 'undefined' || !this.items.length) return;
+            try {
+                SlateSafeAnalytics.trackBeginCheckout({
+                    items: this.items,
+                    total: this.total
+                });
+            } catch (err) {
+                console.error('Error tracking checkout step:', err);
+            }
         },
 
         uniqueSkus() {
@@ -293,6 +361,11 @@ document.addEventListener('alpine:init', () => {
                 return { error: 'Your cart is empty.' };
             }
             if (this.uniqueSkus().length > 1) {
+                if (this.mixedCheckout) {
+                    return {
+                        error: 'Use Step 1 to pay for the enclosure kit, then Step 2 to pay for the cable.'
+                    };
+                }
                 return {
                     error: 'Please check out each item separately. Mixed carts cannot use a single Stripe Payment Link.'
                 };
