@@ -1,5 +1,7 @@
 // Local cart store. Catalog source of truth is products.json.
-// Checkout uses Stripe Payment Links on each product (stripePaymentLink).
+// Default checkout is Stripe Payment Links (stripePaymentLink).
+// window.SLATESAFE_CHECKOUT.mode = 'session' switches Checkout to the
+// server endpoint in checkout-config.js. Leave the default until launch.
 // Previously shopify-cart.js. Pages load cart.js.
 // No Shopify Storefront API, no myshopify.com, no shop.slatesafe.com.
 
@@ -57,6 +59,26 @@ const STANDALONE_CABLE_IDS = new Set([
     'flat-90-degree-usb-c-ribbon-extension-cable'
 ]);
 const CABLE_BUNDLE_NOTICE = 'Heads up: the enclosure kit in your cart already includes a USB-C cable. Adding the standalone cable means this order would include 2 cables.';
+const SESSION_MAX_QTY = 10;
+const CHECKOUT_CLIENT_ERROR = 'Unable to start checkout.';
+
+function slatesafeCheckoutSettings() {
+    const config = (typeof window !== 'undefined' && window.SLATESAFE_CHECKOUT) || {};
+    const mode = config.mode === 'session' ? 'session' : 'payment_links';
+    const endpoint = typeof config.endpoint === 'string' && config.endpoint
+        ? config.endpoint
+        : 'https://checkout.slatesafe.com/api/create-checkout-session';
+    return { mode, endpoint, session: mode === 'session' };
+}
+
+function slatesafeIdempotencyKey() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+    }
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 
 function slatesafeItemKeys(item) {
     if (!item) return [];
@@ -84,8 +106,16 @@ document.addEventListener('alpine:init', () => {
         checkoutNotice: '',
         cableBundleNotice: '',
         checkoutUrl: '#',
+        sessionCheckout: false,
+        checkoutBusy: false,
+        checkoutMode: 'payment_links',
+        checkoutEndpoint: 'https://checkout.slatesafe.com/api/create-checkout-session',
 
         async init() {
+            const settings = slatesafeCheckoutSettings();
+            this.sessionCheckout = settings.session;
+            this.checkoutMode = settings.mode;
+            this.checkoutEndpoint = settings.endpoint;
             this.open = false;
             try {
                 localStorage.removeItem('shopify_checkout_id');
@@ -231,25 +261,39 @@ document.addEventListener('alpine:init', () => {
 
             this.items = saved.map((item) => {
                 const product = this.findProduct(item.sku || item.handle || item.id);
+                const savedQty = this.sessionCheckout ? item && item.quantity : 1;
                 if (product) {
-                    return this.lineItemFromProduct(product, 1);
+                    return this.lineItemFromProduct(product, savedQty);
                 }
                 if (!item) return null;
-                return { ...item, quantity: 1 };
+                let quantity = 1;
+                if (this.sessionCheckout) {
+                    const parsed = Number(item.quantity);
+                    quantity = Number.isInteger(parsed) && parsed >= 1
+                        ? Math.min(parsed, SESSION_MAX_QTY)
+                        : 1;
+                }
+                return { ...item, quantity };
             }).filter((item) => item && item.quantity > 0);
 
             this.recalculate();
         },
 
         lineItemFromProduct(product, quantity) {
-            void quantity; // Site cart is locked to qty 1; Stripe checkout can adjust after landing.
             const price = Number(product.price) || 0;
             const imageUrl = slatesafeMediaUrl(product.image);
             const lineId = product.sku || product.handle || product.id;
+            let qty = 1;
+            if (this.sessionCheckout) {
+                const parsed = Number(quantity);
+                qty = Number.isInteger(parsed) && parsed >= 1
+                    ? Math.min(parsed, SESSION_MAX_QTY)
+                    : 1;
+            }
             return {
                 id: lineId,
                 title: product.title,
-                quantity: 1,
+                quantity: qty,
                 sku: product.sku,
                 handle: product.handle,
                 stripePaymentLink: slatesafePaymentLink(product.stripePaymentLink),
@@ -263,17 +307,20 @@ document.addEventListener('alpine:init', () => {
         },
 
         recalculate() {
-            this.items.forEach((item) => {
-                item.quantity = 1;
-            });
+            if (!this.sessionCheckout) {
+                this.items.forEach((item) => {
+                    item.quantity = 1;
+                });
+            }
             this.itemCount = this.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
             this.total = this.items.reduce((sum, item) => {
                 const amount = parseFloat(item.variant?.price?.amount || 0);
-                return sum + (amount * 1);
+                const qty = this.sessionCheckout ? (item.quantity || 0) : 1;
+                return sum + (amount * qty);
             }, 0);
             this.persistCart();
             this.checkoutNotice = '';
-            this.cableBundleNotice = slatesafeHasEnclosureAndCable(this.items)
+            this.cableBundleNotice = (!this.sessionCheckout && slatesafeHasEnclosureAndCable(this.items))
                 ? CABLE_BUNDLE_NOTICE
                 : '';
             this.checkoutUrl = this.getCheckoutUrl();
@@ -339,7 +386,74 @@ document.addEventListener('alpine:init', () => {
             return result;
         },
 
+        async checkoutSession() {
+            if (this.checkoutBusy) {
+                return { error: CHECKOUT_CLIENT_ERROR };
+            }
+            if (!this.items.length) {
+                const error = 'Your cart is empty.';
+                this.checkoutNotice = error;
+                if (Alpine.store('toast')) {
+                    Alpine.store('toast').show(error, 'error');
+                }
+                return { error };
+            }
+            const payload = this.items.map((item) => ({
+                sku: item.sku,
+                qty: item.quantity
+            }));
+            this.checkoutBusy = true;
+            this.checkoutNotice = '';
+            try {
+                if (typeof SlateSafeAnalytics !== 'undefined') {
+                    SlateSafeAnalytics.trackBeginCheckout({
+                        items: this.items,
+                        total: this.total
+                    });
+                }
+            } catch (err) {
+                console.error('Error tracking checkout:', err);
+            }
+            try {
+                const response = await fetch(this.checkoutEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Idempotency-Key': slatesafeIdempotencyKey()
+                    },
+                    body: JSON.stringify(payload)
+                });
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (err) {
+                    data = null;
+                }
+                const url = data && data.url;
+                if (!response.ok || typeof url !== 'string' || !url.startsWith('https://checkout.stripe.com/')) {
+                    this.checkoutBusy = false;
+                    this.checkoutNotice = CHECKOUT_CLIENT_ERROR;
+                    if (Alpine.store('toast')) {
+                        Alpine.store('toast').show(CHECKOUT_CLIENT_ERROR, 'error');
+                    }
+                    return { error: CHECKOUT_CLIENT_ERROR };
+                }
+                window.location.assign(url);
+                return { url };
+            } catch (err) {
+                this.checkoutBusy = false;
+                this.checkoutNotice = CHECKOUT_CLIENT_ERROR;
+                if (Alpine.store('toast')) {
+                    Alpine.store('toast').show(CHECKOUT_CLIENT_ERROR, 'error');
+                }
+                return { error: CHECKOUT_CLIENT_ERROR };
+            }
+        },
+
         async checkout() {
+            if (this.sessionCheckout) {
+                return this.checkoutSession();
+            }
             if (typeof SlateSafeAnalytics !== 'undefined' && this.items.length > 0) {
                 SlateSafeAnalytics.trackBeginCheckout({
                     items: this.items,
@@ -403,7 +517,9 @@ document.addEventListener('alpine:init', () => {
                 if (!Number.isInteger(requestedQty) || requestedQty < 1) {
                     throw new Error('Please enter a valid quantity');
                 }
-                const qty = 1;
+                const session = this.sessionCheckout;
+                let qty = session ? Math.min(requestedQty, SESSION_MAX_QTY) : 1;
+                let capped = session && requestedQty > SESSION_MAX_QTY;
 
                 const product = this.findProduct(productOrVariantId);
                 if (!product) {
@@ -413,7 +529,17 @@ document.addEventListener('alpine:init', () => {
                 const lineId = product.sku || product.handle || product.id;
                 const existing = this.items.find((item) => item.id === lineId);
                 if (existing) {
-                    existing.quantity = 1;
+                    if (session) {
+                        const next = (existing.quantity || 0) + qty;
+                        if (next > SESSION_MAX_QTY) {
+                            existing.quantity = SESSION_MAX_QTY;
+                            capped = true;
+                        } else {
+                            existing.quantity = next;
+                        }
+                    } else {
+                        existing.quantity = 1;
+                    }
                 } else {
                     this.items.push(this.lineItemFromProduct(product, qty));
                 }
@@ -422,6 +548,9 @@ document.addEventListener('alpine:init', () => {
 
                 if (Alpine.store('toast')) {
                     Alpine.store('toast').show('Item added to cart!', 'success');
+                    if (capped) {
+                        Alpine.store('toast').show('Maximum quantity is 10.', 'error');
+                    }
                     if (this.cableBundleNotice) {
                         Alpine.store('toast').show(this.cableBundleNotice, 'success');
                     }
@@ -454,7 +583,16 @@ document.addEventListener('alpine:init', () => {
             }
             const item = this.items.find((line) => line.id === lineItemId);
             if (!item) return;
-            item.quantity = 1;
+            if (!this.sessionCheckout) {
+                item.quantity = 1;
+            } else if (qty > SESSION_MAX_QTY) {
+                item.quantity = SESSION_MAX_QTY;
+                if (Alpine.store('toast')) {
+                    Alpine.store('toast').show('Maximum quantity is 10.', 'error');
+                }
+            } else {
+                item.quantity = qty;
+            }
             this.recalculate();
         },
 

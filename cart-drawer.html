@@ -59,7 +59,12 @@
                             <p class="text-sm text-gray-600 dark:text-gray-400" x-text="item.variant?.title || ''"></p>
                             <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
                             <div class="flex items-center space-x-3 mt-2">
-                                <span class="text-gray-900 dark:text-white font-medium">Quantity 1</span>
+                                <span class="text-gray-900 dark:text-white font-medium" x-show="!$store.cart.sessionCheckout">Quantity 1</span>
+                                <div class="inline-flex items-center space-x-2" x-show="$store.cart.sessionCheckout" x-cloak>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white" aria-label="Decrease quantity" @click="$store.cart.updateLineItem(item.id, item.quantity - 1)">−</button>
+                                    <span class="w-8 text-center text-gray-900 dark:text-white font-medium" x-text="item.quantity"></span>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white" aria-label="Increase quantity" @click="$store.cart.updateLineItem(item.id, item.quantity + 1)">+</button>
+                                </div>
                                 <button @click="$store.cart.removeLineItem(item.id)" 
                                         class="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
                                     Remove
@@ -79,11 +84,12 @@
             </div>
             <button type="button"
                     @click="$store.cart.checkout()"
-                    class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
+                    :disabled="$store.cart.checkoutBusy"
+                    class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg transition-colors text-center">
                 Checkout
             </button>
             <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
-            <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice" x-text="$store.cart.cableBundleNotice"></p>
+            <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice && !$store.cart.sessionCheckout" x-text="$store.cart.cableBundleNotice"></p>
             <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
             <button @click="$store.cart.closeDrawer()" 
                     class="block w-full mt-3 py-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
