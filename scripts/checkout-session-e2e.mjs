@@ -1,46 +1,59 @@
-// Real Stripe test-mode check. Run only after the test key and Price IDs
-// are in the environment. This does not run in CI.
+// Posts one kit and two cables to the deployed test Worker.
+// The Worker holds the Stripe key. This script does not.
 //
-//   STRIPE_SECRET_KEY=rk_test_... PRICE_CABLE=price_... PRICE_KIT=price_... \
+//   CHECKOUT_WORKER_URL=https://slatesafe-checkout-test.<subdomain>.workers.dev/ \
 //     node scripts/checkout-session-e2e.mjs
 //
-// Refuses live keys unless ALLOW_LIVE=1. Prints the session id and URL only.
+// Refuses a URL that is not the test worker unless ALLOW_LIVE=1.
+// Prints the Checkout URL only.
 
-import { createRequire } from 'module';
-import Stripe from 'stripe';
-
-const require = createRequire(import.meta.url);
-const { sessionParams } = require('../api/checkout-lib.js');
-
-const key = process.env.STRIPE_SECRET_KEY || '';
-if (!key) {
-    console.error('Set STRIPE_SECRET_KEY to a test-mode restricted key (rk_test_...).');
+const url = process.env.CHECKOUT_WORKER_URL || '';
+if (!url) {
+    console.error('Set CHECKOUT_WORKER_URL to the test Worker (slatesafe-checkout-test.<subdomain>.workers.dev).');
     process.exit(1);
 }
-if (!key.startsWith('rk_test_') && process.env.ALLOW_LIVE !== '1') {
-    console.error('Refusing to run without an rk_test_ key. Set ALLOW_LIVE=1 only if you mean to.');
+let parsed;
+try {
+    parsed = new URL(url);
+} catch (error) {
+    console.error('CHECKOUT_WORKER_URL is not a URL.');
     process.exit(1);
 }
-if (!process.env.PRICE_CABLE || !process.env.PRICE_KIT) {
-    console.error('Set PRICE_CABLE and PRICE_KIT.');
+if (parsed.protocol !== 'https:') {
+    console.error('CHECKOUT_WORKER_URL must be https.');
+    process.exit(1);
+}
+const testHost = parsed.hostname.startsWith('slatesafe-checkout-test.')
+    && parsed.hostname.endsWith('.workers.dev');
+if (!testHost && process.env.ALLOW_LIVE !== '1') {
+    console.error('Refusing a URL that is not the test worker. Set ALLOW_LIVE=1 only if you mean to.');
     process.exit(1);
 }
 
-const items = [
-    { sku: 'ENC-SAM-A9-V1', qty: 1 },
-    { sku: 'CAB-RA20CM-MF-BLK-V1', qty: 2 }
-];
-const idempotencyKey = `e2e-${Date.now()}`;
-const params = sessionParams(items, process.env, idempotencyKey);
-const stripe = new Stripe(key, {
-    apiVersion: '2026-09-30.endive',
-    maxNetworkRetries: 1,
-    telemetry: false
+const origin = process.env.CHECKOUT_ORIGIN || 'https://slatesafe.com';
+const idempotencyKey = `e2e-kit1-cable2-${Date.now()}`;
+const response = await fetch(parsed, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        Origin: origin,
+        'Idempotency-Key': idempotencyKey
+    },
+    body: JSON.stringify([
+        { sku: 'ENC-SAM-A9-V1', qty: 1 },
+        { sku: 'CAB-RA20CM-MF-BLK-V1', qty: 2 }
+    ])
 });
-const session = await stripe.checkout.sessions.create(params, { idempotencyKey });
-console.log(JSON.stringify({
-    id: session.id,
-    url: session.url,
-    mode: session.mode,
-    livemode: session.livemode
-}));
+const text = await response.text();
+let json = null;
+try {
+    json = JSON.parse(text);
+} catch (error) {
+    json = null;
+}
+const checkoutUrl = json && json.url;
+if (!response.ok || typeof checkoutUrl !== 'string' || !checkoutUrl.startsWith('https://checkout.stripe.com/')) {
+    console.error(`Checkout failed (HTTP ${response.status}).`);
+    process.exit(1);
+}
+console.log(JSON.stringify({ status: response.status, url: checkoutUrl }));

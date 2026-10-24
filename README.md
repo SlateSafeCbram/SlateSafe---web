@@ -11,7 +11,7 @@ SlateSafe offers practical, professionally designed tablet accessories including
 - **Alpine.js** - Lightweight JavaScript framework for interactive components
 - **Tailwind CSS** - Utility-first CSS framework (compiled via PostCSS)
 - **Stripe Payment Links** - Checkout for first-party SKUs (default)
-- **Stripe Checkout Sessions** - Optional, off until `checkout-config.js` is set to `session`. See [docs/checkout.md](docs/checkout.md).
+- **Stripe Checkout Sessions** - Optional, off until `checkout-config.js` is set to `session`. The function is a Cloudflare Worker on the free plan. See [docs/checkout.md](docs/checkout.md).
 - **GitHub Pages** - Static site hosting
 
 ## Development Setup

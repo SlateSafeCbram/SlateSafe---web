@@ -4,11 +4,11 @@ Date: 2026-10-24. Repo: public `SlateSafeCbram/SlateSafe---web`. Branch: `cursor
 
 No secret value is written below. Findings list file, commit, and type only.
 
-## 1. Secrets — PASS for Stripe, Vercel, webhook, and .env
+## 1. Secrets — PASS for Stripe, webhook, and .env
 
-Full-history scan with the default gitleaks rules (allowing only `node_modules` and `package-lock.json`) found **no** `stripe-access-token`, restricted key, webhook secret (`whsec_`), Vercel token, or `.env` file. The same scan of the working tree found none of those either. GitHub issue bodies (51), issue comments (52), pull request bodies (51), and review comments (22) had no `sk_live_` / `sk_test_` / `rk_live_` / `rk_test_` / `whsec_` / `vercel_` token patterns.
+Full-history scan with the default gitleaks rules (allowing only `node_modules` and `package-lock.json`) found **no** `stripe-access-token`, restricted key, webhook secret (`whsec_`), Vercel token, or `.env` file. The same scan of the working tree found none of those either. GitHub issue bodies (51), issue comments (52), pull request bodies (51), and review comments (22) had no `sk_live_` / `sk_test_` / `rk_live_` / `rk_test_` / `whsec_` / `vercel_` token patterns. `worker/wrangler.toml` has no `account_id` and no secret values. Stripe keys are wrangler secrets, not files in git.
 
-`.gitignore` now ignores `.env` and `.env.*` and keeps `.env.example` (empty names only). `.github/workflows/gitleaks.yml` runs `gitleaks/gitleaks-action@v2` on pull requests with full history and sets `GITLEAKS_VERSION` to `8.28.0`. Without that pin the action installs 8.24.3, which ignores `[[allowlists]]`. That action is free on public repositories.
+`.gitignore` ignores `.env`, `.env.*` (keeps `.env.example`, names only), and `.dev.vars` (wrangler's local secret file). `worker/.dev.vars.example` lists empty names only. `.github/workflows/gitleaks.yml` runs `gitleaks/gitleaks-action@v2` on pull requests with full history and sets `GITLEAKS_VERSION` to `8.28.0`. Without that pin the action installs 8.24.3, which ignores `[[allowlists]]`. That action is free on public repositories.
 
 The unfiltered generic-api-key rule did match other tokens. They are not Stripe keys:
 
@@ -18,7 +18,7 @@ The unfiltered generic-api-key rule did match other tokens. They are not Stripe 
 | generic-api-key (same Web3Forms form id) | `contact.html` | `8d8e89ef86ed` | Yes |
 | generic-api-key (retired Shopify Storefront token) | `shopify-cart.js`, `product-tablet-enclosure.html`, `product-usb-c-cable.html`, `contact.html` | `2134940d1938` | No |
 
-`.gitleaks.toml` allowlists **only** rule `generic-api-key` (`targetRules`) on those five paths so CI does not fail on the public form id and the retired Storefront token. Stripe rules stay active. With that config, the full-history scan reports 0 findings.
+`.gitleaks.toml` allowlists **only** rule `generic-api-key` (`targetRules`) on those five paths so a scan does not fail on the public form id and the retired Storefront token. Stripe rules stay active. gitleaks 8.28.0 does not apply a `targetRules` allowlist when `[extend] useDefault = true` (the targeted allowlist is attached only when `extendDepth` is still 0, and loading the default config increments that first). A full-history scan with this binary still reports those 6 `generic-api-key` hits and no Stripe keys. Dropping `targetRules` would hide every rule on those paths, including a future Stripe key, so the file keeps it. The pull-request job scans the patch (`git log -p -U0` on the PR commits) and reported no leaks on `f9f7e5b`.
 
 Follow-up, not done here: in the Web3Forms dashboard, domain-lock the form to `slatesafe.com` (and rotate the form id if it was never locked). Revoke the old Shopify Storefront token if that store still exists. Do not delete the form id from the HTML until a replacement is in place, or the contact form stops working. No Stripe key was found, so no Stripe rotation is indicated by this scan.
 
@@ -46,29 +46,31 @@ No personal Gmail author. Chris already commits with the company domain. GitHub'
 
 ## 3. Checkout function — PASS (implemented in this PR)
 
-`api/create-checkout-session.js` and `api/checkout-lib.js`:
+`worker/src/index.js` and `worker/src/checkout.js` (Cloudflare Worker, Workers Free). The Vercel function and `vercel.json` are removed.
 
 - Server maps SKU → Price ID from `PRICE_CABLE` and `PRICE_KIT`. The browser sends only `{ sku, qty }`. No client amount is accepted (extra fields are rejected).
 - SKU allowlist is the two `products.json` SKUs. Quantity is an integer 1–10 per SKU after duplicates are summed. At most 2 lines.
 - CORS allows exactly `https://slatesafe.com` and `https://www.slatesafe.com`. Other origins get 403 and no `Access-Control-Allow-Origin`. `OPTIONS` and `POST` only.
-- Body must be `application/json`, at most 4096 bytes, and a JSON array of objects whose only keys are `sku` and `qty`.
-- Every client error is `{ "error": "Unable to start checkout." }`. Stripe error text and stack traces are not returned. Server logs are the fixed strings `checkout_misconfigured`, `checkout_bad_redirect`, and `checkout_failed`.
+- Body must be `application/json`, at most 4096 bytes (declared Content-Length and bytes read from the stream), and a JSON array of objects whose only keys are `sku` and `qty`.
+- Every client error is `{ "error": "Unable to start checkout." }`. Stripe error text and stack traces are not returned. Server logs are the fixed strings `checkout_misconfigured`, `checkout_bad_redirect`, `checkout_failed`, `checkout_rate_limit_unbound`, and `checkout_rate_limit_failed`.
 - Redirect URL must start with `https://checkout.stripe.com/`.
-- Abuse controls that fit Vercel Hobby: exact Origin check, 4096-byte cap, idempotency key (`^[A-Za-z0-9_-]{16,200}$`, or a hash of origin + cart when the header is omitted), and an in-memory token bucket of 8 requests per 60 seconds per IP **per instance**. The bucket does not span instances, and the first `x-forwarded-for` hop is what the platform sets. This is not a global rate limit.
+- Abuse controls: exact Origin check, 4096-byte cap, idempotency key (`^[A-Za-z0-9_-]{16,200}$`, or a hash of origin + cart when the header is omitted), and the Workers Rate Limiting binding (`[[ratelimits]]`, name `CHECKOUT_RATE_LIMITER`). Limit 8 per 60 seconds, key `CF-Connecting-IP` (set by Cloudflare, not the client). The binding is GA and the docs do not gate it to a paid plan ([Rate Limiting](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/), updated Oct 21, 2026; [GA](https://developers.cloudflare.com/changelog/post/2025-09-19-ratelimit-workers-ga/), Sept 19, 2025). Counts are approximate and per Cloudflare location, not a strict global cap. A missing or throwing binding fails closed (HTTP 500, Stripe not called). Test `namespace_id` is `1002`; production is `1001`.
+- The public hostname is `https://slatesafe-checkout.<account subdomain>.workers.dev/` (test: `slatesafe-checkout-test`). That URL is reachable by anyone. Origin is a browser control, not authentication. `preview_urls` is false. Secrets are `wrangler secret put` per environment, not `[vars]`, not git, and not a preview deployment that inherits the live key.
+- stripe-node uses `Stripe.createFetchHttpClient()`, API `2026-09-30.endive`, timeout 4000ms, one retry. Workers Free CPU is 10ms per request; waiting on Stripe is not CPU. A consistent error 1102 would be that CPU limit, and the buyer would see Cloudflare's page rather than the JSON error.
 - Command-deck contract: session `metadata.source` is `slatesafe-cart` and `metadata.cart` is `SKU:qty,SKU:qty`. One kit and two cables is exactly `ENC-SAM-A9-V1:1,CAB-RA20CM-MF-BLK-V1:2` (kit, then cable), whatever order the browser posted. Each line item is `{ price, quantity, metadata: { sku } }`. Stripe Checkout line items accept that metadata next to a Price ID, so `price_data` is not used.
 
-`npm test` (`node --test api/checkout-lib.test.js`): 10 passing, including that metadata case and the mocked 1 kit + 2 cables session. No real Stripe key was available, so `scripts/checkout-session-e2e.mjs` was not run against Stripe. `stripe/stripe-mock` was not used; the mocked client covers the required session shape.
+`npm test` runs `worker/src/checkout.test.js`, `worker/src/stripe-client.test.js`, and `cart.test.js`: 19 passing, including the metadata case, the mocked 1 kit + 2 cables session, the rate-limit binding, and the fetch HTTP client. No real Stripe key was available, so `scripts/checkout-session-e2e.mjs` was not run against the Worker. `stripe/stripe-mock` was not used; the mocked client covers the required session shape. Miniflare was not added: Node's `Request` / `Response` / `crypto.subtle` cover the handler.
 
 ## 4. Restricted key and webhooks — PASS (documented; no webhook in this PR)
 
 Minimum restricted-key scope is **Checkout Sessions: Write**. The function passes Price IDs and does not retrieve Prices or Products, so those read scopes are not required. Do not use a secret key (`sk_`).
 
-This PR does not add a webhook. Fulfillment is not automated. A later webhook must verify the `Stripe-Signature` against a webhook secret stored only in Vercel and must not trust the unsigned body.
+This PR does not add a webhook. Fulfillment is not automated. A later webhook must verify the `Stripe-Signature` against a webhook secret stored only with `wrangler secret put` and must not trust the unsigned body.
 
 ## 5. Site — PASS with a flagged CSP residual
 
 - Alpine.js is pinned to 3.13.5 and every copy has SRI `sha384-BxpSbjbDhVKwnC1UfcjsNEuMuxg4af5IXOaSi1Iq5rASQ/9a7uslhEXbP9UI/fXo` and `crossorigin="anonymous"`.
-- GitHub Pages cannot set a CSP response header. A `Content-Security-Policy` meta tag is on each HTML page. It allows the Alpine CDN, Google Analytics (after the existing consent loader), Google Fonts, Web3Forms, YouTube, Gumlet, and `https://checkout.slatesafe.com`.
+- GitHub Pages cannot set a CSP response header. A `Content-Security-Policy` meta tag is on each HTML page. It allows the Alpine CDN, Google Analytics (after the existing consent loader), Google Fonts, Web3Forms, YouTube, Gumlet, and the two workers.dev checkout hosts (`slatesafe-checkout.ACCOUNT_SUBDOMAIN.workers.dev` and `slatesafe-checkout-test.ACCOUNT_SUBDOMAIN.workers.dev`). `ACCOUNT_SUBDOMAIN` is replaced after the first deploy. `*.workers.dev` is not used: a CSP wildcard matches one label, and these hosts have two.
 - Alpine's stock CDN build evaluates expressions, so the meta CSP includes `'unsafe-eval'`. It also includes `'unsafe-inline'` because several pages have inline scripts and style attributes. `@alpinejs/csp` was not adopted: the cart and product pages use `@click="$store..."` expressions that the CSP build rejects. **Flag: this CSP does not stop an injected inline script or an eval-based XSS. It does block new script hosts, mixed content upgrades, and unexpected form posts.**
 - `frame-src` includes `'self'` because the product gallery mounts an iframe for every media item, including local images. `img-src` includes YouTube hosts because hidden gallery nodes request embed URLs as images.
 - Mixed content: no `http://` script, image, or frame URLs in the pages. `http://` in `sitemap.xml` and `logo.svg` is an XML namespace, not a resource load.
@@ -83,14 +85,14 @@ GitHub settings read with this token:
 | Dependabot alerts | **off** (API: "Dependabot alerts are disabled for this repository.") |
 | Branch protection on `main` | **unknown** (API 403, needs administration read) |
 
-## 6. Vercel — PASS as documentation; the dashboard steps are not applied from here
+## 6. Cloudflare Workers — PASS as documentation; the dashboard steps are not applied from here
 
-`docs/checkout.md` tells Chris to:
+The function is a Worker on the Workers Free plan. `docs/checkout.md` tells Chris to:
 
-- Keep `slatesafe.com` on GitHub Pages. Attach only `checkout.slatesafe.com` to Vercel.
-- Put `STRIPE_SECRET_KEY`, `PRICE_CABLE`, and `PRICE_KIT` in Vercel sensitive env vars, never in git or the browser.
-- Either disable Preview deployments, or give Preview only the test restricted key and test Price IDs. Production is the only environment that should hold the live key.
-- Turn on Deployment Protection for Preview if previews stay enabled.
+- Keep `slatesafe.com` on GitHub Pages. Do not move nameservers for launch. Use the workers.dev host. A CNAME to `checkout.slatesafe.com` does not work on the Free plan while DNS stays off Cloudflare (Custom Domains and Routes need an active zone; partial CNAME setup is Business or Enterprise; Cloudflare for SaaS needs a zone on Cloudflare and payment info on non-enterprise plans).
+- Put `STRIPE_SECRET_KEY`, `PRICE_CABLE`, and `PRICE_KIT` in with `wrangler secret put`, once per environment. `[env.test]` gets the `rk_test_` key and test Price IDs. Production gets the live key only after the test purchase. Nothing is committed. `account_id` stays out of `wrangler.toml`.
+- Leave `preview_urls` false. Do not use `wrangler dev --remote` against production. Local `.dev.vars` is gitignored and should hold the test key only.
+- The rate-limit binding is the free control. It is not a global hard cap (per location, approximate). The workers.dev URL is public. Origin checks do not authenticate non-browser clients.
 
 ## Only Chris can change
 
@@ -108,14 +110,15 @@ Stripe:
 2. For the first end-to-end run, copy **test-mode** Price IDs into `PRICE_CABLE` and `PRICE_KIT`. The live Payment Link prices do not work with an `rk_test_` key (see `docs/checkout.md`).
 3. Optional, preferred by the command-deck parser: set each Price `lookup_key` to its SKU (`CAB-RA20CM-MF-BLK-V1`, `ENC-SAM-A9-V1`). Checkout does not read lookup keys.
 4. Confirm Stripe Tax registration and product tax codes, or accept that `automatic_tax` collects $0 until then.
-5. After a test-mode purchase works, create the live `rk_live_` key with the same single scope, copy the live Payment Link Price IDs into Production, turn on successful-payment receipt emails, and put the live key only in Vercel Production.
+5. After a test-mode purchase works, create the live `rk_live_` key with the same single scope, copy the live Payment Link Price IDs into the production Worker with `wrangler secret put` (no `--env`), turn on successful-payment receipt emails, and do not put the live key on the test worker.
 6. No Stripe key rotation is indicated by the scan. Domain-lock or rotate the Web3Forms form id, and revoke the retired Shopify Storefront token if that store still exists.
 
-Vercel:
+Cloudflare:
 
-1. Hobby project, root = this repo. Do not add `slatesafe.com` as a domain.
-2. Sensitive env vars as named above. Preview gets the test key or no preview deployments. Production gets the live key only after the test purchase.
-3. Deployment Protection on Preview.
-4. DNS CNAME `checkout.slatesafe.com` to the Vercel target. Do not move the apex off GitHub Pages.
+1. Free account. Workers Free. Do not move `slatesafe.com` nameservers for this launch. Enable the workers.dev subdomain.
+2. `npx wrangler@4 login` (4.36.0 or later). `npx wrangler deploy --env test` from `worker/`. Then `wrangler secret put` for `STRIPE_SECRET_KEY`, `PRICE_CABLE`, and `PRICE_KIT` with `--env test`.
+3. Replace `ACCOUNT_SUBDOMAIN` in `checkout-config.js` and in every CSP `connect-src`. Point the endpoint at the test host until the test purchase works, then deploy production (`wrangler deploy --env=""`, secrets with `--env=""`) and point the endpoint at `slatesafe-checkout.<subdomain>.workers.dev`.
+4. Leave `preview_urls` false. Do not commit `.dev.vars`. Do not put secrets in `[vars]`.
+5. Optional later: move the zone to Cloudflare and add a Custom Domain. A CNAME while DNS stays at Vercel is not available on the Free plan. Buyers still see `checkout.stripe.com`; the workers.dev host is only in devtools and the POST.
 
 Launch follow-up after those steps: flip `checkout-config.js` `mode` to `session`, and update the privacy-policy sentences that still say Payment Links. This pull request leaves the flag at `payment_links` and must not be merged until that checklist is accepted.

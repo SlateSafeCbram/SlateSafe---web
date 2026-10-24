@@ -7,7 +7,7 @@
     "watch-css": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
     "serve": "npx http-server . -p 8080 -o",
     "dev": "npx http-server . -p 8080",
-    "test": "node --test api/checkout-lib.test.js api/create-checkout-session.test.js cart.test.js"
+    "test": "node --test worker/src/checkout.test.js worker/src/stripe-client.test.js cart.test.js"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.17",
