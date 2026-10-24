@@ -75,7 +75,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="index.html" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+                    <a href="index.html" class="flex items-center min-h-11 space-x-2 hover:opacity-90 transition-opacity">
                         <img src="logo.svg" alt="SlateSafe Logo" class="h-8 md:h-10 w-auto" data-gumlet="false">
                     </a>
                 </div>
@@ -88,7 +88,7 @@
                     <a href="contact.html" class="text-white hover:text-brand-orange transition-colors">Contact</a>
                     
                     <!-- Cart Icon -->
-                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
+                    <button @click="$store.cart.openDrawer()" class="min-w-11 min-h-11 justify-center items-center inline-flex relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
@@ -96,7 +96,7 @@
                     </button>
                     
                     <!-- Theme Toggle -->
-                    <button @click="$store.theme.toggle()" class="p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Toggle theme">
+                    <button @click="$store.theme.toggle()" class="min-w-11 min-h-11 justify-center items-center inline-flex p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Toggle theme">
                         <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
@@ -109,7 +109,7 @@
                 <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center space-x-2">
                     <!-- Cart Icon (Mobile) -->
-                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
+                    <button @click="$store.cart.openDrawer()" class="min-w-11 min-h-11 justify-center items-center inline-flex relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
@@ -117,7 +117,7 @@
                     </button>
                     
                     <!-- Theme Toggle (Mobile) -->
-                    <button @click="$store.theme.toggle()" class="p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Toggle theme">
+                    <button @click="$store.theme.toggle()" class="min-w-11 min-h-11 justify-center items-center inline-flex p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Toggle theme">
                         <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
@@ -125,7 +125,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                     </button>
-                    <button @click="open = !open" class="p-2 rounded-lg text-white hover:text-brand-orange transition-colors" aria-label="Toggle menu">
+                    <button @click="open = !open" class="min-w-11 min-h-11 justify-center items-center inline-flex p-2 rounded-lg text-white hover:text-brand-orange transition-colors" aria-label="Toggle menu">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -148,10 +148,10 @@
              @click.outside="open = false"
              class="bg-header-blue border-t border-header-blue/80">
             <div class="px-4 py-4 space-y-3">
-                <a href="index.html" class="block text-white hover:text-brand-orange transition-colors">Home</a>
-                <a href="products.html" class="block text-white hover:text-brand-orange transition-colors">Products</a>
-                <a href="about.html" class="block text-white hover:text-brand-orange transition-colors">About</a>
-                <a href="contact.html" class="block text-white hover:text-brand-orange transition-colors">Contact</a>
+                <a href="index.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">Home</a>
+                <a href="products.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">Products</a>
+                <a href="about.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">About</a>
+                <a href="contact.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">Contact</a>
             </div>
         </div>
     </nav>
@@ -519,25 +519,25 @@
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Products</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="products.html" class="hover:text-brand-orange transition-colors">All Products</a></li>
+                        <li><a href="products.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">All Products</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Company</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="about.html" class="hover:text-brand-orange transition-colors">About Us</a></li>
-                        <li><a href="contact.html" class="hover:text-brand-orange transition-colors">Contact</a></li>
+                        <li><a href="about.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">About Us</a></li>
+                        <li><a href="contact.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Legal</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
-                        <li><a href="shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
-                        <li><a href="returns.html" class="hover:text-brand-orange transition-colors">Returns</a></li>
-                        <li><a href="terms.html" class="hover:text-brand-orange transition-colors">Terms of Service</a></li>
+                        <li><a href="privacy-policy.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Privacy Policy</a></li>
+                        <li><a href="shipping-policy.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Shipping Policy</a></li>
+                        <li><a href="returns.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Returns</a></li>
+                        <li><a href="terms.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
@@ -548,7 +548,7 @@
                 </p>
                 <div class="flex space-x-6">
                     <div class="relative group">
-                        <button class="text-gray-200 hover:text-brand-orange transition-colors cursor-not-allowed" aria-label="Instagram - Coming Soon" disabled>
+                        <button class="inline-flex items-center justify-center min-h-11 min-w-11 text-gray-200 hover:text-brand-orange transition-colors cursor-not-allowed" aria-label="Instagram - Coming Soon" disabled>
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                             </svg>
@@ -556,7 +556,7 @@
                         <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Coming soon</span>
                     </div>
                     <div class="relative group">
-                        <button class="text-gray-200 hover:text-brand-orange transition-colors cursor-not-allowed" aria-label="YouTube - Coming Soon" disabled>
+                        <button class="inline-flex items-center justify-center min-h-11 min-w-11 text-gray-200 hover:text-brand-orange transition-colors cursor-not-allowed" aria-label="YouTube - Coming Soon" disabled>
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                             </svg>
@@ -598,7 +598,7 @@
             <!-- Cart Header -->
             <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Shopping Cart</h2>
-                <button @click="$store.cart.open = false" class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Close cart">
+                <button @click="$store.cart.open = false" class="min-w-11 min-h-11 justify-center items-center inline-flex p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Close cart">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -630,13 +630,13 @@
                                 </template>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate" x-text="item.title"></h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="item.title"></h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400" x-text="item.variant?.title || ''"></p>
                                 <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
                                 <div class="flex items-center space-x-3 mt-2">
                                     <span class="text-gray-900 dark:text-white font-medium">Quantity 1</span>
                                     <button @click="$store.cart.removeLineItem(item.id)" 
-                                            class="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
+                                            class="ml-auto inline-flex items-center min-h-11 px-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
                                         Remove
                                     </button>
                                 </div>
@@ -777,11 +777,11 @@
                 </div>
                 <div class="flex gap-3 flex-shrink-0">
                     <button @click="$store.cookieConsent.reject(); bannerOpen = false;"
-                            class="px-6 py-2 bg-transparent border-2 border-white text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
+                            class="inline-flex items-center justify-center min-h-11 px-6 py-2 bg-transparent border-2 border-white text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
                         Reject
                     </button>
                     <button @click="$store.cookieConsent.accept(); bannerOpen = false; if (typeof SlateSafeAnalytics !== 'undefined') SlateSafeAnalytics.init();"
-                            class="px-6 py-2 bg-brand-orange hover:bg-brand-orange/90 text-white rounded-lg transition-colors font-medium">
+                            class="inline-flex items-center justify-center min-h-11 px-6 py-2 bg-brand-orange hover:bg-brand-orange/90 text-white rounded-lg transition-colors font-medium">
                         Accept
                     </button>
                 </div>
