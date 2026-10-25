@@ -16,7 +16,7 @@ window.SLATESAFE_CHECKOUT = {
 };
 ```
 
-`payment_links` is the default. In that mode the cart still locks each line to quantity 1, still shows the mixed-cart cable notice, and Checkout still opens the product's Stripe Payment Link. Buy buttons always open Payment Links.
+`payment_links` is the default. In that mode the cart still locks each line to quantity 1, still shows the mixed-cart cable notice, and both Checkout and Buy open the product's Stripe Payment Link. In `session` mode, Buy adds the selected quantity to the cart, keeps what is already in the cart, and starts one Checkout Session. It does not open a Payment Link.
 
 The workers.dev subdomain is `slatesafe`. The constant currently points at the **test** worker, `https://slatesafe-checkout-test.slatesafe.workers.dev/`. At launch, switch it to `https://slatesafe-checkout.slatesafe.workers.dev/` in the same change that sets `mode` to `session`. Both hosts are in each HTML page's `connect-src`. A CSP wildcard `*.workers.dev` does not match these hosts: the URL has two labels before `workers.dev`, and a CSP `*` matches one label.
 
@@ -27,7 +27,7 @@ Flip `mode` to `'session'` only after the checklist below is done and a test-mod
 - A cart may contain both the kit and the cable.
 - The mixed-cart cable notice is hidden.
 - Checkout POSTs `[{ sku, qty }]` to the endpoint and redirects only to a `https://checkout.stripe.com/` URL.
-- Buy buttons still open Payment Links as a fallback.
+- Buy adds the selected quantity to the cart, keeps what is already in the cart, and starts that same Checkout Session. Buy opens a Payment Link only while `mode` is `payment_links`.
 
 Privacy copy still says checkout uses Payment Links. Update `privacy-policy.html` in the same change that flips the flag.
 
@@ -146,15 +146,15 @@ Do these in order. Merging this pull request does not turn session checkout on. 
 11. **Done (2026-10-24).** `scripts/checkout-session-e2e.mjs` against the test worker, body 1 kit + 2 cables, returned HTTP 200 and a `https://checkout.stripe.com/` URL with a `cs_test_` session id. A browser pass of that Checkout page (one kit, cable quantity 2, free shipping, phone field) is still worth doing before step 12 if it has not been clicked through.
 12. Later, when the test purchase looks right: create the live restricted key (`rk_live_`, Checkout Sessions write only) and copy the Price IDs from the existing live Payment Links. Put those on the **production** worker, then deploy production. Leave the test key on the test worker.
 
-   Wrangler 4 warns if you deploy the top-level script without an environment flag, because `[env.test]` also exists. Pass an empty `--env` to mean production.
+    Wrangler 4 warns if you deploy the top-level script without an environment flag, because `[env.test]` also exists. Pass an empty `--env` to mean production.
 
-   ```bash
-   cd worker
-   npx wrangler@4 secret put STRIPE_SECRET_KEY --env=""
-   npx wrangler@4 secret put PRICE_CABLE --env=""
-   npx wrangler@4 secret put PRICE_KIT --env=""
-   npx wrangler@4 deploy --env=""
-   ```
+    ```bash
+    cd worker
+    npx wrangler@4 secret put STRIPE_SECRET_KEY --env=""
+    npx wrangler@4 secret put PRICE_CABLE --env=""
+    npx wrangler@4 secret put PRICE_KIT --env=""
+    npx wrangler@4 deploy --env=""
+    ```
 
     - Cable `CAB-RA20CM-MF-BLK-V1`, Payment Link `https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00` → `PRICE_CABLE`
     - Kit `ENC-SAM-A9-V1`, Payment Link `https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01` → `PRICE_KIT`
