@@ -16,18 +16,18 @@ window.SLATESAFE_CHECKOUT = {
 };
 ```
 
-`payment_links` is the default. In that mode the cart still locks each line to quantity 1, still shows the mixed-cart cable notice, and both Checkout and Buy open the product's Stripe Payment Link. In `session` mode, Buy adds the selected quantity to the cart, keeps what is already in the cart, and starts one Checkout Session. It does not open a Payment Link.
+`payment_links` is the default. In that mode the cart still locks each line to quantity 1, still shows the mixed-cart cable notice, and both Checkout and Buy open the product's Stripe Payment Link. In `session` mode, Buy checks out only that product at the chosen quantity and leaves the saved cart untouched. It does not open a Payment Link.
 
 The workers.dev subdomain is `slatesafe`. The constant currently points at the **test** worker, `https://slatesafe-checkout-test.slatesafe.workers.dev/`. At launch, switch it to `https://slatesafe-checkout.slatesafe.workers.dev/` in the same change that sets `mode` to `session`. Both hosts are in each HTML page's `connect-src`. A CSP wildcard `*.workers.dev` does not match these hosts: the URL has two labels before `workers.dev`, and a CSP `*` matches one label.
 
 Flip `mode` to `'session'` only after the checklist below is done and a test-mode purchase has succeeded. Then:
 
 - Cart lines show steppers from 1 to 10.
-- The product page quantity field accepts 1 to 10 and that quantity is what the cart stores.
+- The product page quantity field accepts 1 to 10. Add to Cart stores that quantity. Buy uses it only for that product's Checkout Session.
 - A cart may contain both the kit and the cable.
 - The mixed-cart cable notice is hidden.
 - Checkout POSTs `[{ sku, qty }]` to the endpoint and redirects only to a `https://checkout.stripe.com/` URL.
-- Buy adds the selected quantity to the cart, keeps what is already in the cart, and starts that same Checkout Session. Buy opens a Payment Link only while `mode` is `payment_links`.
+- Buy checks out only that product at the chosen quantity and leaves the saved cart untouched. Buy opens a Payment Link only while `mode` is `payment_links`.
 
 Privacy copy still says checkout uses Payment Links. Update `privacy-policy.html` in the same change that flips the flag.
 
@@ -66,11 +66,13 @@ Stripe Payment Link "after completion" URLs live in the Stripe Dashboard, not in
 - Success: `https://slatesafe.com/order-complete.html?session_id={CHECKOUT_SESSION_ID}`
 - Cancel: `https://slatesafe.com/`
 
+Cart checkout uses that success URL. A product-page Buy posts only that product and adds `?src=buy` on the worker request. Stripe's success URL for a Buy session is the cart success URL plus `&src=buy`. `order-complete.html` clears the saved cart only when `session_id` starts with `cs_` and `src` is not `buy`. Both paths keep `source` exactly `slatesafe-cart`. A Buy session also sets `metadata.checkout` to `buy`.
+
 `order-complete.html` does not claim the payment succeeded. It says Stripe emails a receipt only when receipt emails are enabled and Stripe confirms the payment, and that test mode sends none. The page is not linked from the nav.
 
 ## What the browser sends
 
-Only an array of `{ sku, qty }`. No prices, no amounts, no Price IDs. The server maps:
+Only an array of `{ sku, qty }`. No prices, no amounts, no Price IDs. Product-page Buy sends that same array for the chosen product only, with `?src=buy` on the POST URL. The Idempotency-Key header is unchanged. The server maps:
 
 | SKU | Env var | Catalog price (display only) |
 | --- | --- | --- |

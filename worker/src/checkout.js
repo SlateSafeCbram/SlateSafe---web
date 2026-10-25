@@ -22,6 +22,7 @@ const MAX_LINES = 2;
 export const MAX_BODY_BYTES = 4096;
 export const CLIENT_ERROR = 'Unable to start checkout.';
 export const SUCCESS_URL = 'https://slatesafe.com/order-complete.html?session_id={CHECKOUT_SESSION_ID}';
+export const BUY_SUCCESS_URL = `${SUCCESS_URL}&src=buy`;
 export const CANCEL_URL = 'https://slatesafe.com/';
 
 function clientIp(request) {
@@ -132,7 +133,16 @@ export async function idempotencyKeyFor(origin, items, requested) {
     return Array.from(hash, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-export async function sessionParams(items, env, idempotencyKey) {
+export function checkoutSource(url) {
+    try {
+        return new URL(url).searchParams.get('src') === 'buy' ? 'buy' : 'cart';
+    } catch (error) {
+        return 'cart';
+    }
+}
+
+export async function sessionParams(items, env, idempotencyKey, source) {
+    const buy = source === 'buy';
     const lineItems = [];
     for (const item of items) {
         const price = priceIdForSku(item.sku, env);
@@ -152,11 +162,12 @@ export async function sessionParams(items, env, idempotencyKey) {
         shipping_address_collection: { allowed_countries: ['US'] },
         phone_number_collection: { enabled: true },
         shipping_options: [shippingOption(items)],
-        success_url: SUCCESS_URL,
+        success_url: buy ? BUY_SUCCESS_URL : SUCCESS_URL,
         cancel_url: CANCEL_URL,
         metadata: {
             source: 'slatesafe-cart',
-            cart: items.map((item) => `${item.sku}:${item.qty}`).join(',')
+            cart: items.map((item) => `${item.sku}:${item.qty}`).join(','),
+            ...(buy ? { checkout: 'buy' } : {})
         },
         integration_identifier: `slatesafe-cart-${await integrationSuffix(idempotencyKey)}`
     };
@@ -260,7 +271,7 @@ export function createCheckoutHandler(deps) {
         const idempotencyKey = await idempotencyKeyFor(origin, items, requestedKey);
         if (!idempotencyKey) return fail(400, origin);
 
-        const params = await sessionParams(items, env, idempotencyKey);
+        const params = await sessionParams(items, env, idempotencyKey, checkoutSource(request.url));
         if (!params) {
             console.error('checkout_misconfigured');
             return fail(500, origin);

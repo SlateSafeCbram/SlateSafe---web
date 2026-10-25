@@ -159,7 +159,7 @@
     
     <!-- Contact Section -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" x-data="{ shippingNotice: null }" x-init="
-        async () => {
+        (async () => {
             try {
                 const response = await fetch('shipping-notice.json');
                 if (response.ok) {
@@ -169,7 +169,7 @@
             } catch (err) {
                 console.error('Error loading shipping notice:', err);
             }
-        }
+        })()
     ">
         <div class="grid lg:grid-cols-2 gap-12">
             
@@ -221,8 +221,8 @@
                 
                 <!-- Shipping Notice -->
                 <div x-show="shippingNotice && shippingNotice.subject && shippingNotice.description" class="mt-12 p-6 bg-gray-100 dark:bg-slate-dark rounded-lg border border-gray-200 dark:border-gray-800">
-                    <h3 class="font-semibold mb-2 text-brand-orange" x-text="shippingNotice.subject"></h3>
-                    <p class="text-sm text-gray-700 dark:text-gray-400" x-text="shippingNotice.description"></p>
+                    <h3 class="font-semibold mb-2 text-brand-orange" x-text="shippingNotice ? shippingNotice.subject : ''"></h3>
+                    <p class="text-sm text-gray-700 dark:text-gray-400" x-text="shippingNotice ? shippingNotice.description : ''"></p>
                 </div>
             </div>
             
@@ -486,7 +486,7 @@
                     Checkout
                 </button>
                 <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
-                <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-2">Free shipping when your order includes the kit.</p>
+                <p x-show="$store.cart.sessionCheckout" x-cloak class="text-center text-gray-600 dark:text-gray-400 text-xs mt-2">Free shipping when your order includes the kit.</p>
                 <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice && !$store.cart.sessionCheckout" x-text="$store.cart.cableBundleNotice"></p>
                 <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
                 <button @click="$store.cart.open = false" 

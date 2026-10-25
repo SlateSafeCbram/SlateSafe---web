@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
+    BUY_SUCCESS_URL,
     CLIENT_ERROR,
     SUCCESS_URL,
+    checkoutSource,
     createCheckoutHandler,
     normalizeItems,
     sessionParams,
@@ -43,7 +45,7 @@ function makeHandler(stripe, limiter = allowLimiter()) {
     };
 }
 
-async function post(handler, env, body, extraHeaders = {}, method = 'POST') {
+async function post(handler, env, body, extraHeaders = {}, method = 'POST', requestUrl) {
     const headers = new Headers({
         origin: 'https://slatesafe.com',
         'content-type': 'application/json',
@@ -54,7 +56,7 @@ async function post(handler, env, body, extraHeaders = {}, method = 'POST') {
     if (method !== 'GET' && method !== 'OPTIONS') {
         init.body = typeof body === 'string' ? body : JSON.stringify(body);
     }
-    const request = new Request('https://slatesafe-checkout-test.slatesafe.workers.dev/', init);
+    const request = new Request(requestUrl || 'https://slatesafe-checkout-test.slatesafe.workers.dev/', init);
     const response = await handler(request, env);
     const text = await response.text();
     let json = null;
@@ -119,6 +121,7 @@ test('a kit plus two cables builds one session with two line items and automatic
     assert.deepEqual(params.shipping_address_collection.allowed_countries, ['US']);
     assert.equal(params.phone_number_collection.enabled, true);
     assert.equal(params.success_url, SUCCESS_URL);
+    assert.equal(Object.prototype.hasOwnProperty.call(params.metadata, 'checkout'), false);
     assert.equal(params.shipping_options[0].shipping_rate_data.display_name, 'Free shipping');
     assert.equal(params.metadata.source, 'slatesafe-cart');
     assert.equal(params.metadata.cart, 'ENC-SAM-A9-V1:1,CAB-RA20CM-MF-BLK-V1:2');
@@ -352,6 +355,58 @@ test('integration: 1 kit + 2 cables is one session, cable qty 2, free shipping, 
     assert.equal(JSON.stringify(params).includes('11.99'), false);
     assert.equal(JSON.stringify(params).includes('56.00'), false);
     assert.equal(params.metadata.cart, 'ENC-SAM-A9-V1:1,CAB-RA20CM-MF-BLK-V1:2');
+    assert.equal(params.success_url, SUCCESS_URL);
+    assert.equal(Object.prototype.hasOwnProperty.call(params.metadata, 'checkout'), false);
+});
+
+test('product buy posts one line and tags the session without changing the cart contract', async () => {
+    assert.equal(checkoutSource('https://slatesafe-checkout-test.slatesafe.workers.dev/?src=buy'), 'buy');
+    assert.equal(checkoutSource('https://slatesafe-checkout-test.slatesafe.workers.dev/'), 'cart');
+    assert.equal(BUY_SUCCESS_URL, `${SUCCESS_URL}&src=buy`);
+
+    const seen = [];
+    const stripe = {
+        checkout: {
+            sessions: {
+                create: async (params, options) => {
+                    seen.push({ params, options });
+                    return { id: 'cs_test_buy', url: 'https://checkout.stripe.com/c/pay/cs_test_buy' };
+                }
+            }
+        }
+    };
+    const { handler, env } = makeHandler(stripe);
+    const body = [{ sku: 'ENC-SAM-A9-V1', qty: 3 }];
+    const buy = await post(
+        handler,
+        env,
+        body,
+        { 'idempotency-key': 'buy-kit-qty-3-key' },
+        'POST',
+        'https://slatesafe-checkout-test.slatesafe.workers.dev/?src=buy'
+    );
+    assert.equal(buy.response.status, 200);
+    assert.equal(seen.length, 1);
+    const params = seen[0].params;
+    assert.equal(params.success_url, `${SUCCESS_URL}&src=buy`);
+    assert.equal(params.metadata.source, 'slatesafe-cart');
+    assert.equal(params.metadata.cart, 'ENC-SAM-A9-V1:3');
+    assert.equal(params.metadata.checkout, 'buy');
+    assert.equal(params.line_items.length, 1);
+    assert.deepEqual(params.line_items[0], {
+        price: PRICE_KIT,
+        quantity: 3,
+        metadata: { sku: 'ENC-SAM-A9-V1' }
+    });
+    assert.equal(seen[0].options.idempotencyKey, 'buy-kit-qty-3-key');
+
+    const cart = await post(handler, env, body, { 'idempotency-key': 'cart-kit-qty-3-key' });
+    assert.equal(cart.response.status, 200);
+    assert.equal(seen[1].params.success_url, SUCCESS_URL);
+    assert.equal(seen[1].params.metadata.source, 'slatesafe-cart');
+    assert.equal(seen[1].params.metadata.cart, 'ENC-SAM-A9-V1:3');
+    assert.equal(Object.prototype.hasOwnProperty.call(seen[1].params.metadata, 'checkout'), false);
+    assert.equal(seen[1].options.idempotencyKey, 'cart-kit-qty-3-key');
 });
 
 test('wrangler.toml sets the rate-limit binding and commits no account or secrets', () => {

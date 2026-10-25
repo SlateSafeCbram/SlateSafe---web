@@ -138,18 +138,52 @@ function slatesafeSessionBuyQuantity(quantity) {
     return { quantity: qty };
 }
 
+function slatesafeBuyPayload(sku, quantity) {
+    const planned = slatesafeSessionBuyQuantity(quantity);
+    if (planned.error) return planned;
+    if (typeof sku !== 'string' || !sku) {
+        return { error: 'Product not found.' };
+    }
+    return { items: [{ sku, qty: planned.quantity }] };
+}
+
+function slatesafeCheckoutRequestUrl(endpoint, buy) {
+    const url = new URL(endpoint);
+    if (buy) url.searchParams.set('src', 'buy');
+    return url.toString();
+}
+
+function slatesafeBuyAnalytics(lines, findProduct) {
+    const items = lines.map((line) => {
+        const product = typeof findProduct === 'function' ? findProduct(line.sku) : null;
+        const price = product ? Number(product.price) || 0 : 0;
+        return {
+            id: line.sku,
+            title: product && product.title ? product.title : line.sku,
+            variant: { id: line.sku, price: { amount: price } },
+            quantity: line.qty
+        };
+    });
+    const total = items.reduce((sum, item) => {
+        return sum + (Number(item.variant.price.amount) || 0) * (item.quantity || 1);
+    }, 0);
+    return { items, total };
+}
+
 // Stripe success URLs look like ?session_id=cs_test_... or cs_live_...
-// Payment Links do not use that prefix, so this leaves those carts alone.
+// Payment Links do not use that prefix. src=buy is a product-page Buy,
+// which must not wipe a cart the buyer left behind.
 function slatesafeClearCartIfCheckoutSession(search, cart, storage) {
     const query = typeof search === 'string' ? search : '';
     const normalized = query.charAt(0) === '?' ? query.slice(1) : query;
-    let sessionId = '';
+    let params;
     try {
-        sessionId = new URLSearchParams(normalized).get('session_id') || '';
+        params = new URLSearchParams(normalized);
     } catch (e) {
-        sessionId = '';
+        return false;
     }
-    if (!sessionId.startsWith('cs_')) return false;
+    const sessionId = params.get('session_id') || '';
+    if (!sessionId.startsWith('cs_') || params.get('src') === 'buy') return false;
     if (cart) {
         cart.items = [];
         if (typeof cart.recalculate === 'function') {
@@ -491,18 +525,19 @@ document.addEventListener('alpine:init', () => {
                 }
                 return planned;
             }
+            await this.loadCatalog();
+            const product = this.findProduct(idOrHandle);
+            const payload = slatesafeBuyPayload(product && product.sku, planned.quantity);
+            if (payload.error) {
+                this.checkoutNotice = payload.error;
+                if (Alpine.store('toast')) {
+                    Alpine.store('toast').show(payload.error, 'error');
+                }
+                return payload;
+            }
+            // Buy posts only this product. The saved cart is not added to or cleared.
             this.checkoutBusy = true;
-            try {
-                await this.addProduct(idOrHandle, planned.quantity, false, { quiet: true });
-            } catch (error) {
-                this.checkoutBusy = false;
-                return { error: (error && error.message) || 'Failed to add product to cart. Please try again.' };
-            }
-            const result = await this.postCheckoutSession();
-            if (result && result.error) {
-                this.openDrawer();
-            }
-            return result;
+            return this.postCheckoutSession(payload.items, { buy: true });
         },
 
         async checkoutSession() {
@@ -512,8 +547,15 @@ document.addEventListener('alpine:init', () => {
             return this.postCheckoutSession();
         },
 
-        async postCheckoutSession() {
-            if (!this.items.length) {
+        async postCheckoutSession(lines, options) {
+            const buy = !!(options && options.buy);
+            const payload = Array.isArray(lines)
+                ? lines
+                : this.items.map((item) => ({
+                    sku: item.sku,
+                    qty: item.quantity
+                }));
+            if (!payload.length) {
                 this.checkoutBusy = false;
                 const error = 'Your cart is empty.';
                 this.checkoutNotice = error;
@@ -522,24 +564,20 @@ document.addEventListener('alpine:init', () => {
                 }
                 return { error };
             }
-            const payload = this.items.map((item) => ({
-                sku: item.sku,
-                qty: item.quantity
-            }));
             this.checkoutBusy = true;
             this.checkoutNotice = '';
             try {
                 if (typeof SlateSafeAnalytics !== 'undefined') {
-                    SlateSafeAnalytics.trackBeginCheckout({
-                        items: this.items,
-                        total: this.total
-                    });
+                    const tracked = buy
+                        ? slatesafeBuyAnalytics(payload, (sku) => this.findProduct(sku))
+                        : { items: this.items, total: this.total };
+                    SlateSafeAnalytics.trackBeginCheckout(tracked);
                 }
             } catch (err) {
                 console.error('Error tracking checkout:', err);
             }
             try {
-                const response = await fetch(this.checkoutEndpoint, {
+                const response = await fetch(slatesafeCheckoutRequestUrl(this.checkoutEndpoint, buy), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -803,6 +841,9 @@ if (typeof module !== 'undefined' && module.exports) {
         slatesafeOnPageShow,
         slatesafeLinePriceLabel,
         slatesafeSessionBuyQuantity,
+        slatesafeBuyPayload,
+        slatesafeCheckoutRequestUrl,
+        slatesafeBuyAnalytics,
         slatesafeClearCartIfCheckoutSession,
         CHECKOUT_CLIENT_ERROR,
         SESSION_MAX_QTY,

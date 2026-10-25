@@ -9,6 +9,9 @@ const {
     slatesafeOnPageShow,
     slatesafeLinePriceLabel,
     slatesafeSessionBuyQuantity,
+    slatesafeBuyPayload,
+    slatesafeCheckoutRequestUrl,
+    slatesafeBuyAnalytics,
     slatesafeClearCartIfCheckoutSession,
     CHECKOUT_CLIENT_ERROR,
     SLATESAFE_CART_KEY,
@@ -107,6 +110,8 @@ test('order complete page does not promise a receipt email', () => {
     assert.match(docs, /https:\/\/buy\.stripe\.com\/00w14ncfc6EN2574tP1Fe00/);
     assert.match(docs, /https:\/\/buy\.stripe\.com\/4gMaEXgvsgfnfVXe4p1Fe01/);
     assert.match(docs, /turn on customer emails for successful payments/);
+    assert.match(docs, /leaves the saved cart untouched/);
+    assert.doesNotMatch(docs, /keeps what is already in the cart/);
 });
 
 test('line price shows a total once quantity is 2 or more', () => {
@@ -157,8 +162,45 @@ test('checkout session return clears the stored cart and badge counts', () => {
     const untouched = { removed: null, removeItem(key) { this.removed = key; } };
     assert.equal(slatesafeClearCartIfCheckoutSession('', kept, untouched), false);
     assert.equal(slatesafeClearCartIfCheckoutSession('?session_id=plink_example', kept, untouched), false);
+    assert.equal(
+        slatesafeClearCartIfCheckoutSession('?session_id=cs_test_example&src=buy', kept, untouched),
+        false
+    );
+    assert.equal(kept.items.length, 1);
     assert.equal(kept.itemCount, 1);
     assert.equal(untouched.removed, null);
+});
+
+test('session buy posts one line and does not touch the saved cart', () => {
+    assert.deepEqual(slatesafeBuyPayload('ENC-SAM-A9-V1', 3), {
+        items: [{ sku: 'ENC-SAM-A9-V1', qty: 3 }]
+    });
+    assert.equal(slatesafeBuyPayload('', 1).error, 'Product not found.');
+    const endpoint = 'https://slatesafe-checkout-test.slatesafe.workers.dev/';
+    assert.equal(
+        slatesafeCheckoutRequestUrl(endpoint, true),
+        'https://slatesafe-checkout-test.slatesafe.workers.dev/?src=buy'
+    );
+    assert.equal(new URL(slatesafeCheckoutRequestUrl(endpoint, false)).searchParams.get('src'), null);
+
+    const tracked = slatesafeBuyAnalytics(
+        [{ sku: 'ENC-SAM-A9-V1', qty: 3 }],
+        () => ({ sku: 'ENC-SAM-A9-V1', title: 'Kit', price: 56 })
+    );
+    assert.equal(tracked.items.length, 1);
+    assert.equal(tracked.items[0].id, 'ENC-SAM-A9-V1');
+    assert.equal(tracked.items[0].quantity, 3);
+    assert.equal(tracked.total, 168);
+
+    const source = fs.readFileSync(path.join(ROOT, 'cart.js'), 'utf8');
+    const buy = source.slice(
+        source.indexOf('async buySessionQuantity'),
+        source.indexOf('async checkoutSession')
+    );
+    assert.equal(buy.includes('addProduct'), false);
+    assert.equal(buy.includes('persistCart'), false);
+    assert.equal(buy.includes('recalculate'), false);
+    assert.match(buy, /postCheckoutSession\(payload\.items, \{ buy: true \}\)/);
 });
 
 test('checkout failure copy points buyers to support', () => {
@@ -179,7 +221,11 @@ test('cart drawers show line totals, stop at 10, and mention kit shipping', () =
         const html = fs.readFileSync(file, 'utf8');
         const rel = path.relative(ROOT, file);
         assert.match(html, /:disabled="item\.quantity >= 10"/, rel);
-        assert.match(html, /Free shipping when your order includes the kit\./, rel);
+        assert.match(
+            html,
+            /x-show="\$store\.cart\.sessionCheckout"[^>]*>Free shipping when your order includes the kit\./,
+            rel
+        );
         assert.match(html, /\$store\.cart\.linePriceLabel\(item\)/, rel);
     }
 });

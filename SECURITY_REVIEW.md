@@ -26,7 +26,7 @@ Follow-up, not done here: in the Web3Forms dashboard, domain-lock the form to `s
 
 Scanned the current tree (code, JSON, README, comments), git history, and the live pages `/`, `/products.html`, both product URLs, `/about.html`, `/contact.html`, `/returns.html`, `/privacy-policy.html`, `/terms.html`, `/shipping-policy.html`, and `/products.json` (all HTTP 200 on 2026-10-24).
 
-Current tree and live site: no personal phone number, no former street address, and no former mailbox address. A personal phone number is also absent from history. No `gmail.com`. `support@slatesafe.com` and "West Chester, Pennsylvania" are the business contact and are intentional.
+Current tree and live site: no personal phone number, no former street address, and no former mailbox address. A personal phone number appeared in earlier commits on this PR branch, was redacted in `1fe15cc`, and PR #52 must be squash-merged so it never reaches `main`'s history. No `gmail.com`. `support@slatesafe.com` and "West Chester, Pennsylvania" are the business contact and are intentional.
 
 Historical, removed from the current tree:
 
@@ -59,7 +59,7 @@ No personal Gmail author. Chris already commits with the company domain. GitHub'
 - stripe-node uses `Stripe.createFetchHttpClient()`, API `2026-09-30.endive`, timeout 4000ms, one retry. Workers Free CPU is 10ms per request; waiting on Stripe is not CPU. A consistent error 1102 would be that CPU limit, and the buyer would see Cloudflare's page rather than the JSON error.
 - Command-deck contract: session `metadata.source` is `slatesafe-cart` and `metadata.cart` is `SKU:qty,SKU:qty`. One kit and two cables is exactly `ENC-SAM-A9-V1:1,CAB-RA20CM-MF-BLK-V1:2` (kit, then cable), whatever order the browser posted. Each line item is `{ price, quantity, metadata: { sku } }`. Stripe Checkout line items accept that metadata next to a Price ID, so `price_data` is not used.
 
-`npm test` runs `worker/src/checkout.test.js`, `worker/src/stripe-client.test.js`, and `cart.test.js`: 27 passing, including the metadata case, the mocked 1 kit + 2 cables session, the rate-limit binding, and the fetch HTTP client. On 2026-10-24, `scripts/checkout-session-e2e.mjs` ran against the deployed test Worker and returned HTTP 200 with a `cs_test_` Checkout URL for 1 kit and 2 cables. `stripe/stripe-mock` was not used; the mocked client covers the required session shape. Miniflare was not added: Node's `Request` / `Response` / `crypto.subtle` cover the handler.
+`npm test` runs `worker/src/checkout.test.js`, `worker/src/stripe-client.test.js`, and `cart.test.js`: 29 passing, including the metadata case, the mocked 1 kit + 2 cables session, the rate-limit binding, and the fetch HTTP client. On 2026-10-24, `scripts/checkout-session-e2e.mjs` ran against the deployed test Worker and returned HTTP 200 with a `cs_test_` Checkout URL for 1 kit and 2 cables. `stripe/stripe-mock` was not used; the mocked client covers the required session shape. Miniflare was not added: Node's `Request` / `Response` / `crypto.subtle` cover the handler.
 
 ## 4. Restricted key and webhooks — PASS (documented; no webhook in this PR)
 
