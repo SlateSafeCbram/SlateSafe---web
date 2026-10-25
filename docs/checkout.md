@@ -1,6 +1,6 @@
 # Checkout Sessions
 
-The public site stays on GitHub Pages. A Cloudflare Worker on the Workers Free plan creates Stripe Checkout Sessions. Launch state is session mode against the production worker. A squash merge of this pull request turns that on. Checkout is a secure Stripe Checkout page reached from the cart or the Buy button, and Stripe processes the payment.
+The public site stays on GitHub Pages. A Cloudflare Worker on the Workers Free plan creates Stripe Checkout Sessions. This commit sets session mode against the production worker. Merging does not confirm the live Worker secrets or the live smoke order and refund. Checkout is a secure Stripe Checkout page reached from the cart or the Buy button, and Stripe processes the payment.
 
 Do not attach `slatesafe.com` or `www.slatesafe.com` to the Worker. Those hostnames stay on GitHub Pages. DNS for `slatesafe.com` stays where it is (Vercel DNS today). The function hostname is the free `workers.dev` URL below, not `checkout.slatesafe.com`.
 
@@ -16,9 +16,9 @@ window.SLATESAFE_CHECKOUT = {
 };
 ```
 
-`session` is the launch mode. The endpoint is the production worker. The live worker secrets are `PRICE_CABLE`, `PRICE_KIT`, and `STRIPE_SECRET_KEY`. `STRIPE_SECRET_KEY` is an `rk_live_` key with Checkout Sessions Write only. The test worker keeps its own test key and test-mode Price IDs.
+`session` is the configured mode. The endpoint is the production worker. Production is meant to use secrets `PRICE_CABLE`, `PRICE_KIT`, and `STRIPE_SECRET_KEY`, with `STRIPE_SECRET_KEY` an `rk_live_` key limited to Checkout Sessions Write. Those production secrets, and a live smoke order and refund, are not confirmed in this repository. The test worker keeps its own test key and test-mode Price IDs.
 
-Rollback: in `checkout-config.js`, set `mode` to `'payment_links'`. Checkout and Buy then open the product's Stripe Payment Link. Those URLs stay in `products.json`. Both the production host and `https://slatesafe-checkout-test.slatesafe.workers.dev/` stay in each HTML page's `connect-src`, so the rollback does not need a CSP edit. A CSP wildcard `*.workers.dev` does not match these hosts: the URL has two labels before `workers.dev`, and a CSP `*` matches one label.
+Rollback: in `checkout-config.js`, set `mode` to `'payment_links'`. Checkout and Buy then open the product's Stripe Payment Link. Those URLs stay in `products.json`. Both the production host and `https://slatesafe-checkout-test.slatesafe.workers.dev/` stay in each HTML page's `connect-src`, so the rollback does not need a CSP edit. `https://*.workers.dev` matches subdomains at any depth, including both Worker hostnames, and it would also match every other `workers.dev` host. The pages list the two exact origins instead.
 
 The workers.dev subdomain is `slatesafe`. In `payment_links` mode the cart locks each line to quantity 1, shows the mixed-cart cable notice, and both Checkout and Buy open the product's Stripe Payment Link. In `session` mode:
 
@@ -53,7 +53,7 @@ A Worker cannot serve `checkout.slatesafe.com` through a CNAME while the `slates
 - Partial (CNAME) setup keeps authoritative DNS at another provider and proxies individual names. Free and Pro are **No**. Business and Enterprise are **Yes**. [CNAME setup](https://developers.cloudflare.com/dns/zone-setups/partial-setup/) (updated Oct 15, 2026).
 - Cloudflare for SaaS custom hostnames also need a zone that is already on Cloudflare. The customer then CNAMEs to a hostname on that zone. The Free plan includes 100 hostnames, and enabling the product on a non-enterprise zone requires entering payment information. [Plans](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/plans/) (updated Aug 14, 2026) and [Enable](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/start/enable/) (updated Apr 29, 2026).
 
-Recommendation: use the free `*.workers.dev` URL. [workers.dev](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) (updated Sep 22, 2026) is the documented way to deploy without onboarding a domain. Cloudflare describes that subdomain as a Free website for personal or hobby projects, and recommends a route or Custom Domain for business-critical production. For this store the buyers' address bar is `checkout.stripe.com`, then `https://slatesafe.com/order-complete.html`. The workers.dev host is not a page, so it has no SEO surface. It shows up in devtools and in the checkout POST. Trust impact is limited to someone inspecting that request. The meta CSP must name the exact origin or the browser blocks the POST once `mode` is `session`.
+Recommendation: use the free `*.workers.dev` URL. [workers.dev](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) (updated Sep 22, 2026) is the documented way to deploy without onboarding a domain. Cloudflare describes that subdomain as a Free website for personal or hobby projects, and recommends a route or Custom Domain for business-critical production. For this store the buyers' address bar is `checkout.stripe.com`, then `https://slatesafe.com/order-complete.html`. The workers.dev host is not a page, so it has no SEO surface. It shows up in devtools and in the checkout POST. Trust impact is limited to someone inspecting that request. The meta CSP lists the two exact worker origins. `https://*.workers.dev` would match both of them, and every other `workers.dev` host, so the pages do not use that wildcard.
 
 What moving DNS to Cloudflare would add later: a Custom Domain on `checkout.slatesafe.com` after the zone is active on Cloudflare. The apex can stay a GitHub Pages target. That move is optional and is not required to launch. Do not point the apex at the Worker.
 
@@ -128,7 +128,7 @@ The script refuses a URL that is not the test worker unless `ALLOW_LIVE=1`. It p
 
 ## Chris setup checklist
 
-Do these in order. A squash merge of this pull request launches session checkout on the production worker. The flag in this commit is `session`. Rollback is `mode: 'payment_links'` in `checkout-config.js`.
+Do these in order. This commit sets `checkout-config.js` `mode` to `session` and points the endpoint at the production worker. Rollback is `mode: 'payment_links'`. Production launch stays pending until the live Worker secrets are confirmed and step 15 is done.
 
 1. Stripe Dashboard, **test mode** (a sandbox is better than the shared test mode if one is available).
 2. Create a restricted key (`rk_test_...`) with only **Checkout Sessions: Write**. Do not grant Prices or Products read. Do not create a webhook for this change.
@@ -146,7 +146,7 @@ Do these in order. A squash merge of this pull request launches session checkout
 9. **Done (2026-10-24).** `STRIPE_SECRET_KEY`, `PRICE_CABLE`, and `PRICE_KIT` are set on the test environment with `wrangler secret put` (secrets, not `[vars]`, not git). The key is the test restricted key. The Price IDs are test-mode. The live key is not on this worker.
 10. **Done.** Every HTML `connect-src` allows `https://slatesafe-checkout-test.slatesafe.workers.dev` and `https://slatesafe-checkout.slatesafe.workers.dev`. `checkout-config.js` points at the production host. See step 14.
 11. **Done (2026-10-24).** `scripts/checkout-session-e2e.mjs` against the test worker, body 1 kit + 2 cables, returned HTTP 200 and a `https://checkout.stripe.com/` URL with a `cs_test_` session id. A browser pass of that Checkout page (one kit, cable quantity 2, free shipping, phone field) is still worth doing before step 12 if it has not been clicked through.
-12. **Launch state.** The production worker uses secrets `PRICE_CABLE`, `PRICE_KIT`, and `STRIPE_SECRET_KEY`. `STRIPE_SECRET_KEY` is an `rk_live_` key with Checkout Sessions Write only. The Price IDs come from the existing live Payment Links. Leave the test key on the test worker. Deploy production with an empty `--env` so Wrangler does not treat `[env.test]` as the target.
+12. Set the production worker secrets `PRICE_CABLE`, `PRICE_KIT`, and `STRIPE_SECRET_KEY`. `STRIPE_SECRET_KEY` must be an `rk_live_` key with Checkout Sessions Write only. The Price IDs come from the existing live Payment Links. Leave the test key on the test worker. This step is not confirmed in the repository. Deploy production with an empty `--env` so Wrangler does not treat `[env.test]` as the target.
 
     Wrangler 4 warns if you deploy the top-level script without an environment flag, because `[env.test]` also exists. Pass an empty `--env` to mean production.
 

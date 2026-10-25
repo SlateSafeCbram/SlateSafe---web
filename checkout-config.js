@@ -8,7 +8,9 @@
 // one-line flag change:
 //   https://slatesafe-checkout.slatesafe.workers.dev/
 //   https://slatesafe-checkout-test.slatesafe.workers.dev/
-// A CSP wildcard of *.workers.dev does not match either hostname.
+// https://*.workers.dev matches subdomains at any depth, including
+// both hostnames. The pages list those exact origins so other
+// workers.dev hosts stay blocked.
 var SLATESAFE_CHECKOUT_ENDPOINT = 'https://slatesafe-checkout.slatesafe.workers.dev/';
 window.SLATESAFE_CHECKOUT = {
     mode: 'session',
