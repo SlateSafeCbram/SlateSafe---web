@@ -81,10 +81,27 @@ test('cart steppers name the item and do not decrement below 1', () => {
     }
 });
 
-test('checkout-config stays on payment links', () => {
+test('checkout-config launches session mode on the production worker', () => {
     const source = fs.readFileSync(path.join(ROOT, 'checkout-config.js'), 'utf8');
-    assert.match(source, /mode:\s*'payment_links'/);
-    assert.doesNotMatch(source, /mode:\s*'session'/);
+    assert.match(source, /mode:\s*'session'/);
+    assert.match(source, /SLATESAFE_CHECKOUT_ENDPOINT = 'https:\/\/slatesafe-checkout\.slatesafe\.workers\.dev\/'/);
+    assert.match(source, /set mode to 'payment_links'/);
+    assert.match(source, /https:\/\/slatesafe-checkout-test\.slatesafe\.workers\.dev\//);
+    const htmlPages = htmlFiles().filter((file) => {
+        return fs.readFileSync(file, 'utf8').includes('connect-src');
+    });
+    assert.ok(htmlPages.length >= 12);
+    for (const file of htmlPages) {
+        const html = fs.readFileSync(file, 'utf8');
+        const rel = path.relative(ROOT, file);
+        assert.match(html, /https:\/\/slatesafe-checkout\.slatesafe\.workers\.dev/, rel);
+        assert.match(html, /https:\/\/slatesafe-checkout-test\.slatesafe\.workers\.dev/, rel);
+    }
+    for (const name of ['privacy-policy.html', 'terms.html']) {
+        const html = fs.readFileSync(path.join(ROOT, name), 'utf8');
+        assert.equal(html.includes('Payment Link'), false, name);
+        assert.match(html, /secure Stripe Checkout page reached from the cart or the Buy button/);
+    }
 });
 
 test('gitleaks allowlist targets generic-api-key on 8.28.0', () => {

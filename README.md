@@ -10,8 +10,8 @@ SlateSafe offers practical, professionally designed tablet accessories including
 
 - **Alpine.js** - Lightweight JavaScript framework for interactive components
 - **Tailwind CSS** - Utility-first CSS framework (compiled via PostCSS)
-- **Stripe Payment Links** - Checkout for first-party SKUs (default)
-- **Stripe Checkout Sessions** - Optional, off until `checkout-config.js` is set to `session`. The function is a Cloudflare Worker on the free plan. See [docs/checkout.md](docs/checkout.md).
+- **Stripe Checkout Sessions** - Checkout for first-party SKUs. The cart or the Buy button opens a secure Stripe Checkout page. The function is a Cloudflare Worker on the free plan. See [docs/checkout.md](docs/checkout.md).
+- **Stripe Payment Links** - Rollback only. Set `checkout-config.js` `mode` to `payment_links`.
 - **GitHub Pages** - Static site hosting
 
 ## Development Setup
@@ -46,7 +46,7 @@ SlateSafe offers practical, professionally designed tablet accessories including
 ├── product-*.html                # Individual product pages
 ├── about.html                    # Company information
 ├── contact.html                  # Contact form
-├── cart.js               # Local cart + Stripe Payment Link checkout
+├── cart.js               # Local cart + Stripe Checkout Session
 ├── products.json                 # First-party catalog (source of truth)
 ├── app-init.js                   # Application initialization
 ├── styles.css                    # Custom styles
@@ -64,7 +64,7 @@ SlateSafe offers practical, professionally designed tablet accessories including
 - Fully responsive design with mobile-first approach
 - Dark mode support
 - Shopping cart with slide-out drawer
-- Stripe Payment Link checkout (one SKU at a time) until session mode is turned on
+- Stripe Checkout from the cart or the Buy button. Stripe processes the payment.
 - Product filtering and search
 - Form handling via Formspree
 - Optimized for performance and SEO

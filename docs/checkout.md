@@ -1,6 +1,6 @@
 # Checkout Sessions
 
-The public site stays on GitHub Pages. A Cloudflare Worker on the Workers Free plan creates Stripe Checkout Sessions. Buyers keep using Stripe Payment Links until `checkout-config.js` is switched to session mode.
+The public site stays on GitHub Pages. A Cloudflare Worker on the Workers Free plan creates Stripe Checkout Sessions. Launch state is session mode against the production worker. A squash merge of this pull request turns that on. Checkout is a secure Stripe Checkout page reached from the cart or the Buy button, and Stripe processes the payment.
 
 Do not attach `slatesafe.com` or `www.slatesafe.com` to the Worker. Those hostnames stay on GitHub Pages. DNS for `slatesafe.com` stays where it is (Vercel DNS today). The function hostname is the free `workers.dev` URL below, not `checkout.slatesafe.com`.
 
@@ -9,18 +9,18 @@ Do not attach `slatesafe.com` or `www.slatesafe.com` to the Worker. Those hostna
 `checkout-config.js` holds the only endpoint constant, `SLATESAFE_CHECKOUT_ENDPOINT`:
 
 ```js
-var SLATESAFE_CHECKOUT_ENDPOINT = 'https://slatesafe-checkout-test.slatesafe.workers.dev/';
+var SLATESAFE_CHECKOUT_ENDPOINT = 'https://slatesafe-checkout.slatesafe.workers.dev/';
 window.SLATESAFE_CHECKOUT = {
-    mode: 'payment_links',
+    mode: 'session',
     endpoint: SLATESAFE_CHECKOUT_ENDPOINT
 };
 ```
 
-`payment_links` is the default. In that mode the cart still locks each line to quantity 1, still shows the mixed-cart cable notice, and both Checkout and Buy open the product's Stripe Payment Link. In `session` mode, Buy checks out only that product at the chosen quantity and leaves the saved cart untouched. It does not open a Payment Link.
+`session` is the launch mode. The endpoint is the production worker. The live worker secrets are `PRICE_CABLE`, `PRICE_KIT`, and `STRIPE_SECRET_KEY`. `STRIPE_SECRET_KEY` is an `rk_live_` key with Checkout Sessions Write only. The test worker keeps its own test key and test-mode Price IDs.
 
-The workers.dev subdomain is `slatesafe`. The constant currently points at the **test** worker, `https://slatesafe-checkout-test.slatesafe.workers.dev/`. At launch, switch it to `https://slatesafe-checkout.slatesafe.workers.dev/` in the same change that sets `mode` to `session`. Both hosts are in each HTML page's `connect-src`. A CSP wildcard `*.workers.dev` does not match these hosts: the URL has two labels before `workers.dev`, and a CSP `*` matches one label.
+Rollback: in `checkout-config.js`, set `mode` to `'payment_links'`. Checkout and Buy then open the product's Stripe Payment Link. Those URLs stay in `products.json`. Both the production host and `https://slatesafe-checkout-test.slatesafe.workers.dev/` stay in each HTML page's `connect-src`, so the rollback does not need a CSP edit. A CSP wildcard `*.workers.dev` does not match these hosts: the URL has two labels before `workers.dev`, and a CSP `*` matches one label.
 
-Flip `mode` to `'session'` only after the checklist below is done and a test-mode purchase has succeeded. Then:
+The workers.dev subdomain is `slatesafe`. In `payment_links` mode the cart locks each line to quantity 1, shows the mixed-cart cable notice, and both Checkout and Buy open the product's Stripe Payment Link. In `session` mode:
 
 - Cart lines show steppers from 1 to 10.
 - The product page quantity field accepts 1 to 10. Add to Cart stores that quantity. Buy uses it only for that product's Checkout Session.
@@ -29,7 +29,7 @@ Flip `mode` to `'session'` only after the checklist below is done and a test-mod
 - Checkout POSTs `[{ sku, qty }]` to the endpoint and redirects only to a `https://checkout.stripe.com/` URL.
 - Buy checks out only that product at the chosen quantity and leaves the saved cart untouched. Buy opens a Payment Link only while `mode` is `payment_links`.
 
-Privacy copy still says checkout uses Payment Links. Update `privacy-policy.html` in the same change that flips the flag.
+Customer-facing copy says checkout is a secure Stripe Checkout page reached from the cart or the Buy button, and that Stripe processes the payment.
 
 ## Where the Worker runs
 
@@ -128,7 +128,7 @@ The script refuses a URL that is not the test worker unless `ALLOW_LIVE=1`. It p
 
 ## Chris setup checklist
 
-Do these in order. Merging this pull request does not turn session checkout on. The flag stays `payment_links`.
+Do these in order. A squash merge of this pull request launches session checkout on the production worker. The flag in this commit is `session`. Rollback is `mode: 'payment_links'` in `checkout-config.js`.
 
 1. Stripe Dashboard, **test mode** (a sandbox is better than the shared test mode if one is available).
 2. Create a restricted key (`rk_test_...`) with only **Checkout Sessions: Write**. Do not grant Prices or Products read. Do not create a webhook for this change.
@@ -144,9 +144,9 @@ Do these in order. Merging this pull request does not turn session checkout on. 
 7. From `worker/`, log in with `npx wrangler@4 login` (Wrangler 4.36.0 or later) or use the dashboard. Enable the workers.dev subdomain (Workers & Pages → your subdomain). Leave `account_id` out of `wrangler.toml`. Wrangler uses the logged-in account. The subdomain in use is `slatesafe`.
 8. **Done (2026-10-24).** The test worker is deployed at `https://slatesafe-checkout-test.slatesafe.workers.dev/` with the `CHECKOUT_RATE_LIMITER` binding (8 requests / 60 seconds, namespace `1002`).
 9. **Done (2026-10-24).** `STRIPE_SECRET_KEY`, `PRICE_CABLE`, and `PRICE_KIT` are set on the test environment with `wrangler secret put` (secrets, not `[vars]`, not git). The key is the test restricted key. The Price IDs are test-mode. The live key is not on this worker.
-10. **Done.** `checkout-config.js` points at `https://slatesafe-checkout-test.slatesafe.workers.dev/`. Every HTML `connect-src` allows that host and `https://slatesafe-checkout.slatesafe.workers.dev`. `mode` stays `payment_links` until step 14.
+10. **Done.** Every HTML `connect-src` allows `https://slatesafe-checkout-test.slatesafe.workers.dev` and `https://slatesafe-checkout.slatesafe.workers.dev`. `checkout-config.js` points at the production host. See step 14.
 11. **Done (2026-10-24).** `scripts/checkout-session-e2e.mjs` against the test worker, body 1 kit + 2 cables, returned HTTP 200 and a `https://checkout.stripe.com/` URL with a `cs_test_` session id. A browser pass of that Checkout page (one kit, cable quantity 2, free shipping, phone field) is still worth doing before step 12 if it has not been clicked through.
-12. Later, when the test purchase looks right: create the live restricted key (`rk_live_`, Checkout Sessions write only) and copy the Price IDs from the existing live Payment Links. Put those on the **production** worker, then deploy production. Leave the test key on the test worker.
+12. **Launch state.** The production worker uses secrets `PRICE_CABLE`, `PRICE_KIT`, and `STRIPE_SECRET_KEY`. `STRIPE_SECRET_KEY` is an `rk_live_` key with Checkout Sessions Write only. The Price IDs come from the existing live Payment Links. Leave the test key on the test worker. Deploy production with an empty `--env` so Wrangler does not treat `[env.test]` as the target.
 
     Wrangler 4 warns if you deploy the top-level script without an environment flag, because `[env.test]` also exists. Pass an empty `--env` to mean production.
 
@@ -161,9 +161,9 @@ Do these in order. Merging this pull request does not turn session checkout on. 
     - Cable `CAB-RA20CM-MF-BLK-V1`, Payment Link `https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00` → `PRICE_CABLE`
     - Kit `ENC-SAM-A9-V1`, Payment Link `https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01` → `PRICE_KIT`
 
-    Then set `checkout-config.js` `endpoint` to `https://slatesafe-checkout.slatesafe.workers.dev/`. That host is already in `connect-src`. Leave `mode` at `payment_links` until step 14.
+    `checkout-config.js` `endpoint` is `https://slatesafe-checkout.slatesafe.workers.dev/`. That host is already in `connect-src`.
 13. In the live-mode Stripe Dashboard, turn on customer emails for successful payments (Settings → Emails). Checkout collects an email address, and Stripe sends a receipt only when that email is on. Test mode does not send receipts. `order-complete.html` does not promise one.
-14. Change `checkout-config.js` `mode` from `payment_links` to `session` in a follow-up commit, and update the privacy-policy sentences that still say Payment Links.
+14. **Done in this commit.** `checkout-config.js` `mode` is `session` and the endpoint is the production worker. Privacy and terms say checkout is a secure Stripe Checkout page reached from the cart or the Buy button, and that Stripe processes the payment. To roll back, set `mode` to `payment_links`.
 15. Place one real live test order, then refund it.
 
 Optional, not required for launch: move `slatesafe.com` onto Cloudflare nameservers (the site can remain a GitHub Pages target) and add `checkout.slatesafe.com` as a Worker Custom Domain. A CNAME from the current DNS host to the Worker does not work on the Free plan. See the Domain section above. Do not attach the apex to the Worker.

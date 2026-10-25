@@ -1,7 +1,7 @@
 // Local cart store. Catalog source of truth is products.json.
-// Default checkout is Stripe Payment Links (stripePaymentLink).
-// window.SLATESAFE_CHECKOUT.mode = 'session' switches Checkout to the
-// server endpoint in checkout-config.js. Leave the default until launch.
+// Launch checkout is a Stripe Checkout Session (checkout-config.js mode
+// 'session'). Set mode to 'payment_links' to roll back to the Stripe
+// Payment Link on each product (stripePaymentLink).
 // Previously shopify-cart.js. Pages load cart.js.
 // No Shopify Storefront API, no myshopify.com, no shop.slatesafe.com.
 
