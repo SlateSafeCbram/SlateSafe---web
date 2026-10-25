@@ -26,12 +26,12 @@ Follow-up, not done here: in the Web3Forms dashboard, domain-lock the form to `s
 
 Scanned the current tree (code, JSON, README, comments), git history, and the live pages `/`, `/products.html`, both product URLs, `/about.html`, `/contact.html`, `/returns.html`, `/privacy-policy.html`, `/terms.html`, `/shipping-policy.html`, and `/products.json` (all HTTP 200 on 2026-10-24).
 
-Current tree and live site: no `1442`, no Pottstown Pike, no `302-367-7867` (that number is also absent from history), no `gmail.com`, no Constitution Drive. `support@slatesafe.com` and "West Chester, Pennsylvania" are the business contact and are intentional.
+Current tree and live site: no personal phone number, no former street address, and no former mailbox address. A personal phone number is also absent from history. No `gmail.com`. `support@slatesafe.com` and "West Chester, Pennsylvania" are the business contact and are intentional.
 
 Historical, removed from the current tree:
 
-- `1442 Pottstown Pike` was in `returns.html` at `70cd134` and removed in `fba48c0`.
-- `806 Constitution Drive` was added on public pages in `fba48c0` (`about.html`, `contact.html`, `privacy-policy.html`, `returns.html`, `terms.html`) and removed in `3f22863` ("Remove residential street address from public pages"). It is not on the site now. It is acceptable only where a future page states it on purpose as the business returns address.
+- A former street address was in `returns.html` at `70cd134` and removed in `fba48c0`.
+- A former street address was added on public pages in `fba48c0` (`about.html`, `contact.html`, `privacy-policy.html`, `returns.html`, `terms.html`) and removed in `3f22863`. It is not on the site now. It is acceptable only where a future page states the official business address on purpose as the business returns address.
 - A personal Gmail address appeared in old `README.md` and `contact.html` copy in `2ebaf5496564`, `7a21b7ca21a9`, `2134940d1938`, and `8d8e89ef86ed`. It is not a commit author. The local part is omitted here. It is gone from the current files.
 
 Commit authors across all branches:
@@ -102,7 +102,7 @@ GitHub (repo is public):
 2. Confirm secret scanning is on, and turn on push protection for public repos if the plan allows it. This token could not read either switch.
 3. Confirm branch protection on `main` (this token got 403). Require the gitleaks check once the workflow has run once.
 4. Optional: set the GitHub commit email to the noreply address if `cbrammell@slatesafe.com` should not remain on new public commits.
-5. Do not rewrite git history from this PR. If the old personal Gmail or the `1442 Pottstown Pike` line must disappear from clones, that is a history rewrite Chris has to choose.
+5. Do not rewrite git history from this PR. If the old personal Gmail or a former street address must disappear from clones, that is a history rewrite Chris has to choose.
 
 Stripe:
 
