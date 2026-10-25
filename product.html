@@ -124,7 +124,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="toast.message"></p>
                 </div>
-                <button @click="$store.toast.remove(toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <button @click="$store.toast.remove(toast.id)" class="inline-flex items-center justify-center flex-shrink-0 min-h-11 min-w-11 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Dismiss notification">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -386,7 +386,7 @@
             <!-- Product Details (Right Side) -->
             <div>
                 <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white" x-text="productData ? productData.title : ''"></h1>
-                <p class="text-3xl font-bold text-brand-orange mb-6" x-text="productData ? productData.priceFormatted : ''"></p>
+                <p class="text-3xl font-bold text-brand-orange mb-6" x-text="displayPrice()"></p>
                 
                 <!-- Variant Selector -->
                 <div class="mb-8" x-show="productData && productData.variants && productData.variants.length > 1">
@@ -517,12 +517,6 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>30-day money-back guarantee</span>
-                        </div>
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-brand-orange mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span>Free shipping on orders over $40</span>
                         </div>
                     </div>
                 </div>
@@ -657,16 +651,16 @@
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate" x-text="item.title"></h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400" x-text="item.variant?.title || ''"></p>
-                                <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
+                                <p class="text-brand-orange font-bold mt-1" x-text="$store.cart.linePriceLabel(item)"></p>
                                 <div class="flex items-center space-x-3 mt-2">
                                     <span class="text-gray-900 dark:text-white font-medium" x-show="!$store.cart.sessionCheckout">Quantity 1</span>
                                 <div class="inline-flex items-center space-x-2" x-show="$store.cart.sessionCheckout" x-cloak>
                                     <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" :aria-label="'Decrease quantity of ' + item.title" :disabled="item.quantity <= 1" @click="$store.cart.updateLineItem(item.id, Math.max(1, item.quantity - 1))">−</button>
                                     <span class="w-8 text-center text-gray-900 dark:text-white font-medium" x-text="item.quantity"></span>
-                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white" :aria-label="'Increase quantity of ' + item.title" @click="$store.cart.updateLineItem(item.id, item.quantity + 1)">+</button>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" :aria-label="'Increase quantity of ' + item.title" :disabled="item.quantity >= 10" @click="$store.cart.updateLineItem(item.id, item.quantity + 1)">+</button>
                                 </div>
                                     <button @click="$store.cart.removeLineItem(item.id)" 
-                                            class="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
+                                            class="ml-auto inline-flex items-center min-h-11 px-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
                                         Remove
                                     </button>
                                 </div>
@@ -689,6 +683,7 @@
                     Checkout
                 </button>
                 <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
+                <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-2">Free shipping when your order includes the kit.</p>
                 <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice && !$store.cart.sessionCheckout" x-text="$store.cart.cableBundleNotice"></p>
                 <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
                 <button @click="$store.cart.open = false" 
@@ -845,9 +840,19 @@
                     }
                 },
 
+                displayPrice() {
+                    if (!this.productData) return '';
+                    const price = Number(this.productData.price);
+                    const cart = Alpine.store('cart');
+                    if (cart && cart.sessionCheckout && Number(this.quantity) >= 2 && typeof cart.priceLabel === 'function') {
+                        return cart.priceLabel(price, this.quantity);
+                    }
+                    return this.productData.priceFormatted || '';
+                },
+
                 async buyNow() {
                     const id = this.productData?.sku || this.productData?.handle || this.productId;
-                    const result = await Alpine.store('cart').buyProduct(id);
+                    const result = await Alpine.store('cart').buyProduct(id, this.quantity);
                     this.buyMessage = result.error || '';
                 }
             }

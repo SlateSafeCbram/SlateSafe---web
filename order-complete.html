@@ -32,5 +32,17 @@
         <p class="text-gray-700 dark:text-gray-300 mb-8">Questions about an order can go to <a href="mailto:support@slatesafe.com" class="text-brand-orange hover:underline">support@slatesafe.com</a>.</p>
         <a href="index.html" class="inline-flex items-center justify-center min-h-11 px-6 py-3 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold rounded-lg transition-colors">Back to SlateSafe</a>
     </main>
+    <script src="cart.js"></script>
+    <script>
+        (function () {
+            var cart = null;
+            try {
+                if (window.Alpine && Alpine.store) cart = Alpine.store('cart');
+            } catch (e) {}
+            if (typeof slatesafeClearCartIfCheckoutSession === 'function') {
+                slatesafeClearCartIfCheckoutSession(window.location.search, cart);
+            }
+        })();
+    </script>
 </body>
 </html>

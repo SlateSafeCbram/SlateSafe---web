@@ -60,7 +60,7 @@ const STANDALONE_CABLE_IDS = new Set([
 ]);
 const CABLE_BUNDLE_NOTICE = 'Heads up: the enclosure kit in your cart already includes a USB-C cable. Adding the standalone cable means this order would include 2 cables.';
 const SESSION_MAX_QTY = 10;
-const CHECKOUT_CLIENT_ERROR = 'Unable to start checkout.';
+const CHECKOUT_CLIENT_ERROR = "We couldn't start checkout. Please try again, or email support@slatesafe.com.";
 
 function slatesafeCheckoutSettings() {
     const config = (typeof window !== 'undefined' && window.SLATESAFE_CHECKOUT) || {};
@@ -115,6 +115,59 @@ function slatesafeOnPageShow(event, cart) {
     if (event && event.persisted && cart) {
         cart.checkoutBusy = false;
     }
+}
+
+// Unit price until qty is 2 or more, then "$23.98 ($11.99 each)".
+function slatesafeLinePriceLabel(unitAmount, quantity) {
+    const unit = Number(unitAmount);
+    if (!Number.isFinite(unit)) return '$0.00';
+    const unitText = `$${unit.toFixed(2)}`;
+    const qty = Number(quantity);
+    if (!Number.isInteger(qty) || qty < 2) return unitText;
+    return `$${(unit * qty).toFixed(2)} (${unitText} each)`;
+}
+
+function slatesafeSessionBuyQuantity(quantity) {
+    const qty = Number(quantity);
+    if (!Number.isInteger(qty) || qty < 1) {
+        return { error: 'Please enter a valid quantity' };
+    }
+    if (qty > SESSION_MAX_QTY) {
+        return { error: 'Maximum quantity is 10.' };
+    }
+    return { quantity: qty };
+}
+
+// Stripe success URLs look like ?session_id=cs_test_... or cs_live_...
+// Payment Links do not use that prefix, so this leaves those carts alone.
+function slatesafeClearCartIfCheckoutSession(search, cart, storage) {
+    const query = typeof search === 'string' ? search : '';
+    const normalized = query.charAt(0) === '?' ? query.slice(1) : query;
+    let sessionId = '';
+    try {
+        sessionId = new URLSearchParams(normalized).get('session_id') || '';
+    } catch (e) {
+        sessionId = '';
+    }
+    if (!sessionId.startsWith('cs_')) return false;
+    if (cart) {
+        cart.items = [];
+        if (typeof cart.recalculate === 'function') {
+            cart.recalculate();
+        } else {
+            cart.itemCount = 0;
+            cart.total = 0;
+        }
+    }
+    const store = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    if (store && typeof store.removeItem === 'function') {
+        try {
+            store.removeItem(SLATESAFE_CART_KEY);
+        } catch (e) {
+            // Ignore storage errors
+        }
+    }
+    return true;
 }
 
 if (typeof document !== 'undefined') {
@@ -399,7 +452,20 @@ document.addEventListener('alpine:init', () => {
             return { url: link };
         },
 
-        async buyProduct(idOrHandle) {
+        linePriceLabel(item) {
+            const amount = parseFloat(item && item.variant && item.variant.price && item.variant.price.amount || 0);
+            const qty = this.sessionCheckout ? Number(item && item.quantity) : 1;
+            return slatesafeLinePriceLabel(amount, qty);
+        },
+
+        priceLabel(amount, quantity) {
+            return slatesafeLinePriceLabel(amount, this.sessionCheckout ? quantity : 1);
+        },
+
+        async buyProduct(idOrHandle, quantity) {
+            if (this.sessionCheckout) {
+                return this.buySessionQuantity(idOrHandle, quantity);
+            }
             const result = await this.resolveBuy(idOrHandle);
             if (result.error) {
                 this.checkoutNotice = result.error;
@@ -413,11 +479,42 @@ document.addEventListener('alpine:init', () => {
             return result;
         },
 
+        async buySessionQuantity(idOrHandle, quantity) {
+            if (this.checkoutBusy) {
+                return { pending: true };
+            }
+            const planned = slatesafeSessionBuyQuantity(quantity);
+            if (planned.error) {
+                this.checkoutNotice = planned.error;
+                if (Alpine.store('toast')) {
+                    Alpine.store('toast').show(planned.error, 'error');
+                }
+                return planned;
+            }
+            this.checkoutBusy = true;
+            try {
+                await this.addProduct(idOrHandle, planned.quantity, false, { quiet: true });
+            } catch (error) {
+                this.checkoutBusy = false;
+                return { error: (error && error.message) || 'Failed to add product to cart. Please try again.' };
+            }
+            const result = await this.postCheckoutSession();
+            if (result && result.error) {
+                this.openDrawer();
+            }
+            return result;
+        },
+
         async checkoutSession() {
             if (this.checkoutBusy) {
                 return { error: CHECKOUT_CLIENT_ERROR };
             }
+            return this.postCheckoutSession();
+        },
+
+        async postCheckoutSession() {
             if (!this.items.length) {
+                this.checkoutBusy = false;
                 const error = 'Your cart is empty.';
                 this.checkoutNotice = error;
                 if (Alpine.store('toast')) {
@@ -537,7 +634,8 @@ document.addEventListener('alpine:init', () => {
             this.open = !this.open;
         },
 
-        async addProduct(productOrVariantId, quantity = 1, isVariantId = false) {
+        async addProduct(productOrVariantId, quantity = 1, isVariantId = false, options = {}) {
+            const quiet = !!(options && options.quiet);
             try {
                 await this.loadCatalog();
                 const requestedQty = Number(quantity);
@@ -571,14 +669,18 @@ document.addEventListener('alpine:init', () => {
                     this.items.push(this.lineItemFromProduct(product, qty));
                 }
                 this.recalculate();
-                this.openDrawer();
+                if (!quiet) {
+                    this.openDrawer();
+                }
 
                 if (Alpine.store('toast')) {
-                    Alpine.store('toast').show('Item added to cart!', 'success');
+                    if (!quiet) {
+                        Alpine.store('toast').show('Item added to cart!', 'success');
+                    }
                     if (capped) {
                         Alpine.store('toast').show('Maximum quantity is 10.', 'error');
                     }
-                    if (this.cableBundleNotice) {
+                    if (!quiet && this.cableBundleNotice) {
                         Alpine.store('toast').show(this.cableBundleNotice, 'success');
                     }
                 }
@@ -699,6 +801,11 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         slatesafeLineQuantity,
         slatesafeOnPageShow,
-        SESSION_MAX_QTY
+        slatesafeLinePriceLabel,
+        slatesafeSessionBuyQuantity,
+        slatesafeClearCartIfCheckoutSession,
+        CHECKOUT_CLIENT_ERROR,
+        SESSION_MAX_QTY,
+        SLATESAFE_CART_KEY
     };
 }
