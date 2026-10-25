@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://www.youtube.com https://i.ytimg.com https://img.youtube.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://play.gumlet.io; connect-src 'self' https://slatesafe-checkout-test.slatesafe.workers.dev https://slatesafe-checkout.slatesafe.workers.dev https://api.web3forms.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://analytics.google.com https://*.analytics.google.com; form-action 'self' https://api.web3forms.com; upgrade-insecure-requests">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SlateSafe privacy policy: GitHub Pages hosting, Web3Forms contact form, cookie consent, Google Analytics after consent, and Stripe Payment Links checkout.">
+    <meta name="description" content="SlateSafe privacy policy: GitHub Pages hosting, Web3Forms contact form, cookie consent, Google Analytics after consent, and Stripe Checkout.">
     <title>Privacy Policy | SlateSafe</title>
     <link rel="canonical" href="https://slatesafe.com/privacy-policy.html">
     <meta property="og:title" content="Privacy Policy | SlateSafe">
-    <meta property="og:description" content="SlateSafe privacy policy: GitHub Pages hosting, Web3Forms contact form, cookie consent, Google Analytics after consent, and Stripe Payment Links checkout.">
+    <meta property="og:description" content="SlateSafe privacy policy: GitHub Pages hosting, Web3Forms contact form, cookie consent, Google Analytics after consent, and Stripe Checkout.">
     <meta property="og:url" content="https://slatesafe.com/privacy-policy.html">
     <meta property="og:image" content="https://slatesafe.com/images/flat-cable-macro.png">
     <meta property="og:type" content="website">
@@ -24,18 +25,19 @@
     </style>
     
     <!-- Alpine.js CDN -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" integrity="sha384-BxpSbjbDhVKwnC1UfcjsNEuMuxg4af5IXOaSi1Iq5rASQ/9a7uslhEXbP9UI/fXo" crossorigin="anonymous"></script>
     
     <!-- Shared JavaScript - Must load before Alpine.js initializes -->
     <script src="app-init.js"></script>
     <script src="cookie-consent.js"></script>
     <script src="analytics.js"></script>
+    <script src="checkout-config.js"></script>
     <script src="cart.js"></script>
 </head>
 <body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
     
     <!-- Toast Notifications -->
-    <div class="fixed top-20 right-4 z-50 space-y-2" style="z-index: 70" x-data>
+    <div class="fixed top-20 right-4 z-50 space-y-2" style="z-index: 70" x-data role="status" aria-live="polite">
         <template x-for="toast in $store.toast.messages" :key="toast.id">
             <div x-show="true"
                  x-transition:enter="transition ease-out duration-300 transform"
@@ -57,7 +59,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="toast.message"></p>
                 </div>
-                <button @click="$store.toast.remove(toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <button @click="$store.toast.remove(toast.id)" class="inline-flex items-center justify-center flex-shrink-0 min-h-11 min-w-11 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Dismiss notification">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -172,7 +174,7 @@
 
             <h2 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white">This website</h2>
             <p class="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                slatesafe.com is a static site hosted on GitHub Pages. Product browsing and the shopping cart run in your browser. Checkout and payment are processed by Stripe Payment Links (buy.stripe.com). Stripe is a processor of order, payment, and shipping information for purchases made through this site.
+                slatesafe.com is a static site hosted on GitHub Pages. Product browsing and the shopping cart run in your browser. Checkout is a secure Stripe Checkout page reached from the cart or the Buy button, and Stripe processes the payment. Stripe is a processor of order, payment, and shipping information for purchases made through this site.
             </p>
 
             <h2 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white">Information we collect</h2>
@@ -219,7 +221,7 @@
                 <li><strong>Reject:</strong> Google Analytics 4 is not loaded. If it was already loaded, we stop sending events.</li>
             </ul>
             <p class="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                The cart also uses browser storage so items stay in your cart while you shop. Checkout itself happens on Stripe Payment Links.
+                The cart also uses browser storage so items stay in your cart while you shop. Checkout is a secure Stripe Checkout page reached from the cart or the Buy button, and Stripe processes the payment.
             </p>
 
             <h2 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white">Processors</h2>
@@ -230,7 +232,7 @@
                 <li><strong>GitHub Pages</strong> — hosts this website</li>
                 <li><strong>Web3Forms</strong> — processes contact-form submissions</li>
                 <li><strong>Google Analytics 4</strong> — site usage analytics, only after cookie consent</li>
-                <li><strong>Stripe</strong> — checkout and payment (Stripe Payment Links)</li>
+                <li><strong>Stripe</strong> — checkout and payment on a secure Stripe Checkout page</li>
             </ul>
 
             <h2 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white">Your Privacy Choices</h2>
@@ -391,11 +393,16 @@
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate" x-text="item.title"></h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400" x-text="item.variant?.title || ''"></p>
-                                <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
+                                <p class="text-brand-orange font-bold mt-1" x-text="$store.cart.linePriceLabel(item)"></p>
                                 <div class="flex items-center space-x-3 mt-2">
-                                    <span class="text-gray-900 dark:text-white font-medium">Quantity 1</span>
+                                    <span class="text-gray-900 dark:text-white font-medium" x-show="!$store.cart.sessionCheckout">Quantity 1</span>
+                                <div class="inline-flex items-center space-x-2" x-show="$store.cart.sessionCheckout" x-cloak>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" :aria-label="'Decrease quantity of ' + item.title" :disabled="item.quantity <= 1" @click="$store.cart.updateLineItem(item.id, Math.max(1, item.quantity - 1))">−</button>
+                                    <span class="w-8 text-center text-gray-900 dark:text-white font-medium" x-text="item.quantity"></span>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" :aria-label="'Increase quantity of ' + item.title" :disabled="item.quantity >= 10" @click="$store.cart.updateLineItem(item.id, item.quantity + 1)">+</button>
+                                </div>
                                     <button @click="$store.cart.removeLineItem(item.id)" 
-                                            class="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
+                                            class="ml-auto inline-flex items-center min-h-11 px-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors">
                                         Remove
                                     </button>
                                 </div>
@@ -413,11 +420,13 @@
                 </div>
                 <button type="button"
                         @click="$store.cart.checkout()"
-                        class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">
+                        :disabled="$store.cart.checkoutBusy"
+                        class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg transition-colors text-center">
                     Checkout
                 </button>
                 <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
-                <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice" x-text="$store.cart.cableBundleNotice"></p>
+                <p x-show="$store.cart.sessionCheckout" x-cloak class="text-center text-gray-600 dark:text-gray-400 text-xs mt-2">Free shipping when your order includes the kit.</p>
+                <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice && !$store.cart.sessionCheckout" x-text="$store.cart.cableBundleNotice"></p>
                 <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
                 <button @click="$store.cart.open = false" 
                         type="button"

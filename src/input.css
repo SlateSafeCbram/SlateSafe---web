@@ -142,5 +142,12 @@
   }
 }
 
+/* Rightmost footer "Coming soon" tooltip stays inside a 1280px viewport. */
+footer .flex.space-x-6 > .group:last-child > span {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 
 

@@ -1,0 +1,6 @@
+# Copy to worker/.dev.vars for `wrangler dev` only. Never commit .dev.vars.
+# Use the test restricted key and test-mode Price IDs. wrangler secret put
+# is what production and the test worker actually read after deploy.
+STRIPE_SECRET_KEY=
+PRICE_CABLE=
+PRICE_KIT=

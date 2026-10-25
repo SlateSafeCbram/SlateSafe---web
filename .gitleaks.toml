@@ -1,0 +1,19 @@
+title = "SlateSafe"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "node_modules is not deployed and is gitignored."
+paths = ['''(^|/)node_modules/''', '''package-lock\.json''']
+
+[[allowlists]]
+description = "Known generic-api-key hits only: the public Web3Forms form id and the retired Shopify Storefront token. Stripe key rules stay active."
+targetRules = ["generic-api-key"]
+paths = [
+  '''(^|/)index\.html$''',
+  '''(^|/)contact\.html$''',
+  '''(^|/)shopify-cart\.js$''',
+  '''(^|/)product-tablet-enclosure\.html$''',
+  '''(^|/)product-usb-c-cable\.html$'''
+]

@@ -1,0 +1,5 @@
+{
+  "name": "slatesafe-checkout-worker",
+  "private": true,
+  "type": "module"
+}

@@ -1,0 +1,41 @@
+# Checkout Worker. No account_id: wrangler uses the account from
+# `wrangler login` or CLOUDFLARE_ACCOUNT_ID. No secrets in this file.
+# Set STRIPE_SECRET_KEY, PRICE_CABLE, and PRICE_KIT with `wrangler secret put`.
+# Do not put those names under [vars]. Vars are plaintext.
+#
+# Production (`wrangler deploy --env=""`) is slatesafe-checkout.
+# Wrangler 4 warns if that flag is omitted while [env.test] exists.
+# Test (`wrangler deploy --env test`) is a separate script: slatesafe-checkout-test.
+# Secrets do not copy between environments. Preview URLs stay off so a
+# version upload does not publish another public hostname for this script.
+
+name = "slatesafe-checkout"
+main = "src/index.js"
+compatibility_date = "2026-10-24"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = false
+
+# Workers Rate Limiting binding (GA). 8 requests / 60 seconds per key
+# per Cloudflare location. namespace_id is an account-wide counter id.
+[[ratelimits]]
+name = "CHECKOUT_RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 8
+  period = 60
+
+[env.test]
+name = "slatesafe-checkout-test"
+workers_dev = true
+preview_urls = false
+
+# Own namespace so test traffic does not share the production counter.
+[[env.test.ratelimits]]
+name = "CHECKOUT_RATE_LIMITER"
+namespace_id = "1002"
+
+  [env.test.ratelimits.simple]
+  limit = 8
+  period = 60
