@@ -67,8 +67,9 @@ function slatesafeCheckoutSettings() {
     const mode = config.mode === 'session' ? 'session' : 'payment_links';
     const endpoint = typeof config.endpoint === 'string' && config.endpoint
         ? config.endpoint
-        : 'https://slatesafe-checkout.ACCOUNT_SUBDOMAIN.workers.dev/';
+        : 'https://slatesafe-checkout-test.slatesafe.workers.dev/';
     // Same host as SLATESAFE_CHECKOUT_ENDPOINT in checkout-config.js.
+    // Launch switches this fallback to https://slatesafe-checkout.slatesafe.workers.dev/
     return { mode, endpoint, session: mode === 'session' };
 }
 
@@ -132,7 +133,7 @@ document.addEventListener('alpine:init', () => {
         sessionCheckout: false,
         checkoutBusy: false,
         checkoutMode: 'payment_links',
-        checkoutEndpoint: 'https://slatesafe-checkout.ACCOUNT_SUBDOMAIN.workers.dev/',
+        checkoutEndpoint: 'https://slatesafe-checkout-test.slatesafe.workers.dev/',
 
         async init() {
             const settings = slatesafeCheckoutSettings();

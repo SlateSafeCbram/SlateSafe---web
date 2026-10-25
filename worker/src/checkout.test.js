@@ -54,7 +54,7 @@ async function post(handler, env, body, extraHeaders = {}, method = 'POST') {
     if (method !== 'GET' && method !== 'OPTIONS') {
         init.body = typeof body === 'string' ? body : JSON.stringify(body);
     }
-    const request = new Request('https://slatesafe-checkout.example.workers.dev/', init);
+    const request = new Request('https://slatesafe-checkout-test.slatesafe.workers.dev/', init);
     const response = await handler(request, env);
     const text = await response.text();
     let json = null;
@@ -252,7 +252,7 @@ test('a stream larger than 4096 bytes is rejected when content-length is absent'
             controller.close();
         }
     });
-    const request = new Request('https://slatesafe-checkout.example.workers.dev/', {
+    const request = new Request('https://slatesafe-checkout-test.slatesafe.workers.dev/', {
         method: 'POST',
         headers: {
             origin: 'https://slatesafe.com',

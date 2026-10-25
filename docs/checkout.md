@@ -9,7 +9,7 @@ Do not attach `slatesafe.com` or `www.slatesafe.com` to the Worker. Those hostna
 `checkout-config.js` holds the only endpoint constant, `SLATESAFE_CHECKOUT_ENDPOINT`:
 
 ```js
-var SLATESAFE_CHECKOUT_ENDPOINT = 'https://slatesafe-checkout.ACCOUNT_SUBDOMAIN.workers.dev/';
+var SLATESAFE_CHECKOUT_ENDPOINT = 'https://slatesafe-checkout-test.slatesafe.workers.dev/';
 window.SLATESAFE_CHECKOUT = {
     mode: 'payment_links',
     endpoint: SLATESAFE_CHECKOUT_ENDPOINT
@@ -18,7 +18,7 @@ window.SLATESAFE_CHECKOUT = {
 
 `payment_links` is the default. In that mode the cart still locks each line to quantity 1, still shows the mixed-cart cable notice, and Checkout still opens the product's Stripe Payment Link. Buy buttons always open Payment Links.
 
-`ACCOUNT_SUBDOMAIN` is a placeholder. After the first deploy, replace it with the workers.dev subdomain Cloudflare shows under Workers & Pages. The test worker is `https://slatesafe-checkout-test.<that subdomain>.workers.dev/`. Point `endpoint` at the test host while exercising test mode, then at the production host before launch. The same two hosts must appear in each HTML page's `connect-src`. A CSP wildcard `*.workers.dev` does not match these hosts: the URL has two labels before `workers.dev`, and a CSP `*` matches one label.
+The workers.dev subdomain is `slatesafe`. The constant currently points at the **test** worker, `https://slatesafe-checkout-test.slatesafe.workers.dev/`. At launch, switch it to `https://slatesafe-checkout.slatesafe.workers.dev/` in the same change that sets `mode` to `session`. Both hosts are in each HTML page's `connect-src`. A CSP wildcard `*.workers.dev` does not match these hosts: the URL has two labels before `workers.dev`, and a CSP `*` matches one label.
 
 Flip `mode` to `'session'` only after the checklist below is done and a test-mode purchase has succeeded. Then:
 
@@ -37,8 +37,8 @@ Privacy copy still says checkout uses Payment Links. Update `privacy-policy.html
 
 | Deploy | Worker name | Hostname |
 | --- | --- | --- |
-| `npx wrangler deploy --env=""` | `slatesafe-checkout` | `https://slatesafe-checkout.<subdomain>.workers.dev/` |
-| `npx wrangler deploy --env test` | `slatesafe-checkout-test` | `https://slatesafe-checkout-test.<subdomain>.workers.dev/` |
+| `npx wrangler deploy --env=""` | `slatesafe-checkout` | `https://slatesafe-checkout.slatesafe.workers.dev/` |
+| `npx wrangler deploy --env test` | `slatesafe-checkout-test` | `https://slatesafe-checkout-test.slatesafe.workers.dev/` |
 
 Secrets are per script. `wrangler secret put NAME --env test` does not set production, and a production secret does not appear on the test worker.
 
@@ -115,14 +115,14 @@ npm test
 
 That runs `worker/src/checkout.test.js` with a mocked Stripe client and a mocked rate-limit binding. The required case is one kit plus two cables: one session, two line items, cable quantity 2, free shipping, `automatic_tax` enabled, and no client-supplied amounts. `worker/src/stripe-client.test.js` checks the fetch HTTP client and the timeout budget. No Miniflare install: Node's `Request`, `Response`, and `crypto.subtle` are enough.
 
-A real test-mode session, once the test Worker is deployed and its secrets are set. The script does not take a Stripe key.
+A real test-mode session against the deployed test Worker. `PRICE_CABLE` and `PRICE_KIT` on that worker must be test-mode Price IDs. The script does not take a Stripe key.
 
 ```bash
-CHECKOUT_WORKER_URL=https://slatesafe-checkout-test.<subdomain>.workers.dev/ \
+CHECKOUT_WORKER_URL=https://slatesafe-checkout-test.slatesafe.workers.dev/ \
   node scripts/checkout-session-e2e.mjs
 ```
 
-The script refuses a URL that is not the test worker unless `ALLOW_LIVE=1`. It prints the Checkout URL only.
+The script refuses a URL that is not the test worker unless `ALLOW_LIVE=1`. It prints the Checkout URL only. On 2026-10-24 that command against the deployed test worker returned HTTP 200 and a `https://checkout.stripe.com/` URL whose session id starts with `cs_test_`, for 1 kit and 2 cables.
 
 ## Chris setup checklist
 
@@ -139,32 +139,12 @@ Do these in order. Merging this pull request does not turn session checkout on. 
    - Kit Payment Link `https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01`
 5. Optional, and preferred by the command-deck order parser: on each test-mode Price from step 4, set `lookup_key` equal to the SKU (`CAB-RA20CM-MF-BLK-V1` on the cable Price, `ENC-SAM-A9-V1` on the kit Price). This function does not read `lookup_key`. It sends the Price ID. Skip this if the Price already has a different lookup key you need to keep.
 6. Create a free Cloudflare account. The Workers Free plan is the target (100,000 requests/day, 10ms CPU). Do not move the `slatesafe.com` nameservers. The site stays on GitHub Pages.
-7. From `worker/`, log in with `npx wrangler@4 login` (Wrangler 4.36.0 or later) or use the dashboard. Enable the workers.dev subdomain (Workers & Pages → your subdomain). Leave `account_id` out of `wrangler.toml`. Wrangler uses the logged-in account.
-8. Deploy the **test** environment first. It has no secrets yet, so checkout returns the generic error until step 9.
-
-   ```bash
-   cd worker
-   npx wrangler@4 deploy --env test
-   ```
-
-   Note the hostname `https://slatesafe-checkout-test.<subdomain>.workers.dev/`.
-9. Put secrets on the **test** worker only. Each command prompts. Nothing is written to git. Secrets do not copy to production.
-
-   ```bash
-   npx wrangler@4 secret put STRIPE_SECRET_KEY --env test
-   npx wrangler@4 secret put PRICE_CABLE --env test
-   npx wrangler@4 secret put PRICE_KIT --env test
-   ```
-
-   `STRIPE_SECRET_KEY` is the `rk_test_` key from step 2. `PRICE_CABLE` and `PRICE_KIT` are the test-mode Price IDs from step 4. Do not put the live key on this worker.
-10. Replace `ACCOUNT_SUBDOMAIN` in `checkout-config.js` and in every HTML `connect-src` with the subdomain from step 7. For this test, set `endpoint` to `https://slatesafe-checkout-test.<subdomain>.workers.dev/`. Leave `mode` as `payment_links` until step 14.
-11. Run the e2e script against that test URL. Open the printed Checkout URL and confirm one kit, cable quantity 2, free shipping, and a phone field. Do not point the script at the production worker for this check.
-
-    ```bash
-    CHECKOUT_WORKER_URL=https://slatesafe-checkout-test.<subdomain>.workers.dev/ \
-      node scripts/checkout-session-e2e.mjs
-    ```
-12. Later, when the test purchase looks right: create the live restricted key (`rk_live_`, Checkout Sessions write only) and copy the Price IDs from the existing live Payment Links. Put those on the **production** worker (no `--env`), then deploy production. Remove is not required on the test worker; leave the test key there.
+7. From `worker/`, log in with `npx wrangler@4 login` (Wrangler 4.36.0 or later) or use the dashboard. Enable the workers.dev subdomain (Workers & Pages → your subdomain). Leave `account_id` out of `wrangler.toml`. Wrangler uses the logged-in account. The subdomain in use is `slatesafe`.
+8. **Done (2026-10-24).** The test worker is deployed at `https://slatesafe-checkout-test.slatesafe.workers.dev/` with the `CHECKOUT_RATE_LIMITER` binding (8 requests / 60 seconds, namespace `1002`).
+9. **Done (2026-10-24).** `STRIPE_SECRET_KEY`, `PRICE_CABLE`, and `PRICE_KIT` are set on the test environment with `wrangler secret put` (secrets, not `[vars]`, not git). The key is the test restricted key. The Price IDs are test-mode. The live key is not on this worker.
+10. **Done.** `checkout-config.js` points at `https://slatesafe-checkout-test.slatesafe.workers.dev/`. Every HTML `connect-src` allows that host and `https://slatesafe-checkout.slatesafe.workers.dev`. `mode` stays `payment_links` until step 14.
+11. **Done (2026-10-24).** `scripts/checkout-session-e2e.mjs` against the test worker, body 1 kit + 2 cables, returned HTTP 200 and a `https://checkout.stripe.com/` URL with a `cs_test_` session id. A browser pass of that Checkout page (one kit, cable quantity 2, free shipping, phone field) is still worth doing before step 12 if it has not been clicked through.
+12. Later, when the test purchase looks right: create the live restricted key (`rk_live_`, Checkout Sessions write only) and copy the Price IDs from the existing live Payment Links. Put those on the **production** worker, then deploy production. Leave the test key on the test worker.
 
    Wrangler 4 warns if you deploy the top-level script without an environment flag, because `[env.test]` also exists. Pass an empty `--env` to mean production.
 
@@ -179,7 +159,7 @@ Do these in order. Merging this pull request does not turn session checkout on. 
     - Cable `CAB-RA20CM-MF-BLK-V1`, Payment Link `https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00` → `PRICE_CABLE`
     - Kit `ENC-SAM-A9-V1`, Payment Link `https://buy.stripe.com/4gMaEXgvsgfnfVXe4p1Fe01` → `PRICE_KIT`
 
-    Then set `checkout-config.js` `endpoint` to `https://slatesafe-checkout.<subdomain>.workers.dev/` and keep that host in `connect-src`.
+    Then set `checkout-config.js` `endpoint` to `https://slatesafe-checkout.slatesafe.workers.dev/`. That host is already in `connect-src`. Leave `mode` at `payment_links` until step 14.
 13. In the live-mode Stripe Dashboard, turn on customer emails for successful payments (Settings → Emails). Checkout collects an email address, and Stripe sends a receipt only when that email is on. Test mode does not send receipts. `order-complete.html` does not promise one.
 14. Change `checkout-config.js` `mode` from `payment_links` to `session` in a follow-up commit, and update the privacy-policy sentences that still say Payment Links.
 15. Place one real live test order, then refund it.

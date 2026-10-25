@@ -1,7 +1,7 @@
 // Posts one kit and two cables to the deployed test Worker.
 // The Worker holds the Stripe key. This script does not.
 //
-//   CHECKOUT_WORKER_URL=https://slatesafe-checkout-test.<subdomain>.workers.dev/ \
+//   CHECKOUT_WORKER_URL=https://slatesafe-checkout-test.slatesafe.workers.dev/ \
 //     node scripts/checkout-session-e2e.mjs
 //
 // Refuses a URL that is not the test worker unless ALLOW_LIVE=1.
@@ -9,7 +9,7 @@
 
 const url = process.env.CHECKOUT_WORKER_URL || '';
 if (!url) {
-    console.error('Set CHECKOUT_WORKER_URL to the test Worker (slatesafe-checkout-test.<subdomain>.workers.dev).');
+    console.error('Set CHECKOUT_WORKER_URL to the test Worker (https://slatesafe-checkout-test.slatesafe.workers.dev/).');
     process.exit(1);
 }
 let parsed;
