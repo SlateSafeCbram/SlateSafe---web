@@ -385,6 +385,26 @@
                 </div>
             </div>
         </div>
+
+        <div x-data="enclosureCustomerPhotos()">
+        <template x-if="photos.length > 0">
+        <section class="mt-16 border-t border-gray-200 dark:border-gray-800 pt-8">
+            <h2 class="text-2xl md:text-3xl font-bold mb-2 text-gray-900 dark:text-white">From customers</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-8">Install photos shared by customers.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="photo in photos" :key="photo.src">
+                    <figure class="bg-gray-100 dark:bg-slate-dark rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800">
+                        <img :src="photo.src" :alt="photo.alt" class="w-full h-64 object-cover bg-white" loading="lazy">
+                        <figcaption class="p-4" x-show="photo.caption || photo.attribution">
+                            <p class="text-gray-900 dark:text-gray-100" x-show="photo.caption" x-text="photo.caption"></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" x-show="photo.attribution" x-text="photo.attribution"></p>
+                        </figcaption>
+                    </figure>
+                </template>
+            </div>
+        </section>
+        </template>
+        </div>
     </main>
 
     <footer class="bg-header-blue border-t border-header-blue/80">
@@ -476,5 +496,42 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('enclosureCustomerPhotos', () => ({
+                photos: [],
+                async init() {
+                    try {
+                        const response = await fetch('/products.json', { cache: 'no-cache' });
+                        if (!response.ok) return;
+                        const data = await response.json();
+                        const product = (data.products || []).find((item) => (
+                            item.handle === 'tablet-enclosure-kit-samsung-tab-a9' || item.sku === 'ENC-SAM-A9-V1'
+                        ));
+                        const entries = product && Array.isArray(product.customerPhotos) ? product.customerPhotos : [];
+                        this.photos = entries.map((entry) => {
+                            if (!entry || typeof entry.image !== 'string' || !entry.image.trim()) return null;
+                            const image = entry.image.trim();
+                            const src = /^https?:\/\//i.test(image)
+                                ? image
+                                : (image.startsWith('/') ? image : `/${image}`);
+                            const caption = typeof entry.caption === 'string' ? entry.caption.trim() : '';
+                            const name = typeof entry.name === 'string' ? entry.name.trim() : '';
+                            const city = typeof entry.city === 'string' ? entry.city.trim() : '';
+                            const attribution = [name, city].filter(Boolean).join(', ');
+                            return {
+                                src,
+                                caption,
+                                attribution,
+                                alt: caption || 'Customer photo of a SlateSafe enclosure install'
+                            };
+                        }).filter(Boolean);
+                    } catch (error) {
+                        this.photos = [];
+                    }
+                }
+            }));
+        });
+    </script>
 </body>
 </html>
