@@ -91,6 +91,35 @@ function offersFrom(blocks) {
     return offers;
 }
 
+const ORG_ID = 'https://slatesafe.com/#organization';
+const RETURN_POLICY_ID = 'https://slatesafe.com/#merchant-return-policy';
+
+function assertReturnPolicy(policy, windowDays) {
+    assert.equal(policy['@type'], 'MerchantReturnPolicy');
+    assert.equal(policy['@id'], RETURN_POLICY_ID);
+    assert.equal(policy.applicableCountry, 'US');
+    assert.equal(policy.returnPolicyCategory, 'https://schema.org/MerchantReturnFiniteReturnWindow');
+    assert.equal(policy.merchantReturnDays, Number(windowDays));
+    assert.equal(policy.returnMethod, 'https://schema.org/ReturnByMail');
+    assert.equal(policy.returnFees, 'https://schema.org/ReturnFeesCustomerResponsibility');
+    assert.equal(policy.customerRemorseReturnFees, 'https://schema.org/ReturnFeesCustomerResponsibility');
+    assert.equal(policy.customerRemorseReturnLabelSource, 'https://schema.org/ReturnLabelCustomerResponsibility');
+    assert.equal(policy.itemDefectReturnFees, 'https://schema.org/FreeReturn');
+    assert.equal(policy.restockingFee['@type'], 'MonetaryAmount');
+    assert.equal(Number(policy.restockingFee.value), 0);
+    assert.equal(policy.restockingFee.currency, 'USD');
+    assert.equal(policy.returnShippingFeesAmount, undefined);
+}
+
+function assertOfferReturnReference(offer, sku) {
+    const policy = offer.hasMerchantReturnPolicy;
+    assert.deepEqual(policy, { '@id': RETURN_POLICY_ID }, `${sku} offer references the organization return policy by @id only`);
+    assert.equal(policy['@type'], undefined, `${sku} offer does not embed a MerchantReturnPolicy`);
+    assert.equal(policy.itemDefectReturnFees, undefined);
+    assert.equal(policy.returnFees, undefined);
+    assert.equal(policy.restockingFee, undefined);
+}
+
 test('product JSON-LD parses, matches products.json prices, and matches the shipping policy', () => {
     const bySku = catalog();
     const rates = policyShipping(read('shipping-policy.html'));
@@ -103,6 +132,21 @@ test('product JSON-LD parses, matches products.json prices, and matches the ship
     assert.match(returns, /No restocking fee when the return meets the unused \/ original-packaging rules\./);
     assert.match(returns, /We do not provide prepaid return labels for change-of-mind returns\./);
     assert.match(returns, /United States addresses only\./);
+
+    const homeBlocks = jsonLdBlocks(read('index.html'), 'index.html');
+    assert.equal(homeBlocks.length, 2, 'index.html JSON-LD is the organization block plus the website block');
+    const org = homeBlocks.find((block) => block['@type'] === 'Organization');
+    const site = homeBlocks.find((block) => block['@type'] === 'WebSite');
+    assert.ok(org, 'index.html has an Organization JSON-LD block');
+    assert.ok(site, 'index.html has a WebSite JSON-LD block');
+    assert.equal(org['@id'], ORG_ID);
+    assert.equal(org.name, 'SlateSafe');
+    assert.equal(org.url, 'https://slatesafe.com');
+    assert.equal(org.logo, 'https://slatesafe.com/logo.svg');
+    assertReturnPolicy(org.hasMerchantReturnPolicy, windowDays[1]);
+    assert.equal(site.name, 'SlateSafe');
+    assert.equal(site.url, 'https://slatesafe.com');
+    assert.equal(site.hasMerchantReturnPolicy, undefined);
 
     let canonicalOffers = 0;
     for (const rel of PRODUCT_PAGES) {
@@ -139,20 +183,12 @@ test('product JSON-LD parses, matches products.json prices, and matches the ship
             assertTime(`${product.sku} handlingTime`, shipping.deliveryTime.handlingTime, rates.handling);
             assertTime(`${product.sku} transitTime`, shipping.deliveryTime.transitTime, rates.transit);
 
-            const policy = offer.hasMerchantReturnPolicy;
-            assert.equal(policy['@type'], 'MerchantReturnPolicy');
-            assert.equal(policy.applicableCountry, 'US');
-            assert.equal(policy.returnPolicyCategory, 'https://schema.org/MerchantReturnFiniteReturnWindow');
-            assert.equal(policy.merchantReturnDays, Number(windowDays[1]));
-            assert.equal(policy.returnMethod, 'https://schema.org/ReturnByMail');
-            assert.equal(policy.returnFees, 'https://schema.org/ReturnFeesCustomerResponsibility');
-            assert.equal(policy.customerRemorseReturnFees, 'https://schema.org/ReturnFeesCustomerResponsibility');
-            assert.equal(policy.customerRemorseReturnLabelSource, 'https://schema.org/ReturnLabelCustomerResponsibility');
-            assert.equal(policy.itemDefectReturnFees, 'https://schema.org/FreeReturn');
-            assert.equal(policy.restockingFee['@type'], 'MonetaryAmount');
-            assert.equal(Number(policy.restockingFee.value), 0);
-            assert.equal(policy.restockingFee.currency, 'USD');
-            assert.equal(policy.returnShippingFeesAmount, undefined);
+            assertOfferReturnReference(offer, product.sku);
+            assert.equal(
+                JSON.stringify(productLd).includes('"@type":"MerchantReturnPolicy"'),
+                false,
+                `${rel} does not embed a full MerchantReturnPolicy`
+            );
         }
 
         for (const crumbs of blocks.filter((block) => block['@type'] === 'BreadcrumbList')) {
