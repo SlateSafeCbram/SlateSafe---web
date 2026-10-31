@@ -43,8 +43,78 @@
             "url": "https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/",
             "priceCurrency": "USD",
             "price": "11.99",
-            "availability": "https://schema.org/InStock"
+            "availability": "https://schema.org/InStock",
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "name": "USPS Ground",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": 5.75,
+                    "currency": "USD"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "US"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 2,
+                        "unitCode": "DAY"
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 3,
+                        "maxValue": 5,
+                        "unitCode": "DAY"
+                    }
+                }
+            },
+            "hasMerchantReturnPolicy": {
+                "@type": "MerchantReturnPolicy",
+                "applicableCountry": "US",
+                "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                "merchantReturnDays": 30,
+                "returnMethod": "https://schema.org/ReturnByMail",
+                "returnFees": "https://schema.org/ReturnFeesCustomerResponsibility",
+                "customerRemorseReturnFees": "https://schema.org/ReturnFeesCustomerResponsibility",
+                "customerRemorseReturnLabelSource": "https://schema.org/ReturnLabelCustomerResponsibility",
+                "itemDefectReturnFees": "https://schema.org/FreeReturn",
+                "restockingFee": {
+                    "@type": "MonetaryAmount",
+                    "value": 0,
+                    "currency": "USD"
+                }
+            }
         }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org/",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://slatesafe.com/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Products",
+                "item": "https://slatesafe.com/products.html"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "USB-C Right Angle Cable",
+                "item": "https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/"
+            }
+        ]
     }
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" integrity="sha384-BxpSbjbDhVKwnC1UfcjsNEuMuxg4af5IXOaSi1Iq5rASQ/9a7uslhEXbP9UI/fXo" crossorigin="anonymous"></script>
