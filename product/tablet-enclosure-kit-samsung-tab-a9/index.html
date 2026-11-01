@@ -43,8 +43,65 @@
             "url": "https://slatesafe.com/product/tablet-enclosure-kit-samsung-tab-a9/",
             "priceCurrency": "USD",
             "price": "56.00",
-            "availability": "https://schema.org/InStock"
+            "availability": "https://schema.org/InStock",
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "name": "USPS Ground",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": 0,
+                    "currency": "USD"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "US"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 2,
+                        "unitCode": "DAY"
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 3,
+                        "maxValue": 5,
+                        "unitCode": "DAY"
+                    }
+                }
+            },
+            "hasMerchantReturnPolicy": {
+                "@id": "https://slatesafe.com/#merchant-return-policy"
+            }
         }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org/",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://slatesafe.com/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Products",
+                "item": "https://slatesafe.com/products.html"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "Tablet Enclosure Kit - Samsung Galaxy Tab A11+ / A9+",
+                "item": "https://slatesafe.com/product/tablet-enclosure-kit-samsung-tab-a9/"
+            }
+        ]
     }
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" integrity="sha384-BxpSbjbDhVKwnC1UfcjsNEuMuxg4af5IXOaSi1Iq5rASQ/9a7uslhEXbP9UI/fXo" crossorigin="anonymous"></script>

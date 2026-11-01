@@ -18,9 +18,27 @@
     {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": "https://slatesafe.com/#organization",
         "name": "SlateSafe",
         "url": "https://slatesafe.com",
-        "logo": "https://slatesafe.com/logo.svg"
+        "logo": "https://slatesafe.com/logo.svg",
+        "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "@id": "https://slatesafe.com/#merchant-return-policy",
+            "applicableCountry": "US",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+            "merchantReturnDays": 30,
+            "returnMethod": "https://schema.org/ReturnByMail",
+            "returnFees": "https://schema.org/ReturnFeesCustomerResponsibility",
+            "customerRemorseReturnFees": "https://schema.org/ReturnFeesCustomerResponsibility",
+            "customerRemorseReturnLabelSource": "https://schema.org/ReturnLabelCustomerResponsibility",
+            "itemDefectReturnFees": "https://schema.org/FreeReturn",
+            "restockingFee": {
+                "@type": "MonetaryAmount",
+                "value": 0,
+                "currency": "USD"
+            }
+        }
     }
     </script>
     <script type="application/ld+json">
