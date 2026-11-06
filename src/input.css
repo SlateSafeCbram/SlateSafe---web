@@ -107,6 +107,23 @@
     z-index: 1;
   }
 
+  /* 44px tap targets and product-page utilities that live outside the root HTML scan */
+  .inline-flex {
+    display: inline-flex;
+  }
+
+  .min-h-11 {
+    min-height: 2.75rem;
+  }
+
+  .min-w-11 {
+    min-width: 2.75rem;
+  }
+
+  .pl-5 {
+    padding-left: 1.25rem;
+  }
+
   /* Hero layers performance hints */
   .hero-video-layer,
   .hero-overlay-layer {
@@ -123,6 +140,13 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* Rightmost footer "Coming soon" tooltip stays inside a 1280px viewport. */
+footer .flex.space-x-6 > .group:last-child > span {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 

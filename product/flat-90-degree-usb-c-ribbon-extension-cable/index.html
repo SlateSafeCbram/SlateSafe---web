@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://www.youtube.com https://i.ytimg.com https://img.youtube.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://play.gumlet.io; connect-src 'self' https://slatesafe-checkout-test.slatesafe.workers.dev https://slatesafe-checkout.slatesafe.workers.dev https://api.web3forms.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://analytics.google.com https://*.analytics.google.com; form-action 'self' https://api.web3forms.com; upgrade-insecure-requests">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="20cm flat right-angle USB-C FPC ribbon extension for tablet enclosures & kiosks. Up to 30W / USB 2.0. SKU CAB-RA20CM-MF-BLK-V1. $11.99. Made for flush installs.">
     <title>Flat USB-C Ribbon Cable – 90° FPC Extension (20cm) | SlateSafe</title>
@@ -12,6 +13,7 @@
     <meta property="og:url" content="https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/">
     <meta property="og:type" content="product">
     <meta property="og:site_name" content="SlateSafe">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="stylesheet" href="/dist/output.css">
     <style>
@@ -41,11 +43,68 @@
             "url": "https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/",
             "priceCurrency": "USD",
             "price": "11.99",
-            "availability": "https://schema.org/InStock"
+            "availability": "https://schema.org/InStock",
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "name": "USPS Ground",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": 5.75,
+                    "currency": "USD"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "US"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 2,
+                        "unitCode": "DAY"
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 3,
+                        "maxValue": 5,
+                        "unitCode": "DAY"
+                    }
+                }
+            },
+            "hasMerchantReturnPolicy": {
+                "@id": "https://slatesafe.com/#merchant-return-policy"
+            }
         }
     }
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org/",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://slatesafe.com/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Products",
+                "item": "https://slatesafe.com/products.html"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "USB-C Right Angle Cable",
+                "item": "https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/"
+            }
+        ]
+    }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" integrity="sha384-BxpSbjbDhVKwnC1UfcjsNEuMuxg4af5IXOaSi1Iq5rASQ/9a7uslhEXbP9UI/fXo" crossorigin="anonymous"></script>
     <script src="/product-gallery.js"></script>
     <script src="/app-init.js"></script>
     <script src="/cookie-consent.js"></script>
@@ -56,10 +115,11 @@
             ProductRouter.updateUrl('flat-90-degree-usb-c-ribbon-extension-cable');
         }
     </script>
-    <script src="/shopify-cart.js"></script>
+    <script src="/checkout-config.js"></script>
+    <script src="/cart.js"></script>
 </head>
 <body class="bg-white dark:bg-matte-black text-gray-900 dark:text-gray-100 font-sans antialiased">
-    <div class="fixed top-20 right-4 z-50 space-y-2" style="z-index: 70" x-data>
+    <div class="fixed top-20 right-4 z-50 space-y-2" style="z-index: 70" x-data role="status" aria-live="polite">
         <template x-for="toast in $store.toast.messages" :key="toast.id">
             <div x-show="true"
                  x-transition:enter="transition ease-out duration-300 transform"
@@ -81,7 +141,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="toast.message"></p>
                 </div>
-                <button @click="$store.toast.remove(toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Dismiss notification">
+                <button @click="$store.toast.remove(toast.id)" class="inline-flex items-center justify-center flex-shrink-0 min-h-11 min-w-11 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Dismiss notification">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -93,7 +153,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="/index.html" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+                    <a href="/index.html" class="flex items-center min-h-11 space-x-2 hover:opacity-90 transition-opacity">
                         <img src="/logo.svg" alt="SlateSafe Logo" class="h-8 md:h-10 w-auto">
                     </a>
                 </div>
@@ -102,13 +162,13 @@
                     <a href="/products.html" class="text-white hover:text-brand-orange transition-colors">Products</a>
                     <a href="/about.html" class="text-white hover:text-brand-orange transition-colors">About</a>
                     <a href="/contact.html" class="text-white hover:text-brand-orange transition-colors">Contact</a>
-                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
+                    <button @click="$store.cart.openDrawer()" class="min-w-11 min-h-11 justify-center items-center inline-flex relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span x-show="$store.cart.itemCount > 0" class="absolute top-0 right-0 bg-brand-orange text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" x-text="$store.cart.itemCount"></span>
                     </button>
-                    <button @click="$store.theme.toggle()" class="p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Toggle theme">
+                    <button @click="$store.theme.toggle()" class="min-w-11 min-h-11 justify-center items-center inline-flex p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Toggle theme">
                         <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
@@ -118,13 +178,13 @@
                     </button>
                 </div>
                 <div class="md:hidden flex items-center space-x-2">
-                    <button @click="$store.cart.openDrawer()" class="relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
+                    <button @click="$store.cart.openDrawer()" class="min-w-11 min-h-11 justify-center items-center inline-flex relative p-2 rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Shopping cart">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span x-show="$store.cart.itemCount > 0" class="absolute top-0 right-0 bg-brand-orange text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" x-text="$store.cart.itemCount"></span>
                     </button>
-                    <button @click="open = !open" class="text-white hover:text-brand-orange">
+                    <button @click="open = !open" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg text-white hover:text-brand-orange" aria-label="Toggle menu">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -135,10 +195,10 @@
         </div>
         <div x-show="open" style="display: none;" class="md:hidden bg-header-blue border-t border-header-blue/80">
             <div class="px-4 py-4 space-y-3">
-                <a href="/index.html" class="block text-white hover:text-brand-orange transition-colors">Home</a>
-                <a href="/products.html" class="block text-white hover:text-brand-orange transition-colors">Products</a>
-                <a href="/about.html" class="block text-white hover:text-brand-orange transition-colors">About</a>
-                <a href="/contact.html" class="block text-white hover:text-brand-orange transition-colors">Contact</a>
+                <a href="/index.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">Home</a>
+                <a href="/products.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">Products</a>
+                <a href="/about.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">About</a>
+                <a href="/contact.html" class="flex items-center min-h-11 text-white hover:text-brand-orange transition-colors">Contact</a>
             </div>
         </div>
     </nav>
@@ -146,9 +206,9 @@
     <div class="bg-gray-100 dark:bg-slate-dark border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav class="text-sm text-gray-600 dark:text-gray-400">
-                <a href="/index.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
+                <a href="/index.html" class="inline-flex items-center justify-center min-h-11 min-w-11 hover:text-brand-orange dark:hover:text-white transition-colors">Home</a>
                 <span class="mx-2">/</span>
-                <a href="/products.html" class="hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
+                <a href="/products.html" class="inline-flex items-center justify-center min-h-11 min-w-11 hover:text-brand-orange dark:hover:text-white transition-colors">Products</a>
                 <span class="mx-2">/</span>
                 <span class="text-gray-900 dark:text-gray-300">USB-C Right Angle Cable</span>
             </nav>
@@ -162,8 +222,9 @@
         sku: 'CAB-RA20CM-MF-BLK-V1',
         addToCart() {
             const qty = Number(this.quantity);
-            if (!Number.isInteger(qty) || qty < 1) {
-                Alpine.store('toast').show('Please enter a valid quantity', 'error');
+            const session = Alpine.store('cart').sessionCheckout;
+            if (!Number.isInteger(qty) || qty < 1 || (session && qty > 10)) {
+                Alpine.store('toast').show(session && qty > 10 ? 'Maximum quantity is 10.' : 'Please enter a valid quantity', 'error');
                 return;
             }
             this.addingToCart = true;
@@ -174,7 +235,7 @@
                 .finally(() => { this.addingToCart = false; });
         },
         buyNow() {
-            Alpine.store('cart').buyProduct(this.sku).then((result) => {
+            Alpine.store('cart').buyProduct(this.sku, this.quantity).then((result) => {
                 if (result.error) {
                     this.buyMessage = result.error;
                 } else {
@@ -249,8 +310,11 @@
                 </div>
             </div>
             <div>
-                <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">USB-C Right Angle Cable</h1>
-                <p class="text-3xl font-bold text-brand-orange mb-6">$11.99</p>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Flat USB-C Ribbon Cable, 90° Right-Angle FPC Extension (20cm)</h1>
+                <p class="text-3xl font-bold text-brand-orange mb-6">
+                    <span x-show="!($store.cart.sessionCheckout && quantity >= 2)">$11.99</span>
+                    <span x-show="$store.cart.sessionCheckout && quantity >= 2" x-cloak x-text="$store.cart.priceLabel(11.99, quantity)"></span>
+                </p>
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Description</h2>
                     <div class="product-description text-gray-700 dark:text-gray-400 leading-relaxed">
@@ -332,8 +396,9 @@
 
                 <div class="mb-8">
                     <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity</label>
-                    <input id="quantity" type="number" value="1" min="1" max="1" readonly class="w-20 px-4 py-2 bg-gray-50 dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-center text-gray-900 dark:text-white cursor-not-allowed">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Additional quantity can be set on the Stripe checkout page.</p>
+                    <input id="quantity" type="number" x-model.number="quantity" min="1" :max="$store.cart.sessionCheckout ? 10 : 1" :readonly="!$store.cart.sessionCheckout" class="w-20 min-h-11 px-4 py-2 bg-gray-50 dark:bg-slate-dark border border-gray-300 dark:border-gray-700 rounded-lg text-center text-gray-900 dark:text-white" :class="$store.cart.sessionCheckout ? '' : 'cursor-not-allowed'">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2" x-show="!$store.cart.sessionCheckout">Additional quantity can be set on the Stripe checkout page.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2" x-show="$store.cart.sessionCheckout" x-cloak>Choose 1 to 10. The cart keeps this quantity.</p>
                 </div>
                 <div class="mb-8">
                     <p class="text-center text-red-600 dark:text-red-400 text-sm mb-3" x-show="buyMessage" x-text="buyMessage"></p>
@@ -365,23 +430,23 @@
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Products</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="/products.html" class="hover:text-brand-orange transition-colors">All Products</a></li>
+                        <li><a href="/products.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">All Products</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Company</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="/about.html" class="hover:text-brand-orange transition-colors">About Us</a></li>
-                        <li><a href="/contact.html" class="hover:text-brand-orange transition-colors">Contact</a></li>
+                        <li><a href="/about.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">About Us</a></li>
+                        <li><a href="/contact.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Contact</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="font-semibold mb-4 text-white">Legal</h4>
                     <ul class="space-y-2 text-sm text-gray-200">
-                        <li><a href="/privacy-policy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
-                        <li><a href="/shipping-policy.html" class="hover:text-brand-orange transition-colors">Shipping Policy</a></li>
-                        <li><a href="/returns.html" class="hover:text-brand-orange transition-colors">Returns</a></li>
-                        <li><a href="/terms.html" class="hover:text-brand-orange transition-colors">Terms of Service</a></li>
+                        <li><a href="/privacy-policy.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Privacy Policy</a></li>
+                        <li><a href="/shipping-policy.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Shipping Policy</a></li>
+                        <li><a href="/returns.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Returns</a></li>
+                        <li><a href="/terms.html" class="inline-flex items-center min-h-11 hover:text-brand-orange transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
@@ -401,7 +466,7 @@
         <div @click.stop class="relative w-full max-w-md bg-white dark:bg-slate-deep shadow-xl h-full overflow-y-auto">
             <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Shopping Cart</h2>
-                <button @click="$store.cart.open = false" class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Close cart">
+                <button @click="$store.cart.open = false" class="min-w-11 min-h-11 justify-center items-center inline-flex p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Close cart">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -415,11 +480,16 @@
                     <template x-for="item in $store.cart.items" :key="item.id">
                         <div class="flex items-start space-x-4 pb-4 border-b border-gray-200 dark:border-gray-800">
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate" x-text="item.title"></h3>
-                                <p class="text-brand-orange font-bold mt-1" x-text="'$' + (item.variant?.price?.amount ? parseFloat(item.variant.price.amount).toFixed(2) : '0.00')"></p>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="item.title"></h3>
+                                <p class="text-brand-orange font-bold mt-1" x-text="$store.cart.linePriceLabel(item)"></p>
                                 <div class="flex items-center space-x-3 mt-2">
-                                    <span class="text-gray-900 dark:text-white font-medium">Quantity 1</span>
-                                    <button @click="$store.cart.removeLineItem(item.id)" class="ml-auto text-red-600 text-sm">Remove</button>
+                                    <span class="text-gray-900 dark:text-white font-medium" x-show="!$store.cart.sessionCheckout">Quantity 1</span>
+                                <div class="inline-flex items-center space-x-2" x-show="$store.cart.sessionCheckout" x-cloak>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" :aria-label="'Decrease quantity of ' + item.title" :disabled="item.quantity <= 1" @click="$store.cart.updateLineItem(item.id, Math.max(1, item.quantity - 1))">−</button>
+                                    <span class="w-8 text-center text-gray-900 dark:text-white font-medium" x-text="item.quantity"></span>
+                                    <button type="button" class="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" :aria-label="'Increase quantity of ' + item.title" :disabled="item.quantity >= 10" @click="$store.cart.updateLineItem(item.id, item.quantity + 1)">+</button>
+                                </div>
+                                    <button @click="$store.cart.removeLineItem(item.id)" class="ml-auto inline-flex items-center min-h-11 px-2 text-red-600 text-sm">Remove</button>
                                 </div>
                             </div>
                         </div>
@@ -431,9 +501,10 @@
                     <span class="text-lg font-semibold text-gray-900 dark:text-white">Subtotal:</span>
                     <span class="text-xl font-bold text-brand-orange" x-text="'$' + $store.cart.total.toFixed(2)"></span>
                 </div>
-                <button type="button" @click="$store.cart.checkout()" class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg transition-colors text-center">Checkout</button>
+                <button type="button" @click="$store.cart.checkout()" :disabled="$store.cart.checkoutBusy" class="block w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg transition-colors text-center">Checkout</button>
                 <p class="text-center text-gray-600 dark:text-gray-400 text-xs mt-3">United States shipping only. Sales tax is calculated at checkout.</p>
-                <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice" x-text="$store.cart.cableBundleNotice"></p>
+                <p x-show="$store.cart.sessionCheckout" x-cloak class="text-center text-gray-600 dark:text-gray-400 text-xs mt-2">Free shipping when your order includes the kit.</p>
+                <p class="text-sm mt-2 leading-snug text-gray-700 dark:text-gray-300" x-show="$store.cart.cableBundleNotice && !$store.cart.sessionCheckout" x-text="$store.cart.cableBundleNotice"></p>
                 <p class="text-center text-red-600 dark:text-red-400 text-sm mt-2" x-show="$store.cart.checkoutNotice" x-text="$store.cart.checkoutNotice"></p>
             </div>
         </div>
