@@ -569,9 +569,10 @@
                         this.photos = entries.map((entry) => {
                             if (!entry || typeof entry.image !== 'string' || !entry.image.trim()) return null;
                             const image = entry.image.trim();
-                            const src = /^https?:\/\//i.test(image)
-                                ? image
-                                : (image.startsWith('/') ? image : `/${image}`);
+                            // Repo paths under images/customers/ only. Absolute and protocol-relative
+                            // URLs are outside img-src 'self', so skip them instead of rendering a broken image.
+                            if (/^https?:\/\//i.test(image) || image.startsWith('//')) return null;
+                            const src = image.startsWith('/') ? image : `/${image}`;
                             const caption = typeof entry.caption === 'string' ? entry.caption.trim() : '';
                             const name = typeof entry.name === 'string' ? entry.name.trim() : '';
                             const city = typeof entry.city === 'string' ? entry.city.trim() : '';
