@@ -215,6 +215,48 @@ function productLdName(products) {
     return products[0].name;
 }
 
+const CABLE_PRODUCT_NAME = 'Flat USB-C Ribbon Cable, 90° Right-Angle FPC Extension (20cm)';
+
+test('cable product name matches the PDP H1 in JSON-LD and the catalog', () => {
+    const rel = 'product/flat-90-degree-usb-c-ribbon-extension-cable/index.html';
+    const html = read(rel);
+    const h1 = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
+    assert.ok(h1, 'cable PDP has an H1');
+    assert.equal(h1[1], CABLE_PRODUCT_NAME);
+
+    const blocks = jsonLdBlocks(html, rel);
+    const productLd = offersFrom(blocks)[0];
+    assert.equal(productLd.name, CABLE_PRODUCT_NAME);
+    const crumbs = blocks.find((block) => block['@type'] === 'BreadcrumbList');
+    assert.equal(crumbs.itemListElement[2].name, CABLE_PRODUCT_NAME);
+    const visibleCrumb = html.match(/<span class="text-gray-900 dark:text-gray-300">([^<]+)<\/span>/);
+    assert.equal(visibleCrumb[1], CABLE_PRODUCT_NAME);
+
+    const cable = catalog().get('CAB-RA20CM-MF-BLK-V1');
+    assert.equal(cable.title, CABLE_PRODUCT_NAME);
+    assert.equal(cable.price, 11.99);
+    assert.equal(cable.sku, 'CAB-RA20CM-MF-BLK-V1');
+    assert.equal(cable.handle, 'flat-90-degree-usb-c-ribbon-extension-cable');
+    assert.equal(cable.url, 'https://slatesafe.com/product/flat-90-degree-usb-c-ribbon-extension-cable/');
+    assert.equal(cable.stripePaymentLink, 'https://buy.stripe.com/00w14ncfc6EN2574tP1Fe00');
+
+    const listing = read('products.html');
+    assert.match(
+        listing,
+        /<h3[^>]*>Flat USB-C Ribbon Cable, 90° Right-Angle FPC Extension \(20cm\)<\/h3>/
+    );
+
+    // Cart and analytics titles are product.title. Checkout sessions send a
+    // Price ID and do not set a line-item name, so no separate short name.
+    const cartSource = read('cart.js');
+    assert.match(cartSource, /title: product\.title/);
+    assert.equal(cartSource.includes('shortTitle'), false);
+    assert.equal(cartSource.includes('cartTitle'), false);
+    const checkoutSource = read('worker/src/checkout.js');
+    assert.equal(checkoutSource.includes('product_data'), false);
+    assert.match(checkoutSource, /price,\s*quantity: item\.qty,\s*metadata: \{ sku: item\.sku \}/);
+});
+
 test('policy page titles match the About and Contact pattern', () => {
     const about = read('about.html').match(/<title>([^<]+)<\/title>/)[1];
     const contact = read('contact.html').match(/<title>([^<]+)<\/title>/)[1];
@@ -222,12 +264,22 @@ test('policy page titles match the About and Contact pattern', () => {
     assert.equal(contact, 'Contact | SlateSafe');
 
     const expected = {
-        'returns.html': 'Returns | SlateSafe',
+        'returns.html': '30-Day Returns | SlateSafe',
         'terms.html': 'Terms of Service | SlateSafe',
         'shipping-policy.html': 'Shipping Policy: Free Kit Shipping, $5.75 Cable-Only Orders | SlateSafe'
     };
+    const shippingRates = policyShipping(read('shipping-policy.html'));
+    assert.equal(shippingRates.kit, 0);
+    assert.equal(shippingRates.cable, 5.75);
+    assert.match(expected['shipping-policy.html'], /Free Kit Shipping/);
+    assert.match(expected['shipping-policy.html'], /\$5\.75 Cable/);
+
     for (const [rel, title] of Object.entries(expected)) {
         const html = read(rel);
+        const titles = html.match(/<title>([^<]+)<\/title>/g);
+        const ogTitles = html.match(/property="og:title" content="([^"]+)"/g);
+        assert.equal(titles.length, 1, rel);
+        assert.equal(ogTitles.length, 1, rel);
         assert.equal(html.match(/<title>([^<]+)<\/title>/)[1], title, rel);
         assert.equal(html.match(/property="og:title" content="([^"]+)"/)[1], title, rel);
         assert.equal(html.includes('SlateSafe - Modern Tablet Solutions'), false, rel);
