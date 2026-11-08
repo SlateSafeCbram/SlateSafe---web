@@ -266,7 +266,7 @@ test('policy page titles match the About and Contact pattern', () => {
     const expected = {
         'returns.html': '30-Day Returns | SlateSafe',
         'terms.html': 'Terms of Service | SlateSafe',
-        'shipping-policy.html': 'Shipping Policy: Free Kit Shipping, $5.75 Cable | SlateSafe'
+        'shipping-policy.html': 'Shipping Policy: Free Kit Shipping, $5.75 Cable-Only Orders | SlateSafe'
     };
     const shippingRates = policyShipping(read('shipping-policy.html'));
     assert.equal(shippingRates.kit, 0);
