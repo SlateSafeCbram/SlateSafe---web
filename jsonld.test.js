@@ -224,7 +224,7 @@ test('policy page titles match the About and Contact pattern', () => {
     const expected = {
         'returns.html': 'Returns | SlateSafe',
         'terms.html': 'Terms of Service | SlateSafe',
-        'shipping-policy.html': 'Shipping Policy | SlateSafe'
+        'shipping-policy.html': 'Shipping Policy: Free Kit Shipping, $5.75 Cable-Only Orders | SlateSafe'
     };
     for (const [rel, title] of Object.entries(expected)) {
         const html = read(rel);
