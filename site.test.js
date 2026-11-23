@@ -104,12 +104,13 @@ function runAnalytics(consented) {
     const docListeners = {};
     const winListeners = {};
     const appended = [];
+    const consent = { value: consented };
     const document = {
         head: { appendChild: (el) => appended.push(el) },
         createElement: () => ({}),
         addEventListener: (name, fn) => { (docListeners[name] = docListeners[name] || []).push(fn); }
     };
-    const store = { hasConsented: () => consented };
+    const store = { hasConsented: () => consent.value };
     const Alpine = { store: (name) => (name === 'cookieConsent' ? store : undefined) };
     // The context is the browser global, so window.dataLayer and dataLayer match.
     const window = vm.createContext({
@@ -121,7 +122,7 @@ function runAnalytics(consented) {
     vm.runInContext('var window = globalThis;', window);
     vm.runInContext(read('analytics.js'), window);
     for (const fn of docListeners['alpine:initialized'] || []) fn();
-    return { appended, window, winListeners };
+    return { appended, window, winListeners, consent };
 }
 
 test('returning visitor with saved consent loads gtag once Alpine is initialized', () => {
@@ -134,10 +135,18 @@ test('returning visitor with saved consent loads gtag once Alpine is initialized
 });
 
 test('no saved consent means no gtag until Accept', () => {
-    const { appended, window, winListeners } = runAnalytics(false);
+    const { appended, window, winListeners, consent } = runAnalytics(false);
     assert.equal(appended.length, 0);
     assert.equal(window.gtag, undefined);
     window.SlateSafeAnalytics.trackAddToCart({ id: 'x', title: 'x', price: 1, quantity: 1 });
     assert.equal(appended.length, 0, 'events before consent do not load gtag');
-    assert.ok((winListeners.cookieConsentChanged || []).length > 0, 'Accept path listener is registered');
+    const listeners = winListeners.cookieConsentChanged || [];
+    assert.equal(listeners.length, 1, 'Accept path listener is registered');
+    consent.value = true;
+    listeners[0]({ detail: { consented: true, type: 'accepted' } });
+    assert.equal(appended.length, 1, 'Accept loads gtag once');
+    assert.equal(appended[0].src, 'https://www.googletagmanager.com/gtag/js?id=G-1XB9ZLWTV0');
+    assert.equal(typeof window.gtag, 'function');
+    listeners[0]({ detail: { consented: true, type: 'accepted' } });
+    assert.equal(appended.length, 1, 'a second Accept does not load gtag again');
 });
