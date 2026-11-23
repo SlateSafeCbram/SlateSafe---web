@@ -155,6 +155,14 @@
         trackEvent: trackEvent
     };
     
+    // Returning visitors: consent saved on an earlier visit.
+    // app-init.js runs its alpine:init check before cookie-consent.js
+    // registers the cookieConsent store, so that check never sees saved
+    // consent. alpine:initialized fires after every store is registered.
+    if (typeof document !== 'undefined') {
+        document.addEventListener('alpine:initialized', initGA);
+    }
+
     // Listen for consent changes
     if (typeof window !== 'undefined') {
         window.addEventListener('cookieConsentChanged', function(event) {
